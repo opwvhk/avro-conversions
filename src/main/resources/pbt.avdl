@@ -1,0 +1,20 @@
+@namespace("predictionsflight")
+protocol `protocol` {
+    @cdpName("predictionsflight-predictedblocktimes")
+    @cdpVersion(1)
+    record predictedblocktimes {
+        timestamp_ms datetime_created_utc;
+        date date_created_utc;
+        timestamp_ms scheduled_block_time_utc;
+        timestamp_ms predicted_block_time_utc;
+        string flight_designator;
+        string flight_direction;
+        model_version model_version;
+    }
+
+    record model_version {
+        string git_commit_sha;
+        union{null, string} git_tag = null;
+        boolean production_model;
+    }
+}

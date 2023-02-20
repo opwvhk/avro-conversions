@@ -1,0 +1,80 @@
+protocol schema0{
+	record topLevelRecord {
+		union{null, @logicalType("timestamp-micros") long} generated_at;
+		int? year;
+		topLevelRecord.timespan? timespan;
+		topLevelRecord.location? location;
+		float? air_pressure_hpa;
+		union{null, array<topLevelRecord.air_temperatures?>} air_temperatures;
+		float? relative_humidity;
+		float? dew_point_temperature_c;
+		union{null, array<topLevelRecord.wind?>} wind;
+		topLevelRecord.max_wind_gust? max_wind_gust;
+		union{null, array<topLevelRecord.precipitation_rate?>} precipitation_rate;
+		float? boundary_layer_height_m;
+		topLevelRecord.cloud_cover? cloud_cover;
+		float? cloud_base_m;
+		float? visibility_m;
+		float? snow_cover_kgpm2;
+		topLevelRecord._origin? _origin;
+	}
+
+	@namespace("topLevelRecord")
+	record timespan {
+		@logicalType("timestamp-micros") long? start;
+		union{null, @logicalType("timestamp-micros") long} end;
+	}
+
+	@namespace("topLevelRecord")
+	record location {
+		float? latitude;
+		float? longitude;
+	}
+
+	@namespace("topLevelRecord")
+	record air_temperatures {
+		int? height_m;
+		float? celsius;
+	}
+
+	@namespace("topLevelRecord")
+	record wind {
+		int? height_m;
+		float? u_mps;
+		float? v_mps;
+		float? knots;
+		float? direction_deg;
+	}
+
+	@namespace("topLevelRecord")
+	record max_wind_gust {
+		long? after;
+		float? u_mps;
+		float? v_mps;
+		float? knots;
+		float? direction_deg;
+	}
+
+	@namespace("topLevelRecord")
+	record precipitation_rate {
+		int? height_m;
+		float? rainfall;
+		float? snow;
+		float? graupel;
+	}
+
+	@namespace("topLevelRecord")
+	record cloud_cover {
+		float? low;
+		float? medium;
+		float? high;
+		float? total;
+	}
+
+	@namespace("topLevelRecord")
+	record _origin {
+		union{null, @logicalType("timestamp-micros") long} imported_at;
+		string? imported_from;
+		string? imported_by;
+	}
+}

@@ -1,0 +1,128 @@
+package opwvhk.avro.xml;
+
+import java.util.ArrayDeque;
+import java.util.Deque;
+
+import opwvhk.avro.io.ValueResolver;
+import opwvhk.avro.io.XmlAsAvroParser;
+import org.xml.sax.Attributes;
+
+import static java.util.Objects.requireNonNullElse;
+
+public class XmlRecordHandler implements SimpleContentHandler {
+	private final ValueResolver rootHandler;
+	private final Deque<HandlerContext> contextStack;
+	private Object value;
+
+	public XmlRecordHandler(ValueResolver rootHandler) {
+		this.rootHandler = rootHandler;
+		contextStack = new ArrayDeque<>();
+		value = null;
+	}
+
+	public <T> T getValue() {
+		//noinspection unchecked
+		return (T) value;
+	}
+
+	@Override
+	public void startDocument() {
+		contextStack.clear();
+		value = null;
+	}
+
+	@Override
+	public void endDocument() {
+		// Nothing to do.
+	}
+
+	@Override
+	public boolean startElement(String uri, String localName, String qName, Attributes attributes) {
+		HandlerContext parentContext = contextStack.peek();
+		HandlerContext context;
+		if (parentContext == null) {
+			context = new HandlerContext(rootHandler);
+		} else {
+			String element = requireNonNullElse(localName, qName);
+			context = parentContext.resolve(element);
+		}
+		contextStack.push(context);
+
+		for (int i = 0; i < attributes.getLength(); i++) {
+			if (XmlAsAvroParser.XML_SCHEMA_DEFINITION_NAMESPACES.contains(attributes.getURI(i))) {
+				continue;
+			}
+			String attribute = requireNonNullElse(attributes.getLocalName(i), attributes.getQName(i));
+			Object attrValue = context.resolveValue(attribute, attributes.getValue(i));
+			context.addProperty(attribute, attrValue);
+		}
+
+		return context.shouldParseContent();
+	}
+
+	@Override
+	public void endElement(String uri, String localName, String qName) {
+		HandlerContext context = contextStack.pop();
+		Object value = context.complete();
+
+		HandlerContext parentContext = contextStack.peek();
+		if (parentContext != null) {
+			String element = requireNonNullElse(localName, qName);
+			parentContext.addProperty(element, value);
+		} else {
+			this.value = value;
+		}
+	}
+
+	@Override
+	public void characters(CharSequence chars) {
+		HandlerContext context = contextStack.element();
+		context.appendChars(chars);
+	}
+
+	private static class HandlerContext {
+		private final ValueResolver resolver;
+		private final StringBuilder buffer;
+		private Object collector;
+
+		public HandlerContext(ValueResolver resolver) {
+			this.resolver = resolver;
+			buffer = new StringBuilder();
+			collector = resolver.createCollector();
+		}
+
+		public boolean shouldParseContent() {
+			return resolver.shouldParseContent();
+		}
+
+		public HandlerContext resolve(String name) {
+			return new HandlerContext(resolver.resolve(name));
+		}
+
+		public Object resolveValue(String name, String value) {
+			ValueResolver childResolver = resolver.resolve(name);
+			Object childCollector = childResolver.createCollector();
+			childCollector = childResolver.addContent(childCollector, value);
+			return childResolver.complete(childCollector);
+		}
+
+		public void addProperty(String name, Object value) {
+			collector = resolver.addProperty(collector, name, value);
+		}
+
+		public Object complete() {
+			String content = buffer.toString().stripIndent().strip();
+			buffer.setLength(0);
+			if (!content.isEmpty()) {
+				collector = resolver.addContent(collector, content);
+			}
+
+			collector = resolver.complete(collector);
+			return collector;
+		}
+
+		public void appendChars(CharSequence chars) {
+			buffer.append(chars);
+		}
+	}
+}

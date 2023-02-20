@@ -1,0 +1,71 @@
+{
+	"type":"record",
+	"name":"predictedblocktimes",
+	"namespace":"predictionsflight",
+	"cdpName":"predictionsflight-predictedblocktimes",
+	"cdpVersion":1,
+	"fields":[
+		{
+			"name":"datetime_created_utc",
+			"type":{
+				"type":"long",
+				"logicalType":"timestamp-millis"
+			}
+		},
+		{
+			"name":"date_created_utc",
+			"type":{
+				"type": "int",
+				"logicalType": "date"
+			}
+		},
+		{
+			"name":"scheduled_block_time_utc",
+			"type":{
+				"type":"long",
+				"logicalType":"timestamp-millis"
+			}
+		},
+		{
+			"name":"predicted_block_time_utc",
+			"type":{
+				"type":"long",
+				"logicalType":"timestamp-millis"
+			}
+		},
+		{
+			"name":"flight_designator",
+			"type": "string"
+		},
+		{
+			"name":"flight_direction",
+			"type": "string"
+		},
+		{
+			"name": "model_version",
+			"type":{
+				"type": "record",
+				"name": "model_version",
+				"namespace": "predictionsflight",
+				"fields":[
+					{
+						"name": "git_commit_sha",
+						"type": "string"
+					},
+					{
+						"name": "git_tag",
+						"type": [
+							"null",
+							"string"
+						],
+						"default": null
+					},
+					{
+						"name": "production_model",
+						"type": "boolean"
+					}
+				]
+			}
+		}
+	]
+}
