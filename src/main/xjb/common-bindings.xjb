@@ -1,0 +1,8 @@
+<jaxb:bindings xmlns:jaxb="http://java.sun.com/xml/ns/jaxb" version="2.1"
+               xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc" jaxb:extensionBindingPrefixes="xjc">
+	<jaxb:globalBindings>
+		<xjc:javaType xmlType="xs:date" name="java.time.LocalDate" adapter="opwvhk.jaxb.LocalDateXmlAdapter"/>
+		<xjc:javaType xmlType="xs:time" name="java.time.LocalTime" adapter="opwvhk.jaxb.LocalTimeXmlAdapter"/>
+		<xjc:javaType xmlType="xs:dateTime" name="java.time.Instant" adapter="opwvhk.jaxb.InstantXmlAdapter"/>
+	</jaxb:globalBindings>
+</jaxb:bindings>
