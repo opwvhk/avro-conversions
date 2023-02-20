@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema targetNamespace="https://www.schiphol.nl/opwvhk/test" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="https://www.schiphol.nl/opwvhk/test" elementFormDefault="qualified">
+	<xs:include schemaLocation="envelope.xsd"/>
+	<xs:element name="record">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="summary" type="xs:string"/>
+				<xs:element name="status">
+					<xs:simpleType>
+						<xs:restriction base="xs:string">
+							<xs:enumeration value="OPEN"/>
+							<xs:enumeration value="IN_PROGRESS"/>
+							<xs:enumeration value="DONE"/>
+							<xs:enumeration value="REJECTED"/>
+						</xs:restriction>
+					</xs:simpleType>
+				</xs:element>
+				<xs:element name="sequence" maxOccurs="unbounded">
+					<xs:complexType>
+						<xs:sequence>
+							<xs:element name="number" type="xs:int" minOccurs="0" maxOccurs="unbounded"/>
+						</xs:sequence>
+					</xs:complexType>
+				</xs:element>
+				<xs:element name="nested" minOccurs="0">
+					<xs:complexType>
+						<xs:sequence>
+							<xs:element name="description" type="xs:string"/>
+							<xs:element name="strings" type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
+						</xs:sequence>
+					</xs:complexType>
+				</xs:element>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+</xs:schema>

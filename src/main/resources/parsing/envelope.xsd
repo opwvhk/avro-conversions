@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema targetNamespace="https://www.schiphol.nl/opwvhk/test" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="https://www.schiphol.nl/opwvhk/test" elementFormDefault="qualified">
+	<xs:element name="envelope">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="source" type="xs:string"/>
+				<xs:element name="target" type="xs:string"/>
+				<xs:element name="payload">
+					<xs:annotation>
+						<xs:documentation>The payload is either XML, UTF-8 text or base64 encoded binary data.</xs:documentation>
+					</xs:annotation>
+					<xs:complexType mixed="true">
+						<xs:sequence>
+							<xs:any minOccurs="0" processContents="lax"/>
+						</xs:sequence>
+						<xs:attribute name="type" default="xml">
+							<xs:simpleType>
+								<xs:restriction base="xs:string">
+									<xs:enumeration value="xml"/>
+									<xs:enumeration value="text"/>
+									<xs:enumeration value="binary"/>
+								</xs:restriction>
+							</xs:simpleType>
+						</xs:attribute>
+					</xs:complexType>
+				</xs:element>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+</xs:schema>
