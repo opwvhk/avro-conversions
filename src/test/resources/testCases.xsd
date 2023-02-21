@@ -237,7 +237,7 @@
 						</xs:sequence>
 					</xs:complexType>
 				</xs:element>
-				<xs:element name="wrappedNumberArray">
+				<xs:element name="WrappedNumberArray">
 					<xs:complexType>
 						<xs:sequence>
 							<xs:element name="Array" minOccurs="0" maxOccurs="unbounded">
@@ -289,6 +289,7 @@
 		<xs:complexType>
 			<xs:sequence>
 				<xs:element name="PlainType" type="TypeName"/>
+				<xs:element name="AnotherType" type="TypeName"/>
 				<xs:element name="TypeName">
 					<xs:complexType>
 						<xs:sequence>
@@ -300,13 +301,21 @@
 					<xs:complexType>
 						<xs:sequence>
 							<xs:element name="description" type="xs:string"/>
+							<xs:element name="Normal">
+								<xs:complexType>
+									<xs:sequence>
+										<xs:element name="TheAnswer" type="xs:int"/>
+									</xs:sequence>
+								</xs:complexType>
+							</xs:element>
 						</xs:sequence>
 					</xs:complexType>
 				</xs:element>
 				<xs:element name="Normal">
 					<xs:complexType>
 						<xs:sequence>
-							<xs:element name="field" type="xs:string"/>
+							<xs:element name="field1" type="xs:string"/>
+							<xs:element name="field2" type="xs:string"/>
 						</xs:sequence>
 					</xs:complexType>
 				</xs:element>
@@ -324,6 +333,46 @@
 			</xs:element>
 		</xs:sequence>
 	</xs:complexType>
+
+	<xs:element name="Duplicates">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="field1">
+					<xs:complexType>
+						<xs:sequence>
+							<xs:element name="Duplicates">
+								<xs:complexType>
+									<xs:attribute name="count" type="xs:int"/>
+								</xs:complexType>
+							</xs:element>
+						</xs:sequence>
+					</xs:complexType>
+				</xs:element>
+				<xs:element name="field2">
+					<xs:complexType>
+						<xs:sequence>
+							<xs:element name="Duplicates">
+								<xs:complexType>
+									<xs:attribute name="count" type="xs:int"/>
+								</xs:complexType>
+							</xs:element>
+						</xs:sequence>
+					</xs:complexType>
+				</xs:element>
+				<xs:element name="field3">
+					<xs:complexType>
+						<xs:sequence>
+							<xs:element name="Duplicates">
+								<xs:complexType>
+									<xs:attribute name="count" type="xs:int"/>
+								</xs:complexType>
+							</xs:element>
+						</xs:sequence>
+					</xs:complexType>
+				</xs:element>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
 
 	<xs:element name="ArbitraryContent">
 		<xs:complexType>
@@ -416,15 +465,6 @@
                         </xs:sequence>
                     </xs:complexType>
                 </xs:element>
-            </xs:sequence>
-        </xs:complexType>
-    </xs:element>
-
-    <xs:element name="SortableFields">
-        <xs:complexType>
-            <xs:sequence>
-                <xs:element name="b" type="xs:string"/>
-                <xs:element name="a" type="xs:string"/>
             </xs:sequence>
         </xs:complexType>
     </xs:element>

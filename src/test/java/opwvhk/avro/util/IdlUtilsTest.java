@@ -1,4 +1,4 @@
-package opwvhk.avro;
+package opwvhk.avro.util;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import org.apache.avro.AvroRuntimeException;
@@ -14,6 +14,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
@@ -39,7 +40,7 @@ public class IdlUtilsTest {
     @Test
     public void validateHappyFlow() throws ParseException, IOException {
         StringWriter schemaBuffer = new StringWriter();
-        try (InputStreamReader reader = new InputStreamReader(getClass().getResourceAsStream("schema.avdl"))) {
+        try (InputStreamReader reader = new InputStreamReader(Objects.requireNonNull(getClass().getResourceAsStream("schema.avdl")))) {
             char[] buf = new char[1024];
             int charsRead;
             while((charsRead = reader.read(buf)) > -1) {
@@ -50,6 +51,7 @@ public class IdlUtilsTest {
         // Write as JSON and parse again to handle logical types correctly.
         protocol = Protocol.parse(protocol.toString());
         Schema newMessageSchema = protocol.getType("naming.NewMessage");
+		assertThat(protocol.getTypes().stream().map(Schema::getFullName)).contains("naming.NewMessage");
 
         StringWriter buffer = new StringWriter();
         IdlUtils.writeIdlProtocol("naming", "HappyFlow", buffer, newMessageSchema);

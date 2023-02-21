@@ -1,8 +1,7 @@
-package opwvhk.avro.xsd;
+package opwvhk.avro.structure;
 
 import java.util.Optional;
 
-import opwvhk.avro.XsdAnalyzer;
 import org.apache.ws.commons.schema.XmlSchemaAttribute;
 import org.apache.ws.commons.schema.XmlSchemaElement;
 import org.apache.ws.commons.schema.XmlSchemaParticle;

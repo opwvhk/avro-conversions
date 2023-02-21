@@ -1,4 +1,4 @@
-package opwvhk.avro.io;
+package opwvhk.avro.xml;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
@@ -10,9 +10,11 @@ import java.io.StringReader;
 import java.net.URL;
 import java.util.Set;
 
-import opwvhk.avro.XsdAnalyzer;
-import opwvhk.avro.xml.SimpleContentAdapter;
-import opwvhk.avro.xml.XmlRecordHandler;
+import opwvhk.avro.xsd.XsdAnalyzer;
+import opwvhk.avro.io.DefaultData;
+import opwvhk.avro.io.ValueResolver;
+import opwvhk.avro.structure.Type;
+import opwvhk.avro.structure.TypeCollection;
 import org.apache.avro.generic.GenericData;
 import org.apache.ws.commons.schema.constants.Constants;
 import org.xml.sax.InputSource;
@@ -40,9 +42,12 @@ public class XmlAsAvroParser {
 		parser = createParser(xsdLocation);
 
 		XsdAnalyzer xsdAnalyzer = new XsdAnalyzer(xsdLocation);
-		org.apache.avro.Schema writeSchema = xsdAnalyzer.createAvroSchema(rootElement);
+		Type writeType = xsdAnalyzer.typeOf(rootElement);
 
-		resolver = resolve(readSchema, writeSchema);
+		TypeCollection typeCollection = new TypeCollection();
+		Type readType = Type.fromSchema(typeCollection, readSchema);
+
+		resolver = resolve(readType, writeType);
 	}
 
 	public XmlAsAvroParser(URL xsdLocation, ValueResolver resolver) {
@@ -66,7 +71,7 @@ public class XmlAsAvroParser {
 		}
 	}
 
-	private ValueResolver resolve(org.apache.avro.Schema readSchema, org.apache.avro.Schema writeSchema) {
+	private ValueResolver resolve(Type readType, Type writeType) {
 		// TODO: Implement
 		return null;
 	}

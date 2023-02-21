@@ -1,14 +1,8 @@
-package opwvhk.avro.xsd;
+package opwvhk.avro.structure;
 
-import opwvhk.avro.Utils;
-
-import static opwvhk.avro.Utils.first;
+import opwvhk.avro.util.Utils;
 
 public record TypeData(String name, String doc, boolean shouldNotBeParsed) {
-	public TypeData extend(FieldData fieldData) {
-		return new TypeData(first(name, fieldData.name()), first(doc, fieldData.doc()), shouldNotBeParsed);
-	}
-
 	@Override
 	public String toString() {
 		String doc0 = Utils.truncate(10, doc);

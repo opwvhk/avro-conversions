@@ -1,7 +1,8 @@
-package opwvhk.avro;
+package opwvhk.avro.util;
 
 import java.io.StringReader;
 
+import opwvhk.avro.util.AvroSchemaUtils;
 import org.apache.avro.Schema;
 import org.apache.avro.compiler.idl.Idl;
 import org.apache.avro.compiler.idl.ParseException;

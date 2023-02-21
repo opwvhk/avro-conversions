@@ -1,4 +1,4 @@
-package opwvhk.avro;
+package opwvhk.avro.util;
 
 import java.util.Comparator;
 import java.util.IdentityHashMap;

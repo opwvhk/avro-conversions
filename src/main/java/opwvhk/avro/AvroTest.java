@@ -6,7 +6,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import opwvhk.avro.io.ValueResolver;
-import opwvhk.avro.io.XmlAsAvroParser;
+import opwvhk.avro.xml.XmlAsAvroParser;
 import org.xml.sax.SAXException;
 
 public class AvroTest {

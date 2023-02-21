@@ -1,13 +1,8 @@
-package opwvhk.avro.xsd;
+package opwvhk.avro.structure;
 
-import javax.xml.namespace.QName;
+import static opwvhk.avro.util.Utils.truncate;
 
-import opwvhk.avro.Utils;
-import opwvhk.avro.XsdAnalyzer;
-
-import static opwvhk.avro.Utils.truncate;
-
-public record FieldData(String name, String doc, Cardinality cardinality, ScalarType scalarType, String defaultValue) {
+public record FieldData(String name, String doc, Cardinality cardinality, ScalarType scalarType, Object defaultValue) {
 
 	public FieldData withName(String newName) {
 		return new FieldData(newName, doc, cardinality, scalarType, defaultValue);
@@ -23,7 +18,7 @@ public record FieldData(String name, String doc, Cardinality cardinality, Scalar
 			default -> "";
 		});
 		if (scalarType != null) {
-			buffer.append(": ").append(scalarType);
+			buffer.append(": ").append(scalarType.debugString(""));
 			if (defaultValue != null) {
 				buffer.append("=").append(defaultValue);
 			}

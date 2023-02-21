@@ -1,4 +1,4 @@
-package opwvhk.avro;
+package opwvhk.avro.util;
 
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
@@ -101,14 +101,14 @@ public final class IdlUtils {
             throws IOException {
         Schema.Type type = schema.getType();
         writeSchemaAttributes(schema, writer, jsonGen);
-        String namespace = schema.getNamespace(); // Fails for unnamed schema types (i.e. other then record, enum & fixed)
+        String namespace = schema.getNamespace(); // Fails for unnamed schema types (i.e., other than record, enum & fixed)
         if (!Objects.equals(namespace, protocolNameSpace)) {
-            writer.append("    @namespace(\"").append(namespace).append("\")\n");
+            writer.append("    @namespace(\"").append(namespace == null ? "" : namespace).append("\")\n");
         }
-        Set<String> saliases = schema.getAliases();
-        if (!saliases.isEmpty()) {
+        Set<String> schemaAliases = schema.getAliases();
+        if (!schemaAliases.isEmpty()) {
             writer.append("    @aliases(");
-            toJson(saliases, jsonGen);
+            toJson(schemaAliases, jsonGen);
             jsonGen.flush();
             resetContext(jsonGen.getOutputContext());
             writer.append(")\n");
@@ -124,10 +124,10 @@ public final class IdlUtils {
                 writer.append("        ");
                 writeFieldSchema(field.schema(), writer, jsonGen, alreadyDeclared, toDeclare, schema.getNamespace());
                 writer.append(' ');
-                Set<String> faliases = field.aliases();
-                if (!faliases.isEmpty()) {
+                Set<String> fieldAliases = field.aliases();
+                if (!fieldAliases.isEmpty()) {
                     writer.append("@aliases(");
-                    toJson(faliases, jsonGen);
+                    toJson(fieldAliases, jsonGen);
                     jsonGen.flush();
                     resetContext(jsonGen.getOutputContext());
                     writer.append(") ");
@@ -206,7 +206,7 @@ public final class IdlUtils {
                     writeFieldSchema(iterator.next(), writer, jsonGen, alreadyDeclared, toDeclare, recordNameSpace);
                 }
             } else {
-                throw new IllegalStateException("Union schmemas must have member types " + schema);
+                throw new IllegalStateException("Union schemas must have member types " + schema);
             }
             writer.append('}');
         } else {
@@ -217,23 +217,21 @@ public final class IdlUtils {
                 typeName = schema.getName();
             } else {
                 String logicalName = schema.getLogicalType().getName();
-                switch (logicalName) {
-                    case "date":
-                    case "time-millis":
-                    case "timestamp-millis":
-                        propertiesToSkip = Collections.singleton("logicalType");
-                        typeName = logicalName.replace("-millis", "_ms");
-                        break;
-                    case "decimal":
-                        propertiesToSkip = Set.of("logicalType", "precision", "scale");
-                        LogicalTypes.Decimal decimal = (LogicalTypes.Decimal) schema.getLogicalType();
-                        typeName = String.format("decimal(%d,%d)", decimal.getPrecision(), decimal.getScale());
-                        break;
-                    default:
-                        propertiesToSkip = Collections.emptySet();
-                        typeName = schema.getName();
-                        break;
-                }
+	            switch (logicalName) {
+		            case "date", "time-millis", "timestamp-millis" -> {
+			            propertiesToSkip = Collections.singleton("logicalType");
+			            typeName = logicalName.replace("-millis", "_ms");
+		            }
+		            case "decimal" -> {
+			            propertiesToSkip = Set.of("logicalType", "precision", "scale");
+			            LogicalTypes.Decimal decimal = (LogicalTypes.Decimal) schema.getLogicalType();
+			            typeName = String.format("decimal(%d,%d)", decimal.getPrecision(), decimal.getScale());
+		            }
+		            default -> {
+			            propertiesToSkip = Collections.emptySet();
+			            typeName = schema.getName();
+		            }
+	            }
             }
             writeJsonProperties(schema, propertiesToSkip, writer, jsonGen, false);
             writer.append(typeName);
@@ -279,7 +277,7 @@ public final class IdlUtils {
             generator.writeNull();
         } else if (datum instanceof Map) { // record, map
             generator.writeStartObject();
-            for (Map.Entry<Object, Object> entry : ((Map<Object, Object>) datum).entrySet()) {
+	        for (Map.Entry<Object, Object> entry : ((Map<Object, Object>) datum).entrySet()) {
                 generator.writeFieldName(entry.getKey().toString());
                 toJson(entry.getValue(), generator);
             }
