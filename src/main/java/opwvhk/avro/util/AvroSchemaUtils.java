@@ -58,7 +58,7 @@ public final class AvroSchemaUtils {
 						updatedSchemas.get(nonTerminal).setFields(sortedFieldList);
 					}
 					case ARRAY -> updatedSchemas.put(nonTerminal, Schema.createArray(get(nonTerminal.getElementType())));
-					//case MAP -> updatedSchemas.put(nonTerminal, Schema.createMap(get(nonTerminal.getValueType())));
+					case MAP -> updatedSchemas.put(nonTerminal, Schema.createMap(get(nonTerminal.getValueType())));
 					default -> {  // nonTerminal.getType() == UNION
 						List<Schema> newUnionTypes = nonTerminal.getTypes().stream().map(this::get).toList();
 						updatedSchemas.put(nonTerminal, Schema.createUnion(newUnionTypes));

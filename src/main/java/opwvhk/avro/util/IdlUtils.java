@@ -103,7 +103,8 @@ public final class IdlUtils {
         writeSchemaAttributes(schema, writer, jsonGen);
         String namespace = schema.getNamespace(); // Fails for unnamed schema types (i.e., other than record, enum & fixed)
         if (!Objects.equals(namespace, protocolNameSpace)) {
-            writer.append("    @namespace(\"").append(namespace == null ? "" : namespace).append("\")\n");
+	        requireNonNull(namespace, "IDL does not allow referencing the default namespace from within another namespace");
+            writer.append("    @namespace(\"").append(namespace).append("\")\n");
         }
         Set<String> schemaAliases = schema.getAliases();
         if (!schemaAliases.isEmpty()) {

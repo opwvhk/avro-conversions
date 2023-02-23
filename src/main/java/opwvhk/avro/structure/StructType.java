@@ -4,28 +4,33 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
-import static java.util.Collections.unmodifiableList;
+import opwvhk.avro.util.Utils;
+
+import static java.util.Arrays.asList;
+import static opwvhk.avro.util.Utils.nonRecursive;
 
 public final class StructType implements Type, NamedElement {
 	private final TypeCollection typeCollection;
 	private final List<String> nameAndAliases;
-	private final String documentation;
+	private String documentation;
 	private List<Field> fields;
 	private Map<String, Field> fieldsByName;
 
 	public StructType(TypeCollection typeCollection, String name, String documentation) {
+		this(typeCollection, name, List.of(), documentation);
+	}
+
+	public StructType(TypeCollection typeCollection, String name, Collection<String> aliases, String documentation) {
 		this.typeCollection = typeCollection;
 		this.documentation = documentation;
 
-		nameAndAliases = new ArrayList<>();
-		nameAndAliases.add(name);
+		nameAndAliases = NamedElement.names(name, aliases);
 
 		fields = null;
 		fieldsByName = null;
@@ -33,63 +38,61 @@ public final class StructType implements Type, NamedElement {
 		typeCollection.addType(this);
 	}
 
-	// For testing, create copy with sorted fields.
-	private StructType(StructType original) {
-		this.typeCollection = null;
-		this.nameAndAliases = original.nameAndAliases();
-		this.documentation = original.documentation();
-		List<Field> fields = new ArrayList<>(this.fields);
-		fields.sort(Comparator.comparing(NamedElement::name));
-		this.fields = fields;
-	}
-
 	public List<String> nameAndAliases() {
-		return unmodifiableList(nameAndAliases);
+		return nameAndAliases;
 	}
 
-	public void addAlias(String alias) {
-		StructType existingType = typeCollection.getType(alias);
+	public void rename(String newName) {
+		NamedElement existingType = typeCollection.getType(newName);
 		if (existingType != null) {
-			throw new IllegalArgumentException("There is already a type with name/alias %s: %s".formatted(alias, existingType));
+			throw new IllegalArgumentException("There is already a type with name/alias %s: is has these names: %s".formatted(newName,
+					String.join(", ", existingType.nameAndAliases())));
 		}
-		nameAndAliases.add(alias);
-	}
-
-	public void addAliases(Iterable<String> aliases) {
-		aliases.forEach(this::addAlias);
+		nameAndAliases.add(0, newName);
+		typeCollection.addNewAliases(this);
 	}
 
 	public String documentation() {
 		return documentation;
 	}
 
+	public void setDocumentation(String documentation) {
+		this.documentation = documentation;
+	}
+
 	public List<Field> fields() {
 		return fields;
+	}
+
+	public StructType withFields(Field... fields) {
+		setFields(asList(fields));
+		return this;
 	}
 
 	public void setFields(List<Field> fields) {
 		if (this.fields != null) {
 			throw new IllegalStateException("Fields can be set only once");
 		}
-		Set<String> allNames = new HashSet<>();
 		Set<String> duplicateNames = new LinkedHashSet<>();
+		HashMap<String, Field> fieldsByName = new HashMap<>();
 		for (Field field : fields) {
-			NamedElement.addDistinct(allNames, duplicateNames, field.nameAndAliases());
+			for (String name : field.nameAndAliases()) {
+				if (fieldsByName.putIfAbsent(name, field) != null) {
+					duplicateNames.add(name);
+				}
+			}
 		}
 		if (!duplicateNames.isEmpty()) {
 			throw new IllegalArgumentException("All field names/aliases must be unique. These are not: " + String.join(", ", duplicateNames));
 		}
-		this.fields = fields;
-		fieldsByName = new HashMap<>();
-		fields.forEach(f -> f.nameAndAliases().forEach(name -> fieldsByName.put(name, f)));
+		fields.forEach(f -> f.setStructType(this));
+
+		this.fieldsByName = fieldsByName;
+		this.fields = List.copyOf(fields);
 	}
 
 	public Field getField(String name) {
 		return fieldsByName.get(name);
-	}
-
-	public StructType sortFieldsForTesting() {
-		return new StructType(this);
 	}
 
 	@Override
@@ -101,22 +104,10 @@ public final class StructType implements Type, NamedElement {
 			return false;
 		}
 		StructType that = (StructType) o;
-
-		Seen here = new Seen(this, that);
-		Set<Seen> seen = SEEN_EQUALS.get();
-		boolean first = seen.isEmpty();
-		if (!seen.add(here)) {
-			// If not equal, another field will fail the equality check.
-			return true;
-		}
-
-		boolean r = containSame(nameAndAliases, that.nameAndAliases) && Objects.equals(documentation, that.documentation) && containSame(fields, that.fields);
-		if (first) {
-			seen.clear();
-		}
-		return r;
+		return nonRecursive("StructEquality", this, that, true,
+				() -> nameAndAliases.equals(that.nameAndAliases) && Objects.equals(documentation, that.documentation) &&
+				      containSame(fields, that.fields));
 	}
-	private static final ThreadLocal<Set<Seen>> SEEN_EQUALS = ThreadLocal.withInitial(HashSet::new);
 
 	private <T> boolean containSame(List<T> list1, List<T> list2) {
 		int found = 0;
@@ -126,7 +117,7 @@ public final class StructType implements Type, NamedElement {
 			}
 			found++;
 		}
-		return found == list2.size();
+		return found == list1.size();
 	}
 
 	@Override
@@ -141,58 +132,62 @@ public final class StructType implements Type, NamedElement {
 
 	@Override
 	public String debugString(String indent) {
-		StringBuilder buffer = new StringBuilder();
-		buffer.append(indent).append("StructType(").append(name());
-		aliases().forEach(alias -> buffer.append(", ").append(alias));
-		buffer.append(")");
-
-		Seen here = new Seen(this);
-		Set<Seen> seen = SEEN_DEBUG_STRING.get();
-		boolean first = seen.isEmpty();
-		if (seen.add(here)) {
-			// No infinite recursion yet
-			buffer.append(" {");
-			if (documentation != null) {
-				buffer.append("\n  ").append(indent).append("Doc: ").append(documentation);
-			}
-			if (fields == null) {
-				buffer.append("\n  ").append(indent).append("(no fields yet)");
-			} else {
-				List<Field> sortedFields = new ArrayList<>(fields);
-				sortedFields.sort(Comparator.comparing(NamedElement::name));
-				for (Field field : sortedFields) {
-					buffer.append("\n  ").append(indent).append(field.name());
-					buffer.append(switch (field.cardinality) {
-						case MULTIPLE -> "[]";
-						case OPTIONAL -> "?";
-						default -> "";
-					});
-					if (field.nameAndAliases().size() > 1) {
-						field.aliases().forEach(alias -> buffer.append(", ").append(alias));
-					}
-					if (field.documentation() != null) {
-						buffer.append("\n    ").append(indent).append("Doc: ").append(field.documentation());
-					}
-					if (field.defaultValue() != null) {
-						buffer.append("\n    ").append(indent).append("Default: ").append(field.defaultValue());
-					}
-					buffer.append("\n").append(field.type().debugString(indent + "    "));
-				}
-			}
-			buffer.append("\n").append(indent).append("}");
-		}
-		if (first) {
-			seen.clear();
-		}
-		return buffer.toString();
+		return indent + "StructType(" + String.join(", ", nameAndAliases()) + ")" +
+		       nonRecursive("debugString", this, "", () -> {
+			       StringBuilder buf = new StringBuilder();
+			       // No infinite recursion yet
+			       buf.append(" {");
+			       if (documentation != null) {
+				       buf.append("\n  ").append(indent).append("Doc: ").append(documentation);
+			       }
+			       if (fields == null) {
+				       buf.append("\n  ").append(indent).append("(no fields yet)");
+			       } else {
+				       List<Field> sortedFields = new ArrayList<>(fields);
+				       sortedFields.sort(Comparator.comparing(NamedElement::name));
+				       for (Field field : sortedFields) {
+					       buf.append("\n  ").append(indent).append(field.name());
+					       buf.append(switch (field.cardinality) {
+						       case MULTIPLE -> "[]";
+						       case OPTIONAL -> "?";
+						       default -> "";
+					       });
+					       if (field.nameAndAliases().size() > 1) {
+						       field.aliases().forEach(alias -> buf.append(", ").append(alias));
+					       }
+					       if (field.documentation() != null) {
+						       buf.append("\n    ").append(indent).append("Doc: ").append(field.documentation());
+					       }
+					       if (field.defaultValue() != null) {
+						       buf.append("\n    ").append(indent).append("Default: ").append(field.defaultValue());
+					       }
+					       buf.append("\n").append(field.type().debugString(indent + "    "));
+				       }
+			       }
+			       buf.append("\n").append(indent).append("}");
+			       return buf;
+		       });
 	}
-	private static final ThreadLocal<Set<Seen>> SEEN_DEBUG_STRING = ThreadLocal.withInitial(HashSet::new);
 
-	public record Field(List<String> nameAndAliases, String documentation, Cardinality cardinality, Type type, Object defaultValue) implements NamedElement {
-		public Field {
+	public static final class Field implements NamedElement {
+		public static final Object NULL_VALUE = new Object();
+		private StructType structType;
+		private final List<String> nameAndAliases;
+		private String documentation;
+		private final Cardinality cardinality;
+		private final Type type;
+		private final Object defaultValue;
+
+		public Field(List<String> nameAndAliases, String documentation, Cardinality cardinality, Type type, Object defaultValue) {
 			if (type == null) {
 				throw new NullPointerException("Cannot create field without a type.");
 			}
+			structType = null;
+			this.nameAndAliases = nameAndAliases;
+			this.documentation = documentation;
+			this.cardinality = cardinality;
+			this.type = type;
+			this.defaultValue = defaultValue;
 		}
 
 		public Field(String name, Collection<String> aliases, String documentation, Cardinality cardinality, Type type, Object defaultValue) {
@@ -200,35 +195,64 @@ public final class StructType implements Type, NamedElement {
 		}
 
 		public Field(String name, String documentation, Cardinality cardinality, Type type, Object defaultValue) {
-			this(List.of(name), documentation, cardinality, type, defaultValue);
-		}
-	}
-
-	/**
-	 * Simple class with equality check (!) on its contents, used to prevent infinite recursion.
-	 */
-	private static class Seen {
-		private final Object left;
-		private final Object right;
-
-		public Seen(Object left, Object right) {
-			this.left = left;
-			this.right = right;
+			this(new ArrayList<>(List.of(name)), documentation, cardinality, type, defaultValue);
 		}
 
-		public Seen(Object obj) {
-			this(obj, null);
+		void setStructType(StructType structType) {
+			if (this.structType != null) {
+				throw new IllegalStateException("Field %s is already part of a StructType".formatted(name()));
+			}
+			this.structType = structType;
 		}
 
+		@Override
+		public List<String> nameAndAliases() {
+			return nameAndAliases;
+		}
+
+		public void rename(String newName) {
+			if (structType != null) {
+				NamedElement existingField = structType.getField(newName);
+				if (existingField != null) {
+					throw new IllegalArgumentException("There is already a field with name/alias %s: is has these names: %s".formatted(newName,
+							String.join(", ", existingField.nameAndAliases())));
+				}
+				structType.fieldsByName.put(newName, this);
+			} else if (nameAndAliases.contains(newName)) {
+				throw new IllegalArgumentException("This field already has that name.");
+			}
+			nameAndAliases.add(0, newName);
+		}
+
+		public String documentation() {
+			return documentation;
+		}
+
+		public void setDocumentation(String newDocumentation) {
+			documentation = newDocumentation;
+		}
+
+		public Cardinality cardinality() {
+			return cardinality;
+		}
+
+		public Type type() {
+			return type;
+		}
+
+		public Object defaultValue() {
+			return defaultValue;
+		}
+
+		@SuppressWarnings("EqualsWhichDoesntCheckParameterClass")
+		@Override
 		public boolean equals(Object o) {
-			if (!(o instanceof Seen))
-				return false;
-			return this.left == ((Seen) o).left && this.right == ((Seen) o).right;
+			return Utils.recursionSafeEquals(this, o, Field::nameAndAliases, Field::documentation, Field::cardinality, Field::type, Field::defaultValue);
 		}
 
 		@Override
 		public int hashCode() {
-			return System.identityHashCode(left) + System.identityHashCode(right);
+			return Objects.hash(nameAndAliases, documentation, cardinality, type, defaultValue);
 		}
 	}
 }

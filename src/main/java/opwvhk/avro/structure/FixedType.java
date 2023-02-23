@@ -6,6 +6,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Base64;
+import java.util.IdentityHashMap;
 import java.util.Locale;
 
 public enum FixedType implements ScalarType {

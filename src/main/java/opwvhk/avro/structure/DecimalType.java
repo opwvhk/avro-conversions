@@ -16,7 +16,13 @@ public record DecimalType(int bitSize, int precision, int scale) implements Scal
 	}
 
 	public DecimalType {
-		assert scale == 0 || bitSize == -1 : "Either scale needs to be 0 (for integer numbers), or bitSize needs to be -1 (for fractional numbers)";
+		if (scale == 0) {
+			if (bitSize <= 0) {
+				throw new IllegalArgumentException("bitSize must be positive");
+			}
+		} else if (bitSize != -1) {
+			throw new IllegalArgumentException("Either scale needs to be 0 (for integer numbers), or bitSize needs to be -1 (for fractional numbers)");
+		}
 	}
 
 	@Override
