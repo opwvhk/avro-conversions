@@ -1,5 +1,7 @@
 package opwvhk.avro.structure;
 
+import java.util.IdentityHashMap;
+
 import static opwvhk.avro.util.Utils.truncate;
 
 public record FieldData(String name, String doc, Cardinality cardinality, ScalarType scalarType, Object defaultValue) {

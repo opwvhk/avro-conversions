@@ -2,10 +2,18 @@ package opwvhk.avro.util;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.regex.MatchResult;
 import java.util.regex.Pattern;
+
+import static java.util.Objects.requireNonNull;
 
 public final class Utils {
 	private static final Pattern UNDERSCORES_PLUS_FOLLOWERS = Pattern.compile("(?U)_([^_])([^_]*)");
@@ -17,7 +25,7 @@ public final class Utils {
 	private static final Pattern INITIAL_CAPITALS = Pattern.compile("(?U)^(\\p{Lu}(?!\\p{Lu})|\\p{Lu}+(?=$|\\p{Lu}\\p{Ll}|s))");
 	private static final Function<MatchResult, String> FIRST_GROUP_TO_LOWER_CASE = m -> m.group(1).toLowerCase(Locale.ROOT);
 
-	public static MessageDigest digest(@SuppressWarnings("SameParameterValue") String algorithm) {
+	public static MessageDigest digest(String algorithm) {
 		try {
 			return MessageDigest.getInstance(algorithm);
 		} catch (NoSuchAlgorithmException e) {
@@ -65,7 +73,6 @@ public final class Utils {
 		return null;
 	}
 
-	@SuppressWarnings("SameParameterValue")
 	public static String truncate(int maxLength, String input) {
 		if (input == null) {
 			return null;
@@ -76,7 +83,81 @@ public final class Utils {
 		}
 	}
 
+	@SafeVarargs
+	public static <T> boolean recursionSafeEquals(T self, Object other, Function<T, Object>... accessors) {
+		return Utils.nonRecursive("recursionSafeEquals", self, other, true, () -> {
+			if (self == other) {
+				return true;
+			}
+			Class<T> type = (Class<T>) self.getClass();
+			if (other == null || other.getClass() != type) {
+				return false;
+			}
+			for (Function<T, Object> accessor : accessors) {
+				if (!Objects.deepEquals(accessor.apply(self), accessor.apply((T) other))) {
+					return false;
+				}
+			}
+			return true;
+		});
+	}
+
+	public static <T> int recursionSafeHashCode(T self, Object... fieldValues) {
+		return Utils.nonRecursive("recursionSafeHashCode", requireNonNull(self), 17, () -> Objects.hash(fieldValues));
+	}
+
+	private static final ThreadLocal<Map<String, Set<Seen>>> SEEN = ThreadLocal.withInitial(HashMap::new);
+
+	public static <T> T nonRecursive(String algorithm, Object caller, T defaultResult, Supplier<T> recursiveTask) {
+		return nonRecursive(algorithm, caller, null, defaultResult, recursiveTask);
+	}
+
+	public static <T> T nonRecursive(String algorithm, Object caller, Object differentiator, T defaultResult, Supplier<T> recursiveTask) {
+		Map<String, Set<Seen>> seenMap = SEEN.get();
+		boolean first = !seenMap.containsKey(algorithm);
+		T result;
+		try {
+			Set<Seen> seen = seenMap.computeIfAbsent(algorithm, ignored -> new HashSet<>());
+			Seen here = new Seen(caller, differentiator);
+			if (seen.add(here)) {
+				result = recursiveTask.get();
+			} else {
+				result = defaultResult;
+			}
+		} finally {
+			if (first) {
+				seenMap.remove(algorithm);
+			}
+		}
+		return result;
+	}
+
 	private Utils() {
 		// Utility class: no need to instantiate.
+	}
+
+	/**
+	 * Simple class with equality check (!) on its contents, used to prevent infinite recursion.
+	 */
+	static class Seen {
+		private final Object left;
+		private final Object right;
+
+		Seen(Object left, Object right) {
+			this.left = left;
+			this.right = right;
+		}
+
+		public boolean equals(Object o) {
+			if (!(o instanceof Seen that)) {
+				return false;
+			}
+			return this.left == that.left & this.right == that.right;
+		}
+
+		@Override
+		public int hashCode() {
+			return System.identityHashCode(left) + System.identityHashCode(right);
+		}
 	}
 }

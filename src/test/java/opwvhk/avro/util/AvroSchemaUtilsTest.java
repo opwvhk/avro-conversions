@@ -2,7 +2,6 @@ package opwvhk.avro.util;
 
 import java.io.StringReader;
 
-import opwvhk.avro.util.AvroSchemaUtils;
 import org.apache.avro.Schema;
 import org.apache.avro.compiler.idl.Idl;
 import org.apache.avro.compiler.idl.ParseException;
@@ -93,4 +92,30 @@ public class AvroSchemaUtilsTest {
 		assertThat(entry.documentation()).isEqualTo(textWithNewlines);
 		assertThat(entry.docForMDTableCell()).isEqualTo(textWithHtmlLineBreaks);
 	}
+
+	@Test
+	public void testAvroSchemaFieldSorting() throws ParseException {
+		Schema schema = new Idl(new StringReader("""
+				protocol dummy {
+					record MainRecord {
+						string name;
+						string? description;
+						map<string> properties = {};
+						array<string> aliases = [];
+						MainRecord loop;
+					}
+				}""")).CompilationUnit().getType("MainRecord");
+		Schema expected = new Idl(new StringReader("""
+				protocol dummy {
+					record MainRecord {
+						array<string> aliases = [];
+						string? description;
+						MainRecord loop;
+						string name;
+						map<string> properties = {};
+					}
+				}""")).CompilationUnit().getType("MainRecord");
+		assertThat(schema).isNotEqualTo(expected);
+		assertThat(AvroSchemaUtils.sortFields(schema)).isEqualTo(expected);
+	};
 }

@@ -2,6 +2,7 @@ package opwvhk.avro.structure;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.IdentityHashMap;
 import java.util.List;
 
 import org.apache.avro.JsonProperties;
@@ -9,6 +10,9 @@ import org.apache.avro.LogicalType;
 import org.apache.avro.LogicalTypes;
 import org.apache.avro.Schema;
 
+import static java.util.Collections.emptyList;
+import static opwvhk.avro.structure.StructType.Field.NULL_VALUE;
+import static org.apache.avro.Schema.Field.NULL_DEFAULT_VALUE;
 import static org.apache.avro.Schema.Type.*;
 
 public sealed interface Type permits ScalarType, StructType {
@@ -48,43 +52,50 @@ public sealed interface Type permits ScalarType, StructType {
 			case BYTES -> FixedType.BINARY_HEX; // TODO: Add generic binary type?
 			case DOUBLE -> FixedType.DOUBLE;
 			case FLOAT -> FixedType.FLOAT;
-			case ENUM -> new EnumType(schema.getFullName(), schema.getAliases(), schema.getDoc(), schema.getEnumSymbols(), schema.getEnumDefault());
+			case ENUM -> new EnumType(typeCollection, schema.getFullName(), schema.getAliases(), schema.getDoc(), schema.getEnumSymbols(), schema.getEnumDefault());
 			default -> throw new IllegalArgumentException("Unsupported schema type %s in: %s".formatted(schema.getType(), schema));
 		};
 	}
 
 	private static StructType fromRecordSchema(TypeCollection typeCollection, Schema schema) {
-		StructType existingType = typeCollection.getType(schema.getFullName());
+		StructType existingType = (StructType) typeCollection.getType(schema.getFullName());
 		if (existingType != null) {
 			return existingType;
 		}
 
-		StructType structType = new StructType(typeCollection, schema.getFullName(), schema.getDoc());
-		structType.addAliases(schema.getAliases());
+		StructType structType = new StructType(typeCollection, schema.getFullName(), schema.getAliases(), schema.getDoc());
 
 		List<Schema.Field> schemaFields = schema.getFields();
 		List<StructType.Field> fields = new ArrayList<>(schemaFields.size());
 		for (Schema.Field schemaField : schemaFields) {
 			Cardinality cardinality = Cardinality.REQUIRED;
 			Schema fieldSchema = schemaField.schema();
+			Object defaultValue = schemaField.defaultVal();
 			while (true) {
 				if (fieldSchema.getType() == ARRAY) {
 					cardinality = cardinality.adjustFor(Cardinality.MULTIPLE);
 					fieldSchema = fieldSchema.getElementType();
 				} else if (fieldSchema.getType() == UNION) {
 					List<Schema> types = fieldSchema.getTypes();
-					if (types.size() != 2 || !fieldSchema.isNullable()) {
+					int unionSize = 1;
+					if (fieldSchema.isNullable()) {
+						cardinality = cardinality.adjustFor(Cardinality.OPTIONAL);
+						unionSize = 2;
+					}
+					if (types.size() != unionSize) {
 						throw new IllegalArgumentException("Unsupported union: only unions of null and one other schema are supported.");
 					}
 					Schema schema0 = types.get(0);
 					fieldSchema = schema0.isNullable() ? types.get(1) : schema0;
-					cardinality = cardinality.adjustFor(Cardinality.OPTIONAL);
 				} else {
 					break;
 				}
 			}
+			if (cardinality == Cardinality.MULTIPLE) {
+				defaultValue = emptyList();
+			}
 			Type fieldType = fromSchema(typeCollection, fieldSchema);
-			fields.add(new StructType.Field(schemaField.name(), schemaField.aliases(), schemaField.doc(), cardinality, fieldType, schemaField.defaultVal()));
+			fields.add(new StructType.Field(schemaField.name(), schemaField.aliases(), schemaField.doc(), cardinality, fieldType, defaultValue));
 		}
 
 		structType.setFields(fields);
@@ -99,13 +110,13 @@ public sealed interface Type permits ScalarType, StructType {
 				if (f.cardinality() == Cardinality.MULTIPLE) {
 					fieldSchema = Schema.createArray(fieldSchema);
 				} else if (f.cardinality() == Cardinality.OPTIONAL) {
-					if (/*defaultValue != null && */defaultValue != JsonProperties.NULL_VALUE && defaultValue != Schema.Field.NULL_DEFAULT_VALUE) {
+					if (defaultValue != NULL_VALUE && defaultValue != JsonProperties.NULL_VALUE && defaultValue != NULL_DEFAULT_VALUE) {
 						fieldSchema = Schema. createUnion(fieldSchema, Schema.create(NULL));
 					} else {
 						fieldSchema = Schema. createUnion(Schema.create(NULL), fieldSchema);
 					}
 				}
-				Schema.Field field = new Schema.Field(f.name(), fieldSchema, f.documentation(), defaultValue);
+				Schema.Field field = new Schema.Field(f.name(), fieldSchema, f.documentation(), defaultValue == NULL_VALUE ? NULL_DEFAULT_VALUE : defaultValue);
 				f.aliases().forEach(field::addAlias);
 				return field;
 			}).toList();

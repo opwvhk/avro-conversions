@@ -14,7 +14,6 @@ import opwvhk.avro.structure.FieldData;
 import opwvhk.avro.structure.StructType;
 import opwvhk.avro.structure.StructureBuilder;
 import opwvhk.avro.structure.Type;
-import opwvhk.avro.structure.TypeCollection;
 import opwvhk.avro.structure.TypeData;
 import org.apache.ws.commons.schema.XmlSchemaAll;
 import org.apache.ws.commons.schema.XmlSchemaAny;
@@ -30,8 +29,6 @@ import org.assertj.core.api.Condition;
 import org.junit.Before;
 import org.junit.Test;
 
-import static java.util.Arrays.asList;
-import static java.util.Collections.emptyList;
 import static opwvhk.avro.structure.Cardinality.MULTIPLE;
 import static opwvhk.avro.structure.Cardinality.OPTIONAL;
 import static opwvhk.avro.structure.Cardinality.REQUIRED;
@@ -44,24 +41,22 @@ import static opwvhk.avro.structure.FixedType.DOUBLE;
 import static opwvhk.avro.structure.FixedType.FLOAT;
 import static opwvhk.avro.structure.FixedType.STRING;
 import static opwvhk.avro.structure.FixedType.TIME;
+import static opwvhk.avro.structure.TestStructures.array;
+import static opwvhk.avro.structure.TestStructures.optional;
+import static opwvhk.avro.structure.TestStructures.required;
+import static opwvhk.avro.structure.TestStructures.struct;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public class XsdAnalyzerTest {
 	private static XsdAnalyzer analyzer;
-	private TypeCollection typeCollection;
 
 	@Before
-	public void beforeClass()
+	public void setUp()
 			throws Exception {
 		URL StructTypeUrl = XsdAnalyzerTest.class.getResource("/testCases.xsd");
 		analyzer = new XsdAnalyzer(Objects.requireNonNull(StructTypeUrl));
 		analyzer.mapTargetNamespace("namespace");
-	}
-
-	@Before
-	public void setUp() throws Exception {
-		typeCollection = new TypeCollection();
 	}
 
 	@Test
@@ -88,16 +83,18 @@ public class XsdAnalyzerTest {
 	@Test
 	public void groupedStructuresAreHandledAndDocumentedCorrectly() {
 		Type type = analyzer.typeOf(new QName("https://www.schiphol.nl/avro-tools/tests", "GroupStructures"));
+		StructType keep = struct("namespace.Keep").withFields(
+				required("value", STRING)
+		);
+		StructType group = struct("namespace.group", "This documents both the field and the record").withFields(
+				array("one", STRING),
+				array("other", STRING),
+				required("Keep", keep)
+		);
 		assertThat(type).isEqualTo(struct("namespace.GroupStructures",
-				"Record documentation is taken from the type if possible, from the element otherwise",
+				"Record documentation is taken from the type if possible, from the element otherwise").withFields(
 				optional("comment", "A comment describing the group; can be placed before or after it in the XML.", STRING, null),
-				required("group", "This documents both the field and the record", struct("namespace.group", "This documents both the field and the record",
-						array("one", STRING),
-						array("other", STRING),
-						required("Keep", struct("namespace.Keep",
-								required("value", STRING)
-						))
-				), null)
+				required("group", "This documents both the field and the record", group, null)
 		));
 	}
 
@@ -105,7 +102,7 @@ public class XsdAnalyzerTest {
 	public void attributesAreSupported() {
 		Type type = analyzer.typeOf("AttributesAndAnnotationWithoutDocs");
 
-		assertThat(type).isEqualTo(struct("namespace.AttributesAndAnnotationWithoutDocs",
+		assertThat(type).isEqualTo(struct("namespace.AttributesAndAnnotationWithoutDocs").withFields(
 				required("id", DecimalType.INTEGER_TYPE),
 				optional("something", DecimalType.INTEGER_TYPE)
 		));
@@ -115,7 +112,7 @@ public class XsdAnalyzerTest {
 	public void attributesWithSimpleContentAreSupported() {
 		Type type = analyzer.typeOf("ExtensionInSimpleContent");
 
-		assertThat(type).isEqualTo(struct("namespace.ExtensionInSimpleContent",
+		assertThat(type).isEqualTo(struct("namespace.ExtensionInSimpleContent").withFields(
 				required("value", STRING),
 				optional("version", STRING)
 		));
@@ -124,7 +121,7 @@ public class XsdAnalyzerTest {
 	@Test
 	public void attributesWithComplexContentAreSupported() {
 		Type type = analyzer.typeOf("ExtensionInMixedComplexContent");
-		assertThat(type).isEqualTo(struct("namespace.ExtensionInMixedComplexContent",
+		assertThat(type).isEqualTo(struct("namespace.ExtensionInMixedComplexContent").withFields(
 				required("value", STRING),
 				optional("version", STRING)
 		));
@@ -134,12 +131,13 @@ public class XsdAnalyzerTest {
 	public void repeatedNestedValuesBecomeArrays() {
 		Type type = analyzer.typeOf("RepeatedNestedRecordWithOptionalField");
 
-		assertThat(type).isEqualTo(struct("namespace.RepeatedNestedRecordWithOptionalField",
+		StructType array = struct("namespace.array").withFields(
+				required("one", STRING),
+				optional("two", STRING)
+		);
+		assertThat(type).isEqualTo(struct("namespace.RepeatedNestedRecordWithOptionalField").withFields(
 				required("ID", STRING),
-				array("array", struct("namespace.array",
-						required("one", STRING),
-						optional("two", STRING)
-				))
+				array("array", array)
 		));
 	}
 
@@ -147,11 +145,11 @@ public class XsdAnalyzerTest {
 	public void repeatedSequencedElementsBecomeArrays() {
 		Type type = analyzer.typeOf("RepeatedSequence");
 
-		StructType namedStructType = struct("namespace.named",
+		StructType namedStructType = struct("namespace.named").withFields(
 				required("description", STRING),
 				required("name", STRING)
 		);
-		assertThat(type).isEqualTo(struct("namespace.RepeatedSequence",
+		assertThat(type).isEqualTo(struct("namespace.RepeatedSequence").withFields(
 				array("array1", namedStructType),
 				array("array2", namedStructType)
 		));
@@ -161,7 +159,7 @@ public class XsdAnalyzerTest {
 	public void repeatedChoiceElementsBecomeArrays() {
 		Type type = analyzer.typeOf("RepeatedChoice");
 
-		assertThat(type).isEqualTo(struct("namespace.RepeatedChoice",
+		assertThat(type).isEqualTo(struct("namespace.RepeatedChoice").withFields(
 				array("value", STRING)
 		));
 	}
@@ -170,7 +168,7 @@ public class XsdAnalyzerTest {
 	public void optionalAllMakesElementsNullable() {
 		Type type = analyzer.typeOf("OptionalAll");
 
-		assertThat(type).isEqualTo(struct("namespace.OptionalAll",
+		assertThat(type).isEqualTo(struct("namespace.OptionalAll").withFields(
 				optional("value1", STRING),
 				optional("value2", STRING)
 		));
@@ -185,14 +183,14 @@ public class XsdAnalyzerTest {
 	@Test
 	public void allowsRestrictionInComplexContent() {
 		Type type = analyzer.typeOf("RestrictionInComplexContent");
-		assertThat(type).isEqualTo(struct("namespace.RestrictionInComplexContent",
+		assertThat(type).isEqualTo(struct("namespace.RestrictionInComplexContent").withFields(
 				required("name", STRING)));
 	}
 
 	@Test
 	public void allowsExtensionWithElements() {
 		Type type = analyzer.typeOf("ExtensionWithElements");
-		assertThat(type).isEqualTo(struct("namespace.ExtensionWithElements",
+		assertThat(type).isEqualTo(struct("namespace.ExtensionWithElements").withFields(
 				required("description", STRING),
 				required("field", STRING),
 				required("name", STRING)
@@ -202,7 +200,7 @@ public class XsdAnalyzerTest {
 	@Test
 	public void allowsExtensionOfComplexType() {
 		Type type = analyzer.typeOf("ExtensionOfComplexType");
-		assertThat(type).isEqualTo(struct("namespace.ExtensionOfComplexType",
+		assertThat(type).isEqualTo(struct("namespace.ExtensionOfComplexType").withFields(
 				required("value", STRING),
 				optional("version", STRING)
 		));
@@ -210,7 +208,7 @@ public class XsdAnalyzerTest {
 
 	@Test
 	public void arbitraryXmlDataIsReadAsString() {
-		StructType expected = struct("namespace.ArbitraryContent",
+		StructType expected = struct("namespace.ArbitraryContent").withFields(
 				required("source", STRING),
 				optional("value", "The entire element content, unparsed.", STRING, null)
 		);
@@ -219,7 +217,7 @@ public class XsdAnalyzerTest {
 
 	@Test
 	public void mixedComplexTypesAreCoercedToString() {
-		StructType expected = struct("namespace.MixedComplexType",
+		StructType expected = struct("namespace.MixedComplexType").withFields(
 				required("source", STRING),
 				required("Payload", STRING)
 		);
@@ -231,7 +229,7 @@ public class XsdAnalyzerTest {
 	public void mixedComplexContentTreatedAsNormal() {
 		Type type = analyzer.typeOf("MixedExtensionWithElements");
 		assertThat(type).isEqualTo(
-				struct("namespace.MixedExtensionWithElements", "Note that the complexContent being mixed does not affect the outcome!",
+				struct("namespace.MixedExtensionWithElements", "Note that the complexContent being mixed does not affect the outcome!").withFields(
 						required("description", STRING),
 						required("field", STRING),
 						required("name", STRING)
@@ -242,16 +240,18 @@ public class XsdAnalyzerTest {
 	public void defaultValuesAreAddedIfPossible() {
 		// Note: because we have a default value, the field becomes required (as there's always a value).
 		// Reason: nil and absent values are treated equally, and mean "there's no value in the XML, so use the default"
-		assertThat(analyzer.typeOf("DefaultValuesForFields")).isEqualTo(struct("namespace.DefaultValuesForFields",
+		StructType optional = struct("namespace.optional").withFields(
+				required("optimizedAway", null, STRING, "def")
+		);
+		StructType defaultToNull = struct("namespace.defaultToNull").withFields(
+				optional("optimizedAway", STRING)
+		);
+		assertThat(analyzer.typeOf("DefaultValuesForFields")).isEqualTo(struct("namespace.DefaultValuesForFields").withFields(
 				required("req", null, STRING, "ghi"),
 				optional("opt", null, STRING, "jkl"),
 				required("required", null, STRING, "abc"),
-				optional("optional", null, struct("namespace.optional",
-						required("optimizedAway", null, STRING, "def")
-				), null),
-				optional("defaultToNull", struct("namespace.defaultToNull",
-						optional("optimizedAway", STRING)
-				)),
+				optional("optional", null, optional, null),
+				optional("defaultToNull", defaultToNull),
 				array("array", STRING)
 		));
 	}
@@ -398,21 +398,25 @@ public class XsdAnalyzerTest {
 				required("level", DecimalType.INTEGER_TYPE),
 				required("RabbitHole", recursiveComplexType)
 		));
+		StructType array = struct("namespace.Array").withFields(
+				required("StringElement", STRING)
+		);
+		StructType wrappedStringArray = struct("namespace.WrappedStringArray").withFields(
+				array("Array", array)
+		);
+		StructType array2 = struct("namespace.Array2").withFields(
+				optional("length", DecimalType.INTEGER_TYPE),
+				required("NumberElement", DecimalType.INTEGER_TYPE)
+		);
+		StructType wrappedNumberArray = struct("namespace.WrappedNumberArray").withFields(
+				array("Array", array2)
+		);
 		StructType recursiveType = struct("namespace.Recursive");
 		recursiveType.setFields(List.of(
 				required("HoleInTheGround", recursiveComplexType),
 				required("Recursive", recursiveType),
-				required("WrappedStringArray", struct("namespace.WrappedStringArray",
-						array("Array", struct("namespace.Array",
-								required("StringElement", STRING)
-						))
-				)),
-				required("WrappedNumberArray", struct("namespace.WrappedNumberArray",
-						array("Array", struct("namespace.Array2",
-								optional("length", DecimalType.INTEGER_TYPE),
-								required("NumberElement", DecimalType.INTEGER_TYPE)
-						))
-				))
+				required("WrappedStringArray", wrappedStringArray),
+				required("WrappedNumberArray", wrappedNumberArray)
 		));
 
 		Type type = analyzer.typeOf("Recursive");
@@ -425,34 +429,39 @@ public class XsdAnalyzerTest {
 
 	@Test
 	public void validateClassNameUniqueness() {
-		StructType plainType = struct("namespace.TypeName",
-				required("Normal", struct("namespace.Normal",
-						required("field", STRING)
-				))
+		StructType normal = struct("namespace.Normal").withFields(
+				required("field", STRING)
 		);
-		assertThat(analyzer.typeOf("ClassNamesEdgeCases")).isEqualTo(struct("namespace.ClassNamesEdgeCases",
-				required("PlainType", plainType),
-				required("AnotherType", plainType),
-				required("TypeName", struct("namespace.TypeName2",
-						required("name", STRING)
-				)),
-				required("ClassNamesEdgeCases", struct("namespace.ClassNamesEdgeCases2",
-						required("description", STRING),
-						required("Normal", struct("namespace.Normal2",
-								required("TheAnswer", DecimalType.INTEGER_TYPE)
-						))
-				)),
-				required("Normal", struct("namespace.Normal3",
-						required("field1", STRING),
-						required("field2", STRING)
-				))
+		StructType typeName = struct("namespace.TypeName").withFields(
+				required("Normal", normal)
+		);
+		StructType typeName2 = struct("namespace.TypeName2").withFields(
+				required("name", STRING)
+		);
+		StructType normal2 = struct("namespace.Normal2").withFields(
+				required("TheAnswer", DecimalType.INTEGER_TYPE)
+		);
+		StructType classNamesEdgeCases2 = struct("namespace.ClassNamesEdgeCases2").withFields(
+				required("description", STRING),
+				required("Normal", normal2)
+		);
+		StructType normal3 = struct("namespace.Normal3").withFields(
+				required("field1", STRING),
+				required("field2", STRING)
+		);
+		assertThat(analyzer.typeOf("ClassNamesEdgeCases")).isEqualTo(struct("namespace.ClassNamesEdgeCases").withFields(
+				required("PlainType", typeName),
+				required("AnotherType", typeName),
+				required("TypeName", typeName2),
+				required("ClassNamesEdgeCases", classNamesEdgeCases2),
+				required("Normal", normal3)
 		));
 	}
 
 	@Test
 	public void checkMaximumNumberOfDuplicateNames() {
 		// Duplicates
-		assertThatThrownBy(() -> analyzer.walkSchemaInTargetNamespace("Duplicates", new StructuralSchemaVisitor<>(new StructureBuilder<Object, Object>() {
+		assertThatThrownBy(() -> analyzer.walkSchemaInTargetNamespace("Duplicates", new StructuralSchemaVisitor<>(new StructureBuilder<>() {
 			@Override
 			public Object startElement(FieldData fieldData, TypeData typeData, List<FieldData> attributes) {
 				return null;
@@ -598,7 +607,7 @@ public class XsdAnalyzerTest {
 	@Test
 	public void unconstrainedIntegerAttributesAreCoercedToLong() {
 		Type type = analyzer.typeOf("unconstrainedIntegerAttribute");
-		assertThat(type).isEqualTo(struct("namespace.unconstrainedIntegerAttribute",
+		assertThat(type).isEqualTo(struct("namespace.unconstrainedIntegerAttribute").withFields(
 				optional("value", DecimalType.LONG_TYPE)
 		));
 	}
@@ -704,60 +713,8 @@ public class XsdAnalyzerTest {
 	}
 
 	/*
-	 * Test parsing default values.
-	 */
-
-	/*
-	TODO: refactor
-	@Test
-	public void testDefaultValues() {
-		assertThat(XsdAnalyzer.parseSimpleValue(StructType.create(STRING), "ABC")).isEqualTo("ABC");
-		assertThat(XsdAnalyzer.parseSimpleValue(StructType.createEnum("enum", null, null, emptyList()), "ABC")).isEqualTo("ABC");
-		assertThat(XsdAnalyzer.parseSimpleValue(StructType.create(BYTES), "ABC")).isEqualTo("ABC");
-
-		assertThat(XsdAnalyzer.parseSimpleValue(StructType.create(DecimalType.INTEGER_TYPE), "42")).isEqualTo(42);
-		assertThat(XsdAnalyzer.parseSimpleValue(StructType.create(LONG), "42")).isEqualTo(42L);
-		assertThat(XsdAnalyzer.parseSimpleValue(StructType.create(BOOLEAN), "false")).isEqualTo(false);
-		assertThat(XsdAnalyzer.parseSimpleValue(StructType.create(DOUBLE), "4.2")).isEqualTo(4.2);
-		assertThat(XsdAnalyzer.parseSimpleValue(StructType.create(FLOAT), "4.2")).isEqualTo(4.2f);
-
-		assertThatThrownBy(() -> XsdAnalyzer.parseSimpleValue(StructType.create(NULL), "")).isInstanceOf(IllegalArgumentException.class);
-
-		assertThat(XsdAnalyzer.parseSimpleValue(LogicalTypes.date().addToStructType(StructType.create(DecimalType.INTEGER_TYPE)), "1970-02-03"))
-				.isEqualTo(33);
-		assertThat(XsdAnalyzer.parseSimpleValue(LogicalTypes.timeMillis().addToStructType(StructType.create(DecimalType.INTEGER_TYPE)), "01:02:03"))
-				.isEqualTo(3723000);
-		assertThat(XsdAnalyzer.parseSimpleValue(LogicalTypes.timestampMillis().addToStructType(StructType.create(LONG)), "1970-02-03T01:02:03Z"))
-				.isEqualTo(2854923000L);
-
-		assertThatThrownBy(() -> XsdAnalyzer.parseSimpleValue(LogicalTypes.decimal(5).addToStructType(StructType.create(BYTES)), ""))
-				.isInstanceOf(IllegalArgumentException.class);
-		assertThatThrownBy(() -> XsdAnalyzer.parseSimpleValue(LogicalTypes.uuid().addToStructType(StructType.create(BYTES)), ""))
-				.isInstanceOf(IllegalArgumentException.class);
-	}
-	*/
-
-	/*
 	 * Test record toString()'s used when debugging.
 	 */
-
-	@Test
-	public void validateFieldDataAsText() {
-		assertThat(new FieldData("field", null, REQUIRED, null, "abc").toString())
-				.isEqualTo("field");
-		assertThat(new FieldData("field", "documented", OPTIONAL, STRING, "abc").toString())
-				.isEqualTo("field?: string=abc (documented)");
-		assertThat(new FieldData("field", "much more documentation", MULTIPLE, STRING, null).toString())
-				.isEqualTo("field[]: string (much more…)");
-	}
-
-	@Test
-	public void validateTypeDataAsText() {
-		assertThat(new TypeData(null, null, false).toString()).isEqualTo("anonymous");
-		assertThat(new TypeData("type", null, true).toString()).isEqualTo("type (mixed)");
-		assertThat(new TypeData("type", "something", true).toString()).isEqualTo("type (mixed; something)");
-		assertThat(new TypeData("type", "much more text", false).toString()).isEqualTo("type (much more…)");
-	}
 
 	@Test
 	public void validateVisitorContextAsText() {
@@ -788,38 +745,6 @@ public class XsdAnalyzerTest {
 				return false;
 			}
 		}, "a decimal(%d,%d)", precision, scale);
-	}
-
-	private StructType struct(String name, StructType.Field... fields) {
-		return struct(name, null, fields);
-	}
-
-	private StructType struct(String name, String doc, StructType.Field... fields) {
-		StructType structType = new StructType(typeCollection, name, doc);
-		if (fields.length > 0) {
-			structType.setFields(asList(fields));
-		}
-		return structType;
-	}
-
-	private StructType.Field required(String name, Type type) {
-		return required(name, null, type, null);
-	}
-
-	private StructType.Field required(String name, String doc, Type type, Object defaultValue) {
-		return new StructType.Field(name, emptyList(), doc, REQUIRED, type, defaultValue);
-	}
-
-	private StructType.Field optional(String name, Type type) {
-		return optional(name, null, type, null);
-	}
-
-	private StructType.Field optional(String name, String doc, Type type, Object defaultValue) {
-		return new StructType.Field(name, emptyList(), doc, OPTIONAL, type, defaultValue);
-	}
-
-	private StructType.Field array(String name, Type type) {
-		return new StructType.Field(name, emptyList(), null, MULTIPLE, type, emptyList());
 	}
 
 	private static class Indent {

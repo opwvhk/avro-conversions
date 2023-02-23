@@ -151,14 +151,13 @@ public class XsdAnalyzer {
 					fields = new ElementFields(typeData);
 					for (FieldData attributeData : attributes) {
 						ScalarType scalarType = requireNonNull(attributeData.scalarType());
-						StructType.Field field = createField(attributeData.cardinality(), attributeData.name(), attributeData.doc(), scalarType,
+						fields.addAttributeField(attributeData.cardinality(), attributeData.name(), attributeData.doc(), scalarType,
 								attributeData.defaultValue());
-						fields.addAttributeField(field);
 					}
 					if (fieldData.scalarType() != null) {
 						FieldData fieldData1 = fieldData.withName("value");
 						ScalarType scalarType = requireNonNull(fieldData1.scalarType());
-						fields.setValueField(createField(fieldData1.cardinality(), fieldData1.name(), fieldData1.doc(), scalarType, fieldData1.defaultValue()));
+						fields.setValueField(fieldData1.cardinality(), fieldData1.name(), fieldData1.doc(), scalarType, fieldData1.defaultValue());
 					}
 				}
 
@@ -187,8 +186,7 @@ public class XsdAnalyzer {
 				}
 
 				Object defaultValue = elementResult instanceof StructType ? null : fieldData.defaultValue();
-				StructType.Field newField = createField(fieldData.cardinality(), fieldData.name(), fieldData.doc(), elementResult, defaultValue);
-				parentElementState.addElementField(newField);
+				parentElementState.addElementField(fieldData.cardinality(), fieldData.name(), fieldData.doc(), elementResult, defaultValue);
 			}
 
 			@Override
@@ -230,14 +228,6 @@ public class XsdAnalyzer {
 		return element;
 	}
 
-	protected static StructType.Field createField(Cardinality fieldCardinality, String name, String doc, Type type, Object defaultValue) {
-		if (fieldCardinality == Cardinality.MULTIPLE) {
-			// Override default value for arrays: nulls cause problems, amd anything else doesn't make sense.
-			defaultValue = emptyList();
-		}
-		return new StructType.Field(name, doc, fieldCardinality, type, defaultValue);
-	}
-
 	private class ElementFields {
 		private final Type recordType;
 		private boolean shouldNotParseElements;
@@ -267,16 +257,24 @@ public class XsdAnalyzer {
 			return recordType instanceof ScalarType;
 		}
 
-		public void setValueField(StructType.Field valueField) {
-			this.valueField = valueField;
+		public void setValueField(Cardinality fieldCardinality, String name, String doc, Type type, Object defaultValue) {
+			this.valueField = createField(fieldCardinality, name, doc, type, defaultValue);
 		}
 
-		public void addAttributeField(StructType.Field field) {
-			attributeFields.add(field);
+		public void addAttributeField(Cardinality fieldCardinality, String name, String doc, Type type, Object defaultValue) {
+			attributeFields.add(createField(fieldCardinality, name, doc, type, defaultValue));
 		}
 
-		public void addElementField(StructType.Field field) {
-			elementFields.add(field);
+		public void addElementField(Cardinality fieldCardinality, String name, String doc, Type type, Object defaultValue) {
+			elementFields.add(createField(fieldCardinality, name, doc, type, defaultValue));
+		}
+
+		private StructType.Field createField(Cardinality fieldCardinality, String name, String doc, Type type, Object defaultValue) {
+			if (fieldCardinality == Cardinality.MULTIPLE) {
+				// Override default value for arrays: nulls cause problems, amd anything else doesn't make sense.
+				defaultValue = emptyList();
+			}
+			return new StructType.Field(name, doc, fieldCardinality, type, defaultValue);
 		}
 
 		public List<StructType.Field> fields() {
