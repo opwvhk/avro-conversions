@@ -14,51 +14,6 @@ import org.apache.avro.generic.GenericData;
  * is called, allowing results to be communicated back to the caller.</p>
  */
 public abstract class ValueResolver {
-	public static ValueResolver forSchema(GenericData model, Schema schema) throws ResolvingFailure {
-		return switch (schema.getType()) {
-			case BOOLEAN -> new ScalarValueResolver(Boolean::parseBoolean);
-			case INT -> new ScalarValueResolver(Integer::decode);
-			case LONG -> new ScalarValueResolver(Long::decode);
-			case FLOAT -> new ScalarValueResolver(Float::parseFloat);
-			case DOUBLE -> new ScalarValueResolver(Double::parseDouble);
-			case STRING -> new ScalarValueResolver(s -> s);
-			case ENUM -> new ScalarValueResolver(symbol -> {
-				String enumSymbol = schema.getEnumSymbols().contains(symbol) ? symbol : schema.getEnumDefault();
-				if (enumSymbol == null) {
-					throw new ParseFailure("Unknown enum symbol for %s: %s".formatted(schema.getFullName(), symbol));
-				}
-				return model.createEnum(enumSymbol, schema);
-			});
-			case BYTES -> {
-				String binaryType = schema.getProp("xmlBinary");
-				if ("hex".equals(binaryType)) {
-					yield new ScalarValueResolver(s -> new BigInteger(s, 16).toByteArray());
-				} else if ("base64".equals(binaryType)) {
-					Base64.Decoder base64Decoder = Base64.getDecoder();
-					yield new ScalarValueResolver(base64Decoder::decode);
-				} else {
-					throw new ResolvingFailure("Binary type '%s' is not supported. Please use 'hex' or 'base64'.".formatted(binaryType));
-				}
-			}
-			case ARRAY -> new ListResolver(ValueResolver.forSchema(model, schema.getElementType()));
-			case UNION -> {
-				List<Schema> unionSchemas = schema.getTypes();
-				if (unionSchemas.size() != 2 || !schema.isNullable()) {
-					throw new ResolvingFailure("Unions are only supported to make a single schema nullable.");
-				}
-				Schema firstSchema = unionSchemas.get(0);
-				Schema nonNullSchema = firstSchema.isNullable() ? unionSchemas.get(1) : firstSchema;
-				yield ValueResolver.forSchema(model, nonNullSchema);
-			}
-			case RECORD -> {
-				RecordResolver resolver = new RecordResolver(model, schema);
-				// TODO: add fields
-				yield resolver;
-			}
-			default -> throw new ResolvingFailure("Schema type '%s' is not supported".formatted(schema.getType()));
-		};
-	}
-
 	private static final ValueResolver NOOP = new ValueResolver() {
 		@Override
 		public Object addContent(Object collector, String content) {

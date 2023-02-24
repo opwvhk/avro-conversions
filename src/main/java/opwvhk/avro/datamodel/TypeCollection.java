@@ -1,13 +1,10 @@
-package opwvhk.avro.structure;
+package opwvhk.avro.datamodel;
 
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import static java.util.Collections.unmodifiableCollection;
 
 /**
  * Collection of {@link StructType StructTypes}. Used to make types more easily accessible, and to enforce uniqueness of names.

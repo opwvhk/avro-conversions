@@ -1,4 +1,4 @@
-package opwvhk.avro.structure;
+package opwvhk.avro.datamodel;
 
 import java.util.ArrayList;
 import java.util.Collection;

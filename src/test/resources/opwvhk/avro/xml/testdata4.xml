@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<envelope xmlns="https://www.schiphol.nl/opwvhk/test" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="https://www.schiphol.nl/opwvhk/test file://./payload.xsd">
+	<source>Bronsysteem</source>
+	<target>Bestemming</target>
+	<payload>
+		<record>
+			<!-- Less whitespace to test more code closing start tags. Also note: comments cannot be reconstructed... -->
+			<title>Status Report</title><summary language="NL">Een korte omschrijving</summary><status>OPEN</status><sequence/>
+			<nested><description>No strings this time</description></nested>
+		</record>
+	</payload>
+</envelope>

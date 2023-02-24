@@ -15,12 +15,12 @@ import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import opwvhk.avro.structure.Cardinality;
-import opwvhk.avro.structure.DecimalType;
-import opwvhk.avro.structure.EnumType;
+import opwvhk.avro.datamodel.Cardinality;
+import opwvhk.avro.datamodel.DecimalType;
+import opwvhk.avro.datamodel.EnumType;
 import opwvhk.avro.structure.FieldData;
-import opwvhk.avro.structure.FixedType;
-import opwvhk.avro.structure.ScalarType;
+import opwvhk.avro.datamodel.FixedType;
+import opwvhk.avro.datamodel.ScalarType;
 import opwvhk.avro.structure.StructureBuilder;
 import opwvhk.avro.structure.TypeData;
 import org.apache.ws.commons.schema.XmlSchema;
