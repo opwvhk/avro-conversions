@@ -13,6 +13,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.time.Month.MARCH;
 import static java.time.ZoneOffset.UTC;
 import static opwvhk.avro.structure.StructType.Field.NULL_VALUE;
+import static opwvhk.avro.structure.TestStructures.enumType;
 import static opwvhk.avro.structure.TestStructures.optional;
 import static opwvhk.avro.structure.TestStructures.required;
 import static opwvhk.avro.structure.TestStructures.struct;
@@ -185,7 +186,7 @@ public class TypeStructureTest {
 		StructType nestedBefore = struct("nested").withFields(
 				optional("field1", null, DecimalType.INTEGER_TYPE, NULL_VALUE),
 				required(List.of("field2a", "field2b"), "Many names", FixedType.STRING, null),
-				required("status", new EnumType("Status", "switch", List.of("ON", "OFF")))
+				required("status", enumType("Status", "switch", List.of("ON", "OFF")))
 		);
 		StructType before = struct("before", "gibberish").withFields(
 				required("name", FixedType.STRING),

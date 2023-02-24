@@ -49,7 +49,7 @@ public sealed interface Type permits ScalarType, StructType {
 			case INT -> DecimalType.INTEGER_TYPE;
 			case LONG -> DecimalType.LONG_TYPE;
 			case STRING -> FixedType.STRING;
-			case BYTES -> FixedType.BINARY_HEX; // TODO: Add generic binary type?
+			case BYTES -> FixedType.BINARY_HEX; // Any binary type will do: we're not parsing.
 			case DOUBLE -> FixedType.DOUBLE;
 			case FLOAT -> FixedType.FLOAT;
 			case ENUM -> new EnumType(typeCollection, schema.getFullName(), schema.getAliases(), schema.getDoc(), schema.getEnumSymbols(), schema.getEnumDefault());

@@ -42,6 +42,7 @@ import static opwvhk.avro.structure.FixedType.FLOAT;
 import static opwvhk.avro.structure.FixedType.STRING;
 import static opwvhk.avro.structure.FixedType.TIME;
 import static opwvhk.avro.structure.TestStructures.array;
+import static opwvhk.avro.structure.TestStructures.enumType;
 import static opwvhk.avro.structure.TestStructures.optional;
 import static opwvhk.avro.structure.TestStructures.required;
 import static opwvhk.avro.structure.TestStructures.struct;
@@ -692,7 +693,7 @@ public class XsdAnalyzerTest {
 	public void enumerationsAreSupported() {
 		analyzer.mapTargetNamespace("");
 		Type type = analyzer.typeOf("enumeration");
-		assertThat(type).isEqualTo(new EnumType("enumeration", null, List.of("NONE", "BICYCLE", "BUS", "TRAIN", "CAR")));
+		assertThat(type).isEqualTo(enumType("enumeration", null, List.of("NONE", "BICYCLE", "BUS", "TRAIN", "CAR")));
 	}
 
 	@Test
