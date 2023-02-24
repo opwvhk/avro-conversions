@@ -113,7 +113,7 @@ public class StructuralSchemaVisitor<ElementState, Result>
 	public void onEnterElement(XmlSchemaElement element, XmlSchemaTypeInfo typeInfo, boolean previouslyVisited) {
 		Cardinality elementCardinality = cardinalityStack.element().adjustFor(Cardinality.of(element));
 
-			TypeData typeData = typeData(element, element.getSchemaType());
+		TypeData typeData = typeData(element, element.getSchemaType());
 
 		ScalarType scalarType = mapScalarType(typeData, typeInfo);
 		String defaultValue = scalarType == null ? null : element.getDefaultValue();
@@ -148,7 +148,7 @@ public class StructuralSchemaVisitor<ElementState, Result>
 		}
 
 		String xmlNamespace = name.getNamespaceURI();
-		if (XsdAnalyzer.XML_SCHEMA_DEFINITION_NAMESPACES.contains(xmlNamespace)) {
+		if (Constants.XML_SCHEMA_DEFINITION_NAMESPACES.contains(xmlNamespace)) {
 			return null;
 		}
 
@@ -236,7 +236,8 @@ public class StructuralSchemaVisitor<ElementState, Result>
 					if (symbols.isEmpty()) {
 						return FixedType.STRING;
 					} else {
-						return new EnumType(typeData.name(), typeData.doc(), symbols);
+						// typeCollection may be null, as this class prevents duplicate names itself.
+						return new EnumType(null, typeData.name(), typeData.doc(), symbols, null);
 					}
 				} else if (XSD_ANYURI.equals(recognizedType)) {
 					return FixedType.STRING;

@@ -12,6 +12,10 @@ import static opwvhk.avro.structure.Cardinality.REQUIRED;
 public class TestStructures {
 	private static final ThreadLocal<StructType> LAST_STRUCT = new ThreadLocal<>();
 
+	public static EnumType enumType(String name, String documentation, List<String> enumSymbols) {
+		return new EnumType(new TypeCollection(), List.of(name), documentation, enumSymbols, null);
+	}
+
 	public static StructType struct(String name) {
 		return struct(null, List.of(name), null);
 	}

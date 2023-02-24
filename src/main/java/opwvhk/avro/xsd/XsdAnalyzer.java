@@ -27,7 +27,6 @@ import opwvhk.avro.util.Utils;
 import org.apache.ws.commons.schema.XmlSchema;
 import org.apache.ws.commons.schema.XmlSchemaCollection;
 import org.apache.ws.commons.schema.XmlSchemaElement;
-import org.apache.ws.commons.schema.constants.Constants;
 import org.apache.ws.commons.schema.utils.NamespacePrefixList;
 import org.apache.ws.commons.schema.walker.XmlSchemaVisitor;
 import org.apache.ws.commons.schema.walker.XmlSchemaWalker;
@@ -43,8 +42,6 @@ import static org.apache.ws.commons.schema.constants.Constants.*;
  * XSD analyzer; can build an Avro schema corresponding to an XML schema, or a SAX {@link DefaultHandler} to parse it into an Avro record.
  */
 public class XsdAnalyzer {
-	public static final Set<String> XML_SCHEMA_DEFINITION_NAMESPACES = Set.of(Constants.URI_2001_SCHEMA_XSD, Constants.URI_2001_SCHEMA_XSI,
-			Constants.XML_NS_URI, Constants.XMLNS_ATTRIBUTE_NS_URI);//, Constants.NULL_NS_URI);
 	public static final Set<QName> USER_RECOGNIZED_TYPES = Set.of(XSD_BOOLEAN, XSD_FLOAT, XSD_DOUBLE, XSD_DATE, XSD_DATETIME, XSD_TIME, XSD_INT, XSD_LONG,
 			XSD_DECIMAL, XSD_STRING, XSD_ANYURI, XSD_HEXBIN, XSD_BASE64);
 
@@ -70,7 +67,7 @@ public class XsdAnalyzer {
 			NamespacePrefixList namespaceContext = schema.getNamespaceContext();
 			for (String prefix : namespaceContext.getDeclaredPrefixes()) {
 				String namespaceURI = namespaceContext.getNamespaceURI(prefix);
-				if (!XML_SCHEMA_DEFINITION_NAMESPACES.contains(namespaceURI)) {
+				if (!opwvhk.avro.xsd.Constants.XML_SCHEMA_DEFINITION_NAMESPACES.contains(namespaceURI)) {
 					String hash = new BigInteger(Utils.digest("MD5").digest(xmlNamespace.getBytes(UTF_8))).toString(16);
 					namespaces.put(namespaceURI, "ns_" + hash);
 				}
@@ -85,7 +82,7 @@ public class XsdAnalyzer {
 	 * Returns the set of XML namespaces (URIs) defined in the XML schema. Does not return namespaces related to defining XML schemas.
 	 *
 	 * @return the set of XML namespaces in the XSD; the iterator returns the target namespace first
-	 * @see #XML_SCHEMA_DEFINITION_NAMESPACES
+	 * @see opwvhk.avro.xsd.Constants#XML_SCHEMA_DEFINITION_NAMESPACES
 	 */
 	public Set<String> availableNamespaces() {
 		return unmodifiableSet(namespaces.keySet());

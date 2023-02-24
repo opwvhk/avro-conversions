@@ -85,8 +85,12 @@ public final class StructType implements Type, NamedElement {
 		if (!duplicateNames.isEmpty()) {
 			throw new IllegalArgumentException("All field names/aliases must be unique. These are not: " + String.join(", ", duplicateNames));
 		}
-		fields.forEach(f -> f.setStructType(this));
-
+		for (Field field : fields) {
+			field.setStructType(this);
+			if (field.type() instanceof EnumType enumType) {
+				enumType.setTypeCollection(typeCollection);
+			}
+		}
 		this.fieldsByName = fieldsByName;
 		this.fields = List.copyOf(fields);
 	}

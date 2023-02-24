@@ -8,7 +8,7 @@ import java.util.Objects;
 import opwvhk.avro.util.Utils;
 
 public final class EnumType implements ScalarType, NamedElement {
-	private final TypeCollection typeCollection;
+	private TypeCollection typeCollection;
 	private final List<String> nameAndAliases;
 	private String documentation;
 	private final List<String> enumSymbols;
@@ -19,22 +19,23 @@ public final class EnumType implements ScalarType, NamedElement {
 			throw new IllegalArgumentException(
 					"%s is not a valid symbol; expected one of: %s".formatted(defaultSymbol, String.join(", ", enumSymbols)));
 		}
-		this.typeCollection = typeCollection == null ? new TypeCollection() : typeCollection;
+		this.typeCollection = typeCollection;
 		this.nameAndAliases = new ArrayList<>(nameAndAliases);
 		this.documentation = documentation;
 		this.enumSymbols = enumSymbols;
 		this.defaultSymbol = defaultSymbol;
 
-		this.typeCollection.addType(this);
+		if (typeCollection != null) {
+			typeCollection.addType(this);
+		}
+	}
+
+	public EnumType(TypeCollection typeCollection, String name, String documentation, List<String> enumSymbols, String defaultSymbol) {
+		this(typeCollection, List.of(name), documentation, enumSymbols, defaultSymbol);
 	}
 
 	EnumType(TypeCollection typeCollection, String name, Collection<String> aliases, String documentation, List<String> enumSymbols, String defaultSymbol) {
 		this(typeCollection, NamedElement.names(name, aliases), documentation, enumSymbols, defaultSymbol);
-	}
-
-	public EnumType(String name, String documentation, List<String> enumSymbols) {
-		// TODO: When used from StructuralSchemaVisitor, check type name !
-		this(null, List.of(name), documentation, enumSymbols, null);
 	}
 
 	@Override
@@ -45,6 +46,13 @@ public final class EnumType implements ScalarType, NamedElement {
 			return defaultSymbol;
 		}
 		throw new IllegalArgumentException("Unknown enum symbol for %s: %s".formatted(name(), text));
+	}
+
+	void setTypeCollection(TypeCollection typeCollection) {
+		if (typeCollection != this.typeCollection) {
+			this.typeCollection = typeCollection;
+			typeCollection.addType(this);
+		}
 	}
 
 	@Override
