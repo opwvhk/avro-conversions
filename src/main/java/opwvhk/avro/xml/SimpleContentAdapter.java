@@ -1,14 +1,12 @@
 package opwvhk.avro.xml;
 
-import java.util.Set;
-
-import org.apache.ws.commons.schema.constants.Constants;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 import org.xml.sax.helpers.DefaultHandler;
 
 import static java.util.Objects.requireNonNull;
+import static opwvhk.avro.xsd.Constants.XML_SCHEMA_DEFINITION_NAMESPACES;
 
 /**
  * Adapter to treat a {@link SimpleContentHandler} as a SAX {@link org.xml.sax.ContentHandler}.
@@ -16,8 +14,6 @@ import static java.util.Objects.requireNonNull;
  * <p>Requires the parser to support namespaces (and return namespace attributes).</p>
  */
 public class SimpleContentAdapter extends DefaultHandler {
-	private static final Set<String> XML_SCHEMA_DEFINITION_NAMESPACES = Set.of(Constants.URI_2001_SCHEMA_XSD, Constants.URI_2001_SCHEMA_XSI,
-			Constants.XML_NS_URI, Constants.XMLNS_ATTRIBUTE_NS_URI, Constants.NULL_NS_URI);
 	private static final int DEFAULT_BUFFER_CAPACITY = 1024;
 	private final SimpleContentHandler simpleContentHandler;
 	private final StringBuilder charBuffer;
@@ -53,7 +49,7 @@ public class SimpleContentAdapter extends DefaultHandler {
 					filteredAttrs.addAttribute(attrUri, attributes.getLocalName(i), attributes.getQName(i), attributes.getType(i), attributes.getValue(i));
 				}
 			}
-			if (simpleContentHandler.startElement(uri, localName, qName, filteredAttrs)) {
+			if (!simpleContentHandler.startElement(uri, localName, qName, filteredAttrs)) {
 				reassemblingDepth = 0;
 				reassemblingStartTag = false;
 			}
@@ -64,7 +60,7 @@ public class SimpleContentAdapter extends DefaultHandler {
 			}
 			charBuffer.append("<").append(qName);
 			for (int i = 0; i < attributes.getLength(); i++) {
-				// Unfiltered: we're
+				// Unfiltered: we're reassembling everything as-is
 				String attrQName = requireNonNull(attributes.getQName(i));
 				String attrValue = attributes.getValue(i).replace("\"", "&quot;'");
 				charBuffer.append(" ").append(attrQName).append("=\"").append(attrValue).append("\"");
@@ -104,7 +100,7 @@ public class SimpleContentAdapter extends DefaultHandler {
 		String content = String.valueOf(ch, start, length);
 		if (reassemblingDepth >= 0) {
 			if (reassemblingStartTag) {
-				charBuffer.append("/>");
+				charBuffer.append(">");
 				reassemblingStartTag = false;
 			}
 			charBuffer.append(escapeForXml(content));
@@ -124,7 +120,7 @@ public class SimpleContentAdapter extends DefaultHandler {
 	public void ignorableWhitespace(char[] ch, int start, int length) {
 		if (reassemblingDepth >= 0) {
 			if (reassemblingStartTag) {
-				charBuffer.append("/>");
+				charBuffer.append(">");
 				reassemblingStartTag = false;
 			}
 			// Can be added as-is, because whitespace does not need escaping for XML parsers

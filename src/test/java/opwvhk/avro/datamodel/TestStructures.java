@@ -1,13 +1,12 @@
-package opwvhk.avro.structure;
+package opwvhk.avro.datamodel;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 import static java.util.Collections.emptyList;
-import static opwvhk.avro.structure.Cardinality.MULTIPLE;
-import static opwvhk.avro.structure.Cardinality.OPTIONAL;
-import static opwvhk.avro.structure.Cardinality.REQUIRED;
+import static opwvhk.avro.datamodel.Cardinality.MULTIPLE;
+import static opwvhk.avro.datamodel.Cardinality.OPTIONAL;
+import static opwvhk.avro.datamodel.Cardinality.REQUIRED;
 
 public class TestStructures {
 	private static final ThreadLocal<StructType> LAST_STRUCT = new ThreadLocal<>();

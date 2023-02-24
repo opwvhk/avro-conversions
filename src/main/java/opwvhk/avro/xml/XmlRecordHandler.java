@@ -7,6 +7,7 @@ import opwvhk.avro.io.ValueResolver;
 import org.xml.sax.Attributes;
 
 import static java.util.Objects.requireNonNullElse;
+import static opwvhk.avro.xsd.Constants.XML_SCHEMA_DEFINITION_NAMESPACES;
 
 public class XmlRecordHandler implements SimpleContentHandler {
 	private final ValueResolver rootHandler;
@@ -20,7 +21,6 @@ public class XmlRecordHandler implements SimpleContentHandler {
 	}
 
 	public <T> T getValue() {
-		//noinspection unchecked
 		return (T) value;
 	}
 
@@ -48,9 +48,6 @@ public class XmlRecordHandler implements SimpleContentHandler {
 		contextStack.push(context);
 
 		for (int i = 0; i < attributes.getLength(); i++) {
-			if (XmlAsAvroParser.XML_SCHEMA_DEFINITION_NAMESPACES.contains(attributes.getURI(i))) {
-				continue;
-			}
 			String attribute = requireNonNullElse(attributes.getLocalName(i), attributes.getQName(i));
 			Object attrValue = context.resolveValue(attribute, attributes.getValue(i));
 			context.addProperty(attribute, attrValue);
@@ -110,8 +107,12 @@ public class XmlRecordHandler implements SimpleContentHandler {
 		}
 
 		public Object complete() {
-			String content = buffer.toString().stripIndent().strip();
+			String bufferContent = buffer.toString();
 			buffer.setLength(0);
+
+			String indentedBufferContent = bufferContent.replaceAll("^\\s*?\\R","").stripTrailing();
+			String unindentedBufferContent = indentedBufferContent.stripIndent();
+			String content = resolver.shouldParseContent() ? unindentedBufferContent.strip() : unindentedBufferContent;
 			if (!content.isEmpty()) {
 				collector = resolver.addContent(collector, content);
 			}

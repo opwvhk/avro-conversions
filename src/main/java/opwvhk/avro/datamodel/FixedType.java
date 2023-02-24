@@ -1,4 +1,4 @@
-package opwvhk.avro.structure;
+package opwvhk.avro.datamodel;
 
 import java.math.BigInteger;
 import java.time.Instant;
@@ -6,7 +6,6 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Base64;
-import java.util.IdentityHashMap;
 import java.util.Locale;
 
 public enum FixedType implements ScalarType {

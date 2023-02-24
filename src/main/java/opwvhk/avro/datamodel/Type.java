@@ -1,8 +1,7 @@
-package opwvhk.avro.structure;
+package opwvhk.avro.datamodel;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.IdentityHashMap;
 import java.util.List;
 
 import org.apache.avro.JsonProperties;
@@ -11,7 +10,7 @@ import org.apache.avro.LogicalTypes;
 import org.apache.avro.Schema;
 
 import static java.util.Collections.emptyList;
-import static opwvhk.avro.structure.StructType.Field.NULL_VALUE;
+import static opwvhk.avro.datamodel.StructType.Field.NULL_VALUE;
 import static org.apache.avro.Schema.Field.NULL_DEFAULT_VALUE;
 import static org.apache.avro.Schema.Type.*;
 

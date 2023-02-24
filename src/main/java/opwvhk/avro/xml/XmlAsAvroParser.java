@@ -3,55 +3,41 @@ package opwvhk.avro.xml;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
-import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import java.io.IOException;
 import java.io.StringReader;
 import java.net.URL;
-import java.util.Set;
 
 import opwvhk.avro.xsd.XsdAnalyzer;
 import opwvhk.avro.io.DefaultData;
 import opwvhk.avro.io.ValueResolver;
-import opwvhk.avro.structure.Type;
-import opwvhk.avro.structure.TypeCollection;
+import opwvhk.avro.datamodel.Type;
+import opwvhk.avro.datamodel.TypeCollection;
+import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericData;
-import org.apache.ws.commons.schema.constants.Constants;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 public class XmlAsAvroParser {
-	public static final Set<String> XML_SCHEMA_DEFINITION_NAMESPACES = Set.of(Constants.URI_2001_SCHEMA_XSD, Constants.URI_2001_SCHEMA_XSI,
-			Constants.XML_NS_URI, Constants.XMLNS_ATTRIBUTE_NS_URI, Constants.NULL_NS_URI);
-	private final GenericData model;
 	private final SAXParser parser;
 	private final ValueResolver resolver;
 
 	public static void main(String[] args) throws IOException, SAXException {
-		URL xsdLocation = ClassLoader.getSystemResource("parsing/payload.xsd");
+		URL xsdLocation = ClassLoader.getSystemResource("opwvhk/avro/xml/payload.xsd");
 		org.apache.avro.Schema readSchema = null;
 		DefaultData model = new DefaultData(GenericData.get());
 		XmlAsAvroParser xmlAsAvroParser = new XmlAsAvroParser(xsdLocation, "Envelope", readSchema, model);
-		System.out.printf("XML data 1:\n%s\n", xmlAsAvroParser.parse(ClassLoader.getSystemResource("parsing/testdata1.xml")));
+		System.out.printf("XML data 1:\n%s\n", xmlAsAvroParser.parse(ClassLoader.getSystemResource("opwvhk/avro/xml/testdata1.xml")));
 		//System.out.printf("XML data 2:\n%s\n", xmlAsAvroParser.parse(ClassLoader.getSystemResource("parsing/testdata2.xml")));
 		//System.out.printf("XML data 3:\n%s\n", xmlAsAvroParser.parse(ClassLoader.getSystemResource("parsing/testdata3.xml")));
 	}
 
-	public XmlAsAvroParser(URL xsdLocation, String rootElement, org.apache.avro.Schema readSchema, GenericData model) throws IOException {
-		this.model = model;
+	public XmlAsAvroParser(URL xsdLocation, String rootElement, Schema readSchema, GenericData model) throws IOException {
 		parser = createParser(xsdLocation);
-
-		XsdAnalyzer xsdAnalyzer = new XsdAnalyzer(xsdLocation);
-		Type writeType = xsdAnalyzer.typeOf(rootElement);
-
-		TypeCollection typeCollection = new TypeCollection();
-		Type readType = Type.fromSchema(typeCollection, readSchema);
-
-		resolver = resolve(readType, writeType);
+		resolver = createResolver(xsdLocation, rootElement, readSchema, model);
 	}
 
-	public XmlAsAvroParser(URL xsdLocation, ValueResolver resolver) {
-		this.model = GenericData.get();
+	XmlAsAvroParser(URL xsdLocation, ValueResolver resolver) {
 		parser = createParser(xsdLocation);
 		this.resolver = resolver;
 	}
@@ -62,7 +48,7 @@ public class XmlAsAvroParser {
 			parserFactory.setNamespaceAware(true);
 
 			SchemaFactory schemaFactory = SchemaFactory.newDefaultInstance();
-			Schema schema = schemaFactory.newSchema(xsdLocation);
+			javax.xml.validation.Schema schema = schemaFactory.newSchema(xsdLocation);
 			parserFactory.setSchema(schema);
 
 			return parserFactory.newSAXParser();
@@ -71,7 +57,23 @@ public class XmlAsAvroParser {
 		}
 	}
 
-	private ValueResolver resolve(Type readType, Type writeType) {
+	private ValueResolver createResolver(URL xsdLocation, String rootElement, Schema readSchema, GenericData model) throws IOException {
+		Type writeType = determineWriteType(xsdLocation, rootElement);
+		Type readType = determineReadType(readSchema);
+		return resolve(readType, writeType, model);
+	}
+
+	private static Type determineReadType(Schema readSchema) {
+		TypeCollection typeCollection = new TypeCollection();
+		return Type.fromSchema(typeCollection, readSchema);
+	}
+
+	private static Type determineWriteType(URL xsdLocation, String rootElement) throws IOException {
+		XsdAnalyzer xsdAnalyzer = new XsdAnalyzer(xsdLocation);
+		return xsdAnalyzer.typeOf(rootElement);
+	}
+
+	private ValueResolver resolve(Type readType, Type writeType, GenericData model) {
 		// TODO: Implement
 		return null;
 	}

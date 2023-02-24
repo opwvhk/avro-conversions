@@ -3,9 +3,9 @@
           xsi:schemaLocation="https://www.schiphol.nl/opwvhk/test file://./payload.xsd">
 	<source>Bronsysteem</source>
 	<target>Bestemming</target>
-	<payload>
+	<payload type="xml">
 		<record>
-			<summary>12.5</summary>
+			<title>Status Report</title>
 			<status>OPEN</status>
 			<sequence>
 				<number>1</number>

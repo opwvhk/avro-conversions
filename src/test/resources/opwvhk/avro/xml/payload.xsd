@@ -4,7 +4,16 @@
 	<xs:element name="record">
 		<xs:complexType>
 			<xs:sequence>
-				<xs:element name="summary" type="xs:string"/>
+				<xs:element name="title" type="xs:string"/>
+				<xs:element name="summary" minOccurs="0">
+					<xs:complexType>
+						<xs:simpleContent>
+							<xs:extension base="xs:string">
+								<xs:attribute  name="language" type="xs:string"/>
+							</xs:extension>
+						</xs:simpleContent>
+					</xs:complexType>
+				</xs:element>
 				<xs:element name="status">
 					<xs:simpleType>
 						<xs:restriction base="xs:string">

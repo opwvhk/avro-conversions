@@ -1,6 +1,7 @@
 package opwvhk.avro.structure;
 
-import java.util.IdentityHashMap;
+import opwvhk.avro.datamodel.Cardinality;
+import opwvhk.avro.datamodel.ScalarType;
 
 import static opwvhk.avro.util.Utils.truncate;
 
