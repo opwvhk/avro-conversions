@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.avro.JsonProperties;
 import org.apache.avro.Schema;
@@ -29,22 +30,18 @@ public class TypeStructureTest {
 		assertThat(structure.toString()).isEqualTo(TYPE_STRUCTURE.replace("@NULL@", JsonProperties.NULL_VALUE.toString()));
 
 		// The type structure does not support some inefficiencies allowed by Avro
-		Schema schema2 = new Schema.Parser().parse(AVRO_SCHEMA
-				.replace("\"type\": [\"null\", { \"type\": \"array\", \"items\": [\"null\", \"string\"] }], \"default\": null,",
+		Schema schema2 = new Schema.Parser().parse(AVRO_SCHEMA.replace(
+						"\"type\": [\"null\", { \"type\": \"array\", \"items\": [\"null\", \"string\"] }], \"default\": null,",
 						"\"type\": { \"type\": \"array\", \"items\": \"string\" }, \"default\": [],")
-				.replace("{\"type\": \"string\", \"logicalType\": \"uuid\"}", "\"string\"")
-				.replace("[\"string\"]", "\"string\""));
+				.replace("{\"type\": \"string\", \"logicalType\": \"uuid\"}", "\"string\"").replace("[\"string\"]", "\"string\""));
 		assertThat(structure.toSchema()).isEqualTo(schema2);
 	}
 
 	@Test
 	public void testAvroDefaultValues() {
-		StructType struct = struct("defaults").withFields(
-				optional("optional1", null, FixedType.STRING, StructType.Field.NULL_VALUE),
+		StructType struct = struct("defaults").withFields(optional("optional1", null, FixedType.STRING, StructType.Field.NULL_VALUE),
 				optional("optional2", null, FixedType.STRING, JsonProperties.NULL_VALUE),
-				optional("optional3", null, FixedType.STRING, Schema.Field.NULL_DEFAULT_VALUE),
-				optional("optional4", null, FixedType.STRING, "text")
-		);
+				optional("optional3", null, FixedType.STRING, Schema.Field.NULL_DEFAULT_VALUE), optional("optional4", null, FixedType.STRING, "text"));
 		Schema schema = new Schema.Parser().parse("""
 				{"type": "record", "name": "defaults", "fields": [
 					{"name": "optional1", "type": ["null", "string"], "default": null},
@@ -73,31 +70,35 @@ public class TypeStructureTest {
 
 	@Test
 	public void testNamingRules() {
-		assertThat(NamedElement.names("names", List.of("are", "used", "in", "order"))).containsExactly("names", "are", "used", "in", "order");
+		assertThatThrownBy(() -> new StructType(new TypeCollection(), "names", Set.of("may", "not", "repeat", "names"), null)).isInstanceOf(
+				IllegalArgumentException.class);
 
-		assertThatThrownBy(() -> NamedElement.names("names", List.of("may", "not", "repeat", "names"))).isInstanceOf(IllegalArgumentException.class);
-		assertThatThrownBy(() -> NamedElement.names("names", List.of("may", "not", "not", "repeat", "names")))
-				.isInstanceOf(IllegalArgumentException.class)
-				.hasMessageStartingWith("Duplicate")
-				.hasMessageContainingAll("not", "names");
+		assertThatThrownBy(
+				() -> new StructType.Field("names", Set.of("may", "not", "repeat", "names"), null, Cardinality.REQUIRED, FixedType.STRING, null)).isInstanceOf(
+				IllegalArgumentException.class);
+
+		assertThatThrownBy(() -> new EnumType(new TypeCollection(), "names", Set.of("may", "not", "repeat", "names"), null, List.of(), null)).isInstanceOf(
+				IllegalArgumentException.class);
 
 		TypeCollection typeCollection = new TypeCollection();
 		new StructType(typeCollection, "someType", null);
 		StructType type = new StructType(typeCollection, "unique", "Names and aliases must be unique");
-		assertThatThrownBy(() -> new StructType(typeCollection, "name", List.of("another", "name"), null)).isInstanceOf(IllegalArgumentException.class);
 		assertThatThrownBy(() -> type.rename("someType")).isInstanceOf(IllegalArgumentException.class);
 
-		StructType.Field field1 = required(List.of("alias"), null, FixedType.STRING, null);
+		StructType.Field field1 = required("alias", null, FixedType.STRING, null);
 		field1.rename("field1");
-		assertThatThrownBy(() -> field1.rename("alias")).isInstanceOf(IllegalArgumentException.class);
-		StructType.Field field2 = required(List.of("field2", "alias"), null, FixedType.STRING, null);
-		assertThatThrownBy(() -> type.setFields(List.of(field1, field2))).isInstanceOf(IllegalArgumentException.class);
+		field1.rename("alias"); // Renaming back is allowed
+		assertThat(field1.name()).isEqualTo("alias");
+		assertThat(field1.aliases()).containsExactly("field1");
+		StructType.Field field2 = required("field2", Set.of("alias"), null, FixedType.STRING, null);
+		StructType.Field field1a = required("alias", Set.of(), null, FixedType.STRING, null);
+		assertThatThrownBy(() -> type.setFields(List.of(field1, field2, field1a))).isInstanceOf(IllegalArgumentException.class);
 
-		StructType.Field field3 = required(List.of("field3"), null, FixedType.STRING, null);
+		StructType.Field field3 = required("field3", null, FixedType.STRING, null);
 		type.setFields(List.of(field1, field3));
 		assertThatThrownBy(() -> field3.rename("alias")).isInstanceOf(IllegalArgumentException.class);
 
-		EnumType enumType = new EnumType(typeCollection, "enum", List.of(), null, List.of("NO", "MAYBE", "YES"), "MAYBE");
+		EnumType enumType = new EnumType(typeCollection, "enum", Set.of(), null, List.of("NO", "MAYBE", "YES"), "MAYBE");
 		assertThatThrownBy(() -> enumType.rename("unique")).isInstanceOf(IllegalArgumentException.class);
 	}
 
@@ -159,12 +160,12 @@ public class TypeStructureTest {
 
 	@Test
 	public void testEnums() {
-		assertThatThrownBy(() -> new EnumType(new TypeCollection(), List.of("name"), null, List.of("the", "default", "symbol", "must"), "exist"))
-				.isInstanceOf(IllegalArgumentException.class);
+		assertThatThrownBy(() -> new EnumType(new TypeCollection(), "name", null, List.of("the", "default", "symbol", "must"), "exist")).isInstanceOf(
+				IllegalArgumentException.class);
 
-		EnumType withoutDefault = new EnumType(new TypeCollection(), List.of("name", "alias"), "Description", List.of("one", "two"), null);
+		EnumType withoutDefault = new EnumType(new TypeCollection(), "name", Set.of("alias"), "Description", List.of("one", "two"), null);
 		assertThat(withoutDefault.defaultSymbol()).isNull();
-		EnumType withDefault = new EnumType(new TypeCollection(), List.of("name", "alias"), "Description", List.of("one", "two"), "one");
+		EnumType withDefault = new EnumType(new TypeCollection(), "name", Set.of("alias"), "Description", List.of("one", "two"), "one");
 		assertThat(withDefault.defaultSymbol()).isEqualTo("one");
 
 		assertThat(withoutDefault.debugString("")).isEqualTo("enum(name, alias: one, two)");
@@ -183,28 +184,20 @@ public class TypeStructureTest {
 
 	@Test
 	public void testUpdatedNamesAndDocumentation() {
-		StructType nestedBefore = struct("nested").withFields(
-				optional("field1", null, DecimalType.INTEGER_TYPE, NULL_VALUE),
-				required(List.of("field2a", "field2b"), "Many names", FixedType.STRING, null),
-				required("status", enumType("Status", "switch", List.of("ON", "OFF")))
-		);
-		StructType before = struct("before", "gibberish").withFields(
-				required("name", FixedType.STRING),
-				optional("description", FixedType.STRING),
-				required("nested", nestedBefore)
-		);
+		StructType nestedBefore = struct("nested").withFields(optional("field1", null, DecimalType.INTEGER_TYPE, NULL_VALUE),
+				required("field2a", Set.of("field2b"), "Many names", FixedType.STRING, null),
+				required("status", enumType("Status", "switch", List.of("ON", "OFF"))));
+		StructType before = struct("before", "gibberish").withFields(required("name", FixedType.STRING), optional("description", FixedType.STRING),
+				required("nested", nestedBefore));
 
-		EnumType enumType = new EnumType(null, List.of("Switch", "Status"), "On/Off switch", List.of("ON", "OFF"), null);
-		StructType nestedAfter = struct(List.of("ranked", "nested"), "Now with ranked fields").withFields(
-				optional(List.of("first", "field1"), "Winner!", DecimalType.INTEGER_TYPE, NULL_VALUE),
-				required(List.of("second", "field2a", "field2b"), "Many names", FixedType.STRING, null),
-				required(List.of("toggle", "status"), "Flip me!", enumType, null)
-		);
-		StructType after = struct(List.of("after", "before"), "Some sensible comment").withFields(
-				required(List.of("title", "name"), FixedType.STRING),
-				optional(List.of("notes", "description"), "Notes are helpful", FixedType.STRING, null),
-				required(List.of("ranking", "nested"), "Ranking, but no stars", nestedAfter, null)
-		);
+		EnumType enumType = new EnumType(null, "Switch", Set.of("Status"), "On/Off switch", List.of("ON", "OFF"), null);
+		StructType nestedAfter = struct("ranked", Set.of("nested"), "Now with ranked fields").withFields(
+				optional("first", Set.of("field1"), "Winner!", DecimalType.INTEGER_TYPE, NULL_VALUE),
+				required("second", Set.of("field2a", "field2b"), "Many names", FixedType.STRING, null),
+				required("toggle", Set.of("status"), "Flip me!", enumType, null));
+		StructType after = struct("after", Set.of("before"), "Some sensible comment").withFields(required("title", Set.of("name"), FixedType.STRING),
+				optional("notes", Set.of("description"), "Notes are helpful", FixedType.STRING, null),
+				required("ranking", Set.of("nested"), "Ranking, but no stars", nestedAfter, null));
 
 		updateFieldDoc(before, "Winner!", "nested", "field1");
 		updateTypeDoc(before, "On/Off switch", "nested", "status");
@@ -272,14 +265,14 @@ public class TypeStructureTest {
 	@Test
 	public void testStructuralEdgeCases() {
 		TypeCollection typeCollection = new TypeCollection();
-		StructType type = struct(typeCollection, List.of("name", "alias"), null);
+		StructType type = struct(typeCollection, "name", Set.of("alias"), null);
 		assertThat(type.toString()).isEqualTo("""
 				StructType(name, alias) {
 				  (no fields yet)
 				}""");
 
-		StructType.Field field1 = required(List.of("field1", "alias1", "alias2"), null, FixedType.STRING, null);
-		type.setFields(List.of(field1, required(List.of("field2"), null, FixedType.STRING, null)));
+		StructType.Field field1 = required("field1", Set.of("alias1", "alias2"), null, FixedType.STRING, null);
+		type.setFields(List.of(field1, required("field2", null, FixedType.STRING, null)));
 		assertThat(type.toString()).isEqualTo("""
 				StructType(name, alias) {
 				  field1, alias1, alias2
@@ -302,27 +295,29 @@ public class TypeStructureTest {
 		assertThat(typeCollection.getType(type.name())).isEqualTo(type);
 
 		//noinspection DataFlowIssue
-		assertThatThrownBy(() -> new StructType.Field("typeIsRequired", null, Cardinality.REQUIRED, null, null))
-				.isInstanceOf(NullPointerException.class);
+		assertThatThrownBy(() -> new StructType.Field("typeIsRequired", null, Cardinality.REQUIRED, null, null)).isInstanceOf(NullPointerException.class);
 
 		StructType type1 = struct("name1");
 		type1.setFields(List.of());
 		StructType type2 = struct("name2");
 		type2.setFields(List.of());
-		StructType type3 = struct("name1", "doc");
+		StructType type3 = struct("name1", Set.of("alias"), null);
 		type3.setFields(List.of());
-		StructType type4 = struct("name1").withFields(required("field", null, FixedType.STRING, null));
+		StructType type4 = struct("name1", "doc");
+		type4.setFields(List.of());
 		StructType type5 = struct("name1").withFields(required("field", null, FixedType.STRING, null));
+		StructType type6 = struct("name1").withFields(required("field", null, FixedType.STRING, null));
 
 		assertThat(type1).isEqualTo(type1);
-		assertThat(type4).isEqualTo(type5);
+		assertThat(type5).isEqualTo(type6);
 		assertThat(type1).isNotEqualTo(null);
 		//noinspection AssertBetweenInconvertibleTypes
 		assertThat(type1).isNotEqualTo("mismatch");
 		assertThat(type1).isNotEqualTo(type2);
 		assertThat(type1).isNotEqualTo(type3);
 		assertThat(type1).isNotEqualTo(type4);
-		assertThat(type4).isNotEqualTo(type1);
+		assertThat(type1).isNotEqualTo(type5);
+		assertThat(type5).isNotEqualTo(type1);
 	}
 
 	private static byte[] bytes(int... bytes) {
