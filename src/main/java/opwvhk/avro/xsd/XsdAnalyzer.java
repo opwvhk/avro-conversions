@@ -33,7 +33,6 @@ import org.apache.ws.commons.schema.walker.XmlSchemaWalker;
 import org.xml.sax.helpers.DefaultHandler;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static java.util.Collections.emptyList;
 import static java.util.Collections.unmodifiableSet;
 import static java.util.Objects.requireNonNull;
 import static org.apache.ws.commons.schema.constants.Constants.*;
@@ -267,18 +266,14 @@ public class XsdAnalyzer {
 		}
 
 		private StructType.Field createField(Cardinality fieldCardinality, String name, String doc, Type type, Object defaultValue) {
-			if (fieldCardinality == Cardinality.MULTIPLE) {
-				// Override default value for arrays: nulls cause problems, amd anything else doesn't make sense.
-				defaultValue = emptyList();
-			}
 			return new StructType.Field(name, doc, fieldCardinality, type, defaultValue);
 		}
 
 		public List<StructType.Field> fields() {
 			Stream<StructType.Field> elementFieldStream;
 			if (shouldNotParseElements) {
-				elementFieldStream = Stream.of(
-						new StructType.Field("value", "The entire element content, unparsed.", Cardinality.OPTIONAL, FixedType.STRING, null));
+				elementFieldStream = Stream.of(new StructType.Field("value", "The entire element content, unparsed.", Cardinality.OPTIONAL, FixedType.STRING,
+						StructType.Field.NULL_VALUE));
 			} else if (valueField != null) {
 				// The element has simple content, optionally with attributes
 				elementFieldStream = Stream.of(valueField);
