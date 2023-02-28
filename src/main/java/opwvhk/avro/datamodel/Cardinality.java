@@ -11,7 +11,22 @@ import static org.apache.ws.commons.schema.XmlSchemaUse.NONE;
 
 public enum Cardinality {
 	// Possible field occurrences, in order of most to least restrictive (the method adjustFor() required this order!)
-	REQUIRED, OPTIONAL, MULTIPLE;
+	REQUIRED() {
+		@Override
+		public String formatName(String name) {
+			return name;
+		}
+	}, OPTIONAL() {
+		@Override
+		public String formatName(String name) {
+			return name + "?";
+		}
+	}, MULTIPLE() {
+		@Override
+		public String formatName(String name) {
+			return name + "[]";
+		}
+	};
 
 	public static Cardinality defaultValue() {
 		return REQUIRED;
@@ -39,4 +54,6 @@ public enum Cardinality {
 	public Cardinality adjustFor(Cardinality childCardinality) {
 		return ordinal() > childCardinality.ordinal() ? this : childCardinality;
 	}
+
+	public abstract String formatName(String name);
 }

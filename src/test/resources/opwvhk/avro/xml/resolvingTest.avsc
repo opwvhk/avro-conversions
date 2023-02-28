@@ -1,0 +1,216 @@
+{
+	"type": "record",
+	"name": "outer",
+	"namespace": "opwvhk.resolvingTest",
+	"fields": [
+		{
+			"name": "presentRequired",
+			"type": "string"
+		}, {
+			"name": "optionalField",
+			"aliases": ["presentOptional", "wouldBeNice"],
+			"type": ["null", "string"],
+			"default": null
+		}, {
+			"name": "textList",
+			"aliases": ["presentArray"],
+			"type": {
+				"type": "array",
+				"items": "string"
+			},
+			"default": []
+		}, {
+			"name": "inner",
+			"type": [
+				"null", {
+					"type": "record",
+					"name": "innerType",
+					"aliases": ["inner", "typeNamesAreUsedInUnions"],
+					"fields": [
+						{
+							"name": "amount",
+							"type": {
+								"type": "record",
+								"name": "amount",
+								"fields": [
+									{
+										"name": "currency",
+										"type": ["null", "string"],
+										"default": null
+									}, {
+										"name": "value",
+										"type": {
+											"type": "bytes",
+											"logicalType": "decimal",
+											"precision": 9,
+											"scale": 3
+										}
+									}
+								]
+							}
+						},
+						{
+							"name": "b",
+							"type": ["null", "boolean"],
+							"default": null
+						},
+						{
+							"name": "b64Bytes",
+							"type": ["null", "bytes"],
+							"default": null
+						},
+						{
+							"name": "d",
+							"type": [
+								"null", {
+									"type": "int",
+									"logicalType": "date"
+								}
+							],
+							"default": null
+						},
+						{
+							"name": "dt",
+							"type": [
+								"null", {
+									"type": "long",
+									"logicalType": "timestamp-millis"
+								}
+							],
+							"default": null
+						},
+						{
+							"name": "e",
+							"type": [
+								{
+									"type": "enum",
+									"name": "e",
+									"symbols": ["one", "two", "three"]
+								}, "null"
+							],
+							"default": "one"
+						},
+						{
+							"name": "fd",
+							"type": ["null", "double"],
+							"default": null
+						},
+						{
+							"name": "fs",
+							"type": ["null", "float"],
+							"default": null
+						},
+						{
+							"name": "hexBytes",
+							"type": ["null", "bytes"],
+							"default": null
+						},
+						{
+							"name": "s",
+							"type": ["null", "string"],
+							"default": null
+						},
+						{
+							"name": "t",
+							"type": [
+								"null", {
+									"type": "int",
+									"logicalType": "time-millis"
+								}
+							],
+							"default": null
+						},
+						{
+							"name": "numberHuge",
+							"type": {
+								"type": "bytes",
+								"logicalType": "decimal",
+								"precision": 80,
+								"scale": 0
+							}
+						},
+						{
+							"name": "numberInt",
+							"type": "int"
+						},
+						{
+							"name": "numberLong",
+							"type": "long"
+						},
+						{
+							"name": "numbers",
+							"type": {
+								"type": "array",
+								"items": "int"
+							},
+							"default": []
+						},
+						{
+							"name": "numberUnbounded",
+							"type": "long"
+						}
+					]
+				}
+			],
+			"default": null
+		}, {
+			"name": "switch",
+			"type": {
+				"type": "enum",
+				"name": "broken",
+				"symbols": ["broken"],
+				"default": "broken"
+			}
+		}, {
+			"name": "approximation",
+			"aliases": ["exactNumber"],
+			"type": "float"
+		}, {
+			"name": "morePrecise",
+			"aliases": ["estimate"],
+			"type": ["null", "double"],
+			"default": null
+		}, {
+			"name": "exceptionToUnwrappingRule",
+			"type": [
+				"null", {
+					"type": "record",
+					"name": "mustMatch",
+					"fields": [
+						{
+							"name": "number",
+							"type": {
+								"type": "array",
+								"items": "long"
+							}
+						}
+					]
+				}
+			],
+			"default": null
+		}, {
+			"name": "upgrade",
+			"type": {
+				"type": "array",
+				"items": {
+					"type": "record",
+					"name": "pair",
+					"fields": [
+						{
+							"name": "key",
+							"type": "string"
+						}, {
+							"name": "value",
+							"type": "string"
+						}
+					]
+				}
+			},
+			"default": []
+		}, {
+			"name": "category",
+			"type": ["null", "string"],
+			"default": null
+		}
+	]
+}

@@ -15,6 +15,7 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import opwvhk.avro.datamodel.Cardinality;
+import opwvhk.avro.datamodel.TypeWithUnparsedContent;
 import opwvhk.avro.structure.FieldData;
 import opwvhk.avro.datamodel.FixedType;
 import opwvhk.avro.datamodel.ScalarType;
@@ -238,7 +239,7 @@ public class XsdAnalyzer {
 			elementFields = new ArrayList<>();
 		}
 
-		private ElementFields(Type recordType) {
+		private ElementFields(ScalarType recordType) {
 			this.recordType = recordType;
 			shouldNotParseElements = true;
 			attributeFields = new ArrayList<>();
@@ -272,8 +273,9 @@ public class XsdAnalyzer {
 		public List<StructType.Field> fields() {
 			Stream<StructType.Field> elementFieldStream;
 			if (shouldNotParseElements) {
-				elementFieldStream = Stream.of(new StructType.Field("value", "The entire element content, unparsed.", Cardinality.OPTIONAL, FixedType.STRING,
-						StructType.Field.NULL_VALUE));
+				elementFieldStream = Stream.of(
+						new StructType.Field("value", "The entire element content, unparsed.", Cardinality.OPTIONAL, FixedType.STRING,
+								StructType.Field.NULL_VALUE));
 			} else if (valueField != null) {
 				// The element has simple content, optionally with attributes
 				elementFieldStream = Stream.of(valueField);
@@ -292,6 +294,7 @@ public class XsdAnalyzer {
 			// Note: MUST only be called once!
 			if (recordType instanceof StructType structType) {
 				structType.setFields(fields());
+				return shouldNotParseElements ? new TypeWithUnparsedContent(recordType) : recordType;
 			}
 			return recordType;
 		}

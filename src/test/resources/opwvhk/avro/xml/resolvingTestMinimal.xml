@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<outer xmlns="https://www.schiphol.nl/opwvhk/test" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="https://www.schiphol.nl/opwvhk/test file://./resolvingTest.xsd">
+	<requiredWithDefault/>
+	<presentRequired>I'm here</presentRequired>
+	<presentArray>Hey, that's my line!</presentArray>
+	<switch>off</switch>
+	<exactNumber>123456.78</exactNumber>
+	<exceptionToUnwrappingRule>
+		<number>1</number>
+	</exceptionToUnwrappingRule>
+</outer>

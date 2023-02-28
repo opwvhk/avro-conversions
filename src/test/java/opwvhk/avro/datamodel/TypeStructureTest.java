@@ -1,8 +1,12 @@
 package opwvhk.avro.datamodel;
 
 import java.math.BigDecimal;
+import java.nio.ByteBuffer;
+import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Set;
 
@@ -18,6 +22,7 @@ import static opwvhk.avro.datamodel.TestStructures.enumType;
 import static opwvhk.avro.datamodel.TestStructures.optional;
 import static opwvhk.avro.datamodel.TestStructures.required;
 import static opwvhk.avro.datamodel.TestStructures.struct;
+import static opwvhk.avro.datamodel.TestStructures.unparsed;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -25,8 +30,7 @@ public class TypeStructureTest {
 	@Test
 	public void testAvroConversions() {
 		Schema schema = new Schema.Parser().parse(AVRO_SCHEMA);
-		TypeCollection typeCollection = new TypeCollection();
-		Type structure = Type.fromSchema(typeCollection, schema);
+		Type structure = Type.fromSchema(schema);
 		assertThat(structure.toString()).isEqualTo(TYPE_STRUCTURE.replace("@NULL@", JsonProperties.NULL_VALUE.toString()));
 
 		// The type structure does not support some inefficiencies allowed by Avro
@@ -55,17 +59,17 @@ public class TypeStructureTest {
 	@Test
 	public void testAvroConversionFailures() {
 		Schema fixedSchema = Schema.createFixed("not.supported", null, null, 8);
-		assertThatThrownBy(() -> Type.fromSchema(new TypeCollection(), fixedSchema)).isInstanceOf(IllegalArgumentException.class);
+		assertThatThrownBy(() -> Type.fromSchema(fixedSchema)).isInstanceOf(IllegalArgumentException.class);
 
 		Schema complexUnion1 = new Schema.Parser().parse(
 				"{\"type\":\"record\",\"name\":\"record\",\"fields\":[{\"name\":\"complexUnion\",\"type\":[\"int\",\"string\"]}]}");
-		assertThatThrownBy(() -> Type.fromSchema(new TypeCollection(), complexUnion1)).isInstanceOf(IllegalArgumentException.class);
+		assertThatThrownBy(() -> Type.fromSchema(complexUnion1)).isInstanceOf(IllegalArgumentException.class);
 		Schema complexUnion2 = new Schema.Parser().parse(
 				"{\"type\":\"record\",\"name\":\"record\",\"fields\":[{\"name\":\"complexUnion\",\"type\":[\"null\",\"int\",\"string\"]}]}");
-		assertThatThrownBy(() -> Type.fromSchema(new TypeCollection(), complexUnion2)).isInstanceOf(IllegalArgumentException.class);
+		assertThatThrownBy(() -> Type.fromSchema(complexUnion2)).isInstanceOf(IllegalArgumentException.class);
 		Schema uselessUnion = new Schema.Parser().parse(
 				"{\"type\":\"record\",\"name\":\"record\",\"fields\":[{\"name\":\"uselessUnion\",\"type\":[\"null\"]}]}");
-		assertThatThrownBy(() -> Type.fromSchema(new TypeCollection(), uselessUnion)).isInstanceOf(IllegalArgumentException.class);
+		assertThatThrownBy(() -> Type.fromSchema(uselessUnion)).isInstanceOf(IllegalArgumentException.class);
 	}
 
 	@Test
@@ -120,14 +124,15 @@ public class TypeStructureTest {
 		assertThat(FixedType.FLOAT.parse("12.34")).isInstanceOf(Float.class).isEqualTo(12.34f);
 		assertThat(FixedType.DOUBLE.parse("12.34")).isInstanceOf(Double.class).isEqualTo(12.34);
 		assertThat(FixedType.DATE.parse("2023-03-16")).isEqualTo(LocalDate.of(2023, MARCH, 16));
-		long timestamp = ZonedDateTime.of(2023, 3, 16, 4, 49, 0, 781_354_000, UTC).toInstant().toEpochMilli();
-		assertThat(FixedType.DATETIME.parse("2023-03-16T04:49:00.781z")).isEqualTo(timestamp);
-		assertThat(FixedType.DATETIME_MICROS.parse("2023-03-16T04:49:00.781354z")).isEqualTo(timestamp * 1000 + 354);
-		assertThat(FixedType.TIME.parse("12:43:56.078")).isEqualTo((((((12 * 60) + 43) * 60) + 56) * 1_000L) + 78);
-		assertThat(FixedType.TIME_MICROS.parse("12:43:56.078912")).isEqualTo((((((12 * 60) + 43) * 60) + 56) * 1_000_000L) + 78_912);
+		Instant timestamp = ZonedDateTime.of(2023, 3, 16, 4, 49, 0, 781_354_000, UTC).toInstant();
+		assertThat(FixedType.DATETIME.parse("2023-03-16T04:49:00.781z")).isEqualTo(timestamp.truncatedTo(ChronoUnit.MILLIS));
+		assertThat(FixedType.DATETIME_MICROS.parse("2023-03-16T04:49:00.781354z")).isEqualTo(timestamp.truncatedTo(ChronoUnit.MICROS));
+		LocalTime time = LocalTime.of(12,43,56,78_912_000);
+		assertThat(FixedType.TIME.parse("12:43:56.078")).isEqualTo(time.truncatedTo(ChronoUnit.MILLIS));
+		assertThat(FixedType.TIME_MICROS.parse("12:43:56.078912")).isEqualTo(time.truncatedTo(ChronoUnit.MICROS));
 		assertThat(FixedType.STRING.parse("some text")).isEqualTo("some text");
-		assertThat(FixedType.BINARY_HEX.parse("DEAD")).isEqualTo(bytes(0, 222, 173));
-		assertThat(FixedType.BINARY_BASE64.parse("U2ltcGxlIHRleHQ=")).isEqualTo("Simple text".getBytes(UTF_8));
+		assertThat(FixedType.BINARY_HEX.parse("DEAD")).isEqualTo(ByteBuffer.wrap(bytes(0, 222, 173)));
+		assertThat(FixedType.BINARY_BASE64.parse("U2ltcGxlIHRleHQ=")).isEqualTo(ByteBuffer.wrap("Simple text".getBytes(UTF_8)));
 	}
 
 	@Test
@@ -180,6 +185,13 @@ public class TypeStructureTest {
 		assertThat(withDefault.parse("one")).isEqualTo("one");
 		assertThat(withDefault.parse("two")).isEqualTo("two");
 		assertThat(withDefault.parse("three")).isEqualTo("one");
+	}
+
+	@Test
+	public void testUnparsedContent() {
+		Type type = unparsed(FixedType.STRING);
+		assertThat(type.toString()).isEqualTo("(unparsed) string");
+		assertThat(type.debugString("> ")).isEqualTo("> (unparsed) string");
 	}
 
 	@Test

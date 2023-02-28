@@ -1,12 +1,5 @@
 package opwvhk.avro.io;
 
-import java.math.BigInteger;
-import java.util.Base64;
-import java.util.List;
-
-import org.apache.avro.Schema;
-import org.apache.avro.generic.GenericData;
-
 /**
  * Class to resolve records with. Assumes records are and/or consist of properties and content.
  *
@@ -20,17 +13,12 @@ public abstract class ValueResolver {
 			return null;
 		}
 	};
-	private static final ValueResolver NON_PARSING = new ValueResolver() {
-		@Override
-		public Object addContent(Object collector, String content) {
-			return content;
-		}
 
-		@Override
-		public boolean shouldParseContent() {
-			return false;
-		}
-	};
+	private boolean parseContent = true;
+
+	public void doNotParseContent() {
+		parseContent = false;
+	}
 
 	/**
 	 * Resolve a property of this record and return the resolver to handle it.
@@ -81,7 +69,7 @@ public abstract class ValueResolver {
 	 * @return the value collector (possibly a new instance) with the new value added
 	 */
 	public Object addContent(Object collector, String content) {
-		throw new IllegalArgumentException("Values are not supported");
+		throw new IllegalStateException("This resolver should not be called here: the type resolution has a bug");
 	}
 
 	/**
@@ -96,7 +84,7 @@ public abstract class ValueResolver {
 		return collector;
 	}
 
-	public boolean shouldParseContent() {
-		return true;
+	public boolean parseContent() {
+		return parseContent;
 	}
 }
