@@ -16,6 +16,14 @@ public class TestStructures {
 		return new EnumType(new TypeCollection(), name, documentation, enumSymbols, null);
 	}
 
+	public static EnumType enumType(String name, List<String> enumSymbols, String defaultSymbol) {
+		return new EnumType(new TypeCollection(), name, null, enumSymbols, defaultSymbol);
+	}
+
+	public static Type unparsed(Type type) {
+		return new TypeWithUnparsedContent(type);
+	}
+
 	public static StructType struct(String name) {
 		return struct(null, name, Set.of(), null);
 	}

@@ -12,34 +12,41 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
 
+import static java.util.Objects.requireNonNull;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-public class XmlAsAvroParserTest {
+public class BasicXmlParsingTest {
 	/**
 	 * Logger for this class.
 	 */
-	private static final Logger LOGGER = LoggerFactory.getLogger(XmlAsAvroParserTest.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(BasicXmlParsingTest.class);
 
 	private XmlAsAvroParser parser;
-	private URL testdata1;
-	private URL testdata2;
-	private URL testdata3;
-	private URL testdata4;
+	private URL testdataTextPayload;
+	private URL testdataBinaryPayload;
+	private URL testdataXmlPayload;
+	private URL testdataDefaultAndCompactXmlPayload;
 
 	@Before
 	public void setUp() {
-		URL payloadXsd = getClass().getResource("payload.xsd");
-		parser = new XmlAsAvroParser(payloadXsd, new PayloadDebugHandler());
+		URL payloadXsd = requireNonNull(getClass().getResource("payload.xsd"));
+		parser = new XmlAsAvroParser(payloadXsd.toExternalForm(), new PayloadDebugHandler());
 
-		testdata1 = getClass().getResource("testdata1.xml");
-		testdata2 = getClass().getResource("testdata2.xml");
-		testdata3 = getClass().getResource("testdata3.xml");
-		testdata4 = getClass().getResource("testdata4.xml");
+		testdataTextPayload = getClass().getResource("textPayload.xml");
+		testdataBinaryPayload = getClass().getResource("binaryPayload.xml");
+		testdataXmlPayload = getClass().getResource("xmlPayload.xml");
+		testdataDefaultAndCompactXmlPayload = getClass().getResource("defaultAndCompactXmlPayload.xml");
+	}
+
+	@Test
+	public void textXsdIsRequired() {
+		assertThatThrownBy(() -> new XmlAsAvroParser(null, new PayloadDebugHandler())).isInstanceOf(IllegalStateException.class);
 	}
 
 	@Test
 	public void testTextPayload() throws IOException, SAXException {
-		assertThat(parser.<Map<String, Object>>parse(testdata1)).isEqualTo(Map.of(
+		assertThat(parser.<Map<String, Object>>parse(testdataTextPayload)).isEqualTo(Map.of(
 				"source", "Bronsysteem",
 				"target", "Bestemming",
 				"payload", Map.of(
@@ -51,7 +58,7 @@ public class XmlAsAvroParserTest {
 
 	@Test
 	public void testRawBinaryPayload() throws IOException, SAXException {
-		assertThat(parser.<Map<String, Object>>parse(testdata2)).isEqualTo(Map.of(
+		assertThat(parser.<Map<String, Object>>parse(testdataBinaryPayload)).isEqualTo(Map.of(
 				"source", "Bronsysteem",
 				"target", "Bestemming",
 				"payload", Map.of(
@@ -63,7 +70,7 @@ public class XmlAsAvroParserTest {
 
 	@Test
 	public void testXmlPayload() throws IOException, SAXException {
-		assertThat(parser.<Map<String, Object>>parse(testdata3)).isEqualTo(Map.of(
+		assertThat(parser.<Map<String, Object>>parse(testdataXmlPayload)).isEqualTo(Map.of(
 				"source", "Bronsysteem",
 				"target", "Bestemming",
 				"payload", Map.of(
@@ -93,7 +100,7 @@ public class XmlAsAvroParserTest {
 
 	@Test
 	public void testDefaultPayload() throws IOException, SAXException {
-		assertThat(parser.<Map<String, Object>>parse(testdata4)).isEqualTo(Map.of(
+		assertThat(parser.<Map<String, Object>>parse(testdataDefaultAndCompactXmlPayload)).isEqualTo(Map.of(
 				"source", "Bronsysteem",
 				"target", "Bestemming",
 				"payload", Map.of(
@@ -159,7 +166,7 @@ public class XmlAsAvroParserTest {
 		}
 
 		@Override
-		public boolean shouldParseContent() {
+		public boolean parseContent() {
 			return !"payload".equals(myName);
 		}
 	}

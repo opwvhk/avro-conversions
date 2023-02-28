@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<outer xmlns="https://www.schiphol.nl/opwvhk/test" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="https://www.schiphol.nl/opwvhk/test file://./resolvingTest.xsd">
+	<obsolete message="this element does not occur in the read schema">
+		<text>Some text</text>
+		<number>42</number>
+	</obsolete>
+	<requiredWithDefault/>
+	<missingOptional>abc</missingOptional>
+	<missingArray>aaa</missingArray>
+	<missingArray>bbb</missingArray>
+	<missingArray>ccc</missingArray>
+	<presentRequired>I'm here</presentRequired>
+	<presentOptional>I'm here too</presentOptional>
+	<presentArray>Me too</presentArray>
+	<presentArray>Hey, that's my line!</presentArray>
+	<inner b="true" d="2023-03-16" dt="2023-03-16T13:45:01.123456Z" t="13:45:01.123456Z" e="three" fs="123.456" fd="123456.789012" s="text">
+		<numbers>
+			<number>1</number>
+			<number>2</number>
+			<number>4</number>
+			<number>8</number>
+			<number>16</number>
+		</numbers>
+		<numberInt>93658723</numberInt>
+		<numberLong>2147483648</numberLong>
+		<numberUnbounded>9223372036854775807</numberUnbounded>
+		<numberHuge>18446744073709551616</numberHuge>
+		<amount currency="EUR">123456.78</amount>
+		<hexBytes>48656c6c6f20576f726c64210a</hexBytes>
+		<b64Bytes>SGVsbG8gV29ybGQhCg==</b64Bytes>
+	</inner>
+	<switch>off</switch>
+	<exactNumber>123456.78</exactNumber>
+	<estimate>12.5</estimate>
+	<exceptionToUnwrappingRule>
+		<number>1</number>
+		<number>1</number>
+		<number>2</number>
+		<number>3</number>
+		<number>5</number>
+		<number>8</number>
+	</exceptionToUnwrappingRule>
+	<category>apple</category>
+	<upgrade>
+		<key>single</key>
+		<value>value</value>
+	</upgrade>
+</outer>

@@ -171,12 +171,7 @@ public final class StructType implements Type {
 				       List<Field> sortedFields = new ArrayList<>(fields);
 				       sortedFields.sort(Comparator.comparing(Field::name));
 				       for (Field field : sortedFields) {
-					       buf.append("\n  ").append(indent).append(field.name());
-					       buf.append(switch (field.cardinality) {
-						       case MULTIPLE -> "[]";
-						       case OPTIONAL -> "?";
-						       default -> "";
-					       });
+					       buf.append("\n  ").append(indent).append(field.cardinality.formatName(field.name));
 					       if (!field.aliases().isEmpty()) {
 						       field.aliases().forEach(alias -> buf.append(", ").append(alias));
 					       }

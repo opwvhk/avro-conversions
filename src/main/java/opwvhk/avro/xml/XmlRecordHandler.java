@@ -7,7 +7,6 @@ import opwvhk.avro.io.ValueResolver;
 import org.xml.sax.Attributes;
 
 import static java.util.Objects.requireNonNullElse;
-import static opwvhk.avro.xsd.Constants.XML_SCHEMA_DEFINITION_NAMESPACES;
 
 public class XmlRecordHandler implements SimpleContentHandler {
 	private final ValueResolver rootHandler;
@@ -88,7 +87,7 @@ public class XmlRecordHandler implements SimpleContentHandler {
 		}
 
 		public boolean shouldParseContent() {
-			return resolver.shouldParseContent();
+			return resolver.parseContent();
 		}
 
 		public HandlerContext resolve(String name) {
@@ -112,7 +111,7 @@ public class XmlRecordHandler implements SimpleContentHandler {
 
 			String indentedBufferContent = bufferContent.replaceAll("^\\s*?\\R","").stripTrailing();
 			String unindentedBufferContent = indentedBufferContent.stripIndent();
-			String content = resolver.shouldParseContent() ? unindentedBufferContent.strip() : unindentedBufferContent;
+			String content = resolver.parseContent() ? unindentedBufferContent.strip() : unindentedBufferContent;
 			if (!content.isEmpty()) {
 				collector = resolver.addContent(collector, content);
 			}

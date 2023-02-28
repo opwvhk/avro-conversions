@@ -15,11 +15,7 @@ public record FieldData(String name, String doc, Cardinality cardinality, Scalar
 		String doc0 = truncate(10, doc);
 
 		StringBuilder buffer = new StringBuilder(64);
-		buffer.append(name).append(switch (cardinality) {
-			case MULTIPLE -> "[]";
-			case OPTIONAL -> "?";
-			default -> "";
-		});
+		buffer.append(cardinality.formatName(name));
 		if (scalarType != null) {
 			buffer.append(": ").append(scalarType.debugString(""));
 			if (defaultValue != null) {

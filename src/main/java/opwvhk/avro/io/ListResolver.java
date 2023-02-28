@@ -3,10 +3,10 @@ package opwvhk.avro.io;
 import java.util.ArrayList;
 import java.util.List;
 
-class ListResolver extends ValueResolver {
+public class ListResolver extends ValueResolver {
 	private final ValueResolver resolver;
 
-	ListResolver(ValueResolver resolver) {
+	public ListResolver(ValueResolver resolver) {
 		this.resolver = resolver;
 	}
 
@@ -22,7 +22,6 @@ class ListResolver extends ValueResolver {
 
 	@Override
 	public Object addProperty(Object collector, String name, Object value) {
-		//noinspection unchecked
 		((List<Object>)collector).add(value);
 		return collector;
 	}

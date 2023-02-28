@@ -43,6 +43,7 @@ import static opwvhk.avro.datamodel.TestStructures.enumType;
 import static opwvhk.avro.datamodel.TestStructures.optional;
 import static opwvhk.avro.datamodel.TestStructures.required;
 import static opwvhk.avro.datamodel.TestStructures.struct;
+import static opwvhk.avro.datamodel.TestStructures.unparsed;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -206,10 +207,10 @@ public class XsdAnalyzerTest {
 
 	@Test
 	public void arbitraryXmlDataIsReadAsString() {
-		StructType expected = struct("namespace.ArbitraryContent").withFields(
+		Type expected = unparsed(struct("namespace.ArbitraryContent").withFields(
 				required("source", STRING),
 				optional("value", "The entire element content, unparsed.", STRING, null)
-		);
+		));
 		assertThat(analyzer.typeOf("ArbitraryContent")).isEqualTo(expected);
 	}
 

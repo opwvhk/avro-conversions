@@ -1,0 +1,40 @@
+{
+	"type": "record",
+	"name": "envelope",
+	"namespace": "opwvhk.resolvingTest",
+	"fields": [
+		{
+			"name": "source",
+			"type": "string"
+		}, {
+			"name": "target",
+			"type": "string"
+		}, {
+			"name": "payload",
+			"type": {
+				"type": "record",
+				"name": "payload",
+				"doc": "The payload is either XML, UTF-8 text or base64 encoded binary data.",
+				"fields": [
+					{
+						"name": "type",
+						"type": [
+							{
+								"type": "enum",
+								"name": "type",
+								"symbols": ["xml", "text", "binary"]
+							}, "null"
+						],
+						"default": "xml"
+					}, {
+						"name": "value",
+						"type": ["null", "string"],
+						"doc": "The entire element content, unparsed.",
+						"default": null
+					}
+				]
+			},
+			"doc": "The payload is either XML, UTF-8 text or base64 encoded binary data."
+		}
+	]
+}

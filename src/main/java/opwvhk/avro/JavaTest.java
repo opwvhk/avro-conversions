@@ -1,32 +1,32 @@
 package opwvhk.avro;
 
-import org.apache.avro.compiler.idl.ParseException;
-
 import java.io.IOException;
-import java.util.Objects;
+import java.io.InputStream;
+import java.io.StringReader;
+import java.io.StringWriter;
+import java.net.URL;
 
+import opwvhk.avro.datamodel.Type;
+import opwvhk.avro.util.IdlUtils;
+import opwvhk.avro.xsd.XsdAnalyzer;
+import org.apache.avro.Protocol;
+import org.apache.avro.Schema;
+import org.apache.avro.compiler.idl.Idl;
+import org.apache.avro.compiler.idl.ParseException;
+import org.apache.avro.specific.AvroGenerated;
+
+import static java.util.Objects.requireNonNull;
+
+@SuppressWarnings("unused")
+@AvroGenerated // HACK: an annotation with "Generated" in the name causes JaCoCo to exclude this class/method from code coverage
 public class JavaTest {
-	public static void main(String[] args) throws IOException, ParseException {
-		//InputStream resource = JavaTest.class.getResourceAsStream("/schema.avsc");
-		//Schema schema = new Schema.Parser().parse(resource);
-
-		//StringWriter buffer = new StringWriter();
-		//IdlUtils.writeIdlProtocol("opwvhk.weather", "Weather", buffer, schema);
-		//System.out.println(buffer.toString());
-		//System.out.println();
-
-		//Idl idl = new Idl(new StringReader(buffer.toString()));
-		//Protocol protocol = idl.CompilationUnit();
-		//for (Schema type : protocol.getTypes()) {
-		//	System.out.println(type.getFullName());
-		//}
-		//Optional<Schema> firstSchema = protocol.getTypes().stream().findFirst();
-		//System.out.println(firstSchema.toString());
-		//
-		//System.out.println(protocol.toString(true));
-		//System.out.println();
-		//System.out.println();
-		//System.out.println();
+	public static void main(String[] args) throws Exception {
+		URL resolvingTestXsd = requireNonNull(JavaTest.class.getResource("/opwvhk/avro/xml/resolvingTest.xsd"));
+		XsdAnalyzer xsdAnalyzer = new XsdAnalyzer(resolvingTestXsd);
+		xsdAnalyzer.mapTargetNamespace("opwvhk.resolvingTest");
+		Type outerType = xsdAnalyzer.typeOf("outer");
+		System.out.println(outerType);
+		System.out.println(outerType.toSchema());
 	}
 
 	/*

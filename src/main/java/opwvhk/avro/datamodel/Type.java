@@ -14,8 +14,12 @@ import static opwvhk.avro.datamodel.StructType.Field.NULL_VALUE;
 import static org.apache.avro.Schema.Field.NULL_DEFAULT_VALUE;
 import static org.apache.avro.Schema.Type.*;
 
-public sealed interface Type permits ScalarType, StructType {
-	static Type fromSchema(TypeCollection typeCollection, Schema schema) {
+public sealed interface Type permits ScalarType, StructType, TypeWithUnparsedContent {
+	static Type fromSchema(Schema schema) {
+		return fromSchema(new TypeCollection(), schema);
+	}
+
+	private static Type fromSchema(TypeCollection typeCollection, Schema schema) {
 		if (schema.getType() == RECORD) {
 			return fromRecordSchema(typeCollection, schema);
 		}
