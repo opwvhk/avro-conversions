@@ -1,20 +1,26 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <outer xmlns="https://www.schiphol.nl/opwvhk/test" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:schemaLocation="https://www.schiphol.nl/opwvhk/test file://./resolvingTest.xsd">
+	<!-- Note: several fields are read into different names using aliases -->
 	<obsolete message="this element does not occur in the read schema">
+		<!-- we're using a nested element here, to test nested ignored data -->
 		<text>Some text</text>
 		<number>42</number>
 	</obsolete>
+	<!-- This element is required, and has a default: the parser returns the default value. -->
 	<requiredWithDefault/>
+	<!-- the missing* elements do not occur in the Avro schema -->
 	<missingOptional>abc</missingOptional>
 	<missingArray>aaa</missingArray>
 	<missingArray>bbb</missingArray>
 	<missingArray>ccc</missingArray>
 	<presentRequired>I'm here</presentRequired>
 	<presentOptional>I'm here too</presentOptional>
+	<!-- the Avro schema has a string array here -->
 	<presentArray>Me too</presentArray>
 	<presentArray>Hey, that's my line!</presentArray>
 	<inner b="true" d="2023-03-16" dt="2023-03-16T13:45:01.123456Z" t="13:45:01.123456Z" e="three" fs="123.456" fd="123456.789012" s="text">
+		<!-- the Avro schema has an int array here, to the element is unwrapped -->
 		<numbers>
 			<number>1</number>
 			<number>2</number>
@@ -22,17 +28,28 @@
 			<number>8</number>
 			<number>16</number>
 		</numbers>
+		<!-- this integer fits an int, and it read as such -->
 		<numberInt>93658723</numberInt>
+		<!-- this integer does not fit an int, but does fit a long, and it read as such -->
 		<numberLong>2147483648</numberLong>
+		<!-- this unbounded integer is implicitly truncated to a long -->
 		<numberUnbounded>9223372036854775807</numberUnbounded>
+		<!-- this number has explicit bounds larger than a long and is read as BigDecimal (with scale 0) -->
 		<numberHuge>18446744073709551616</numberHuge>
+		<!-- this number is read as BigDecimal; the element with attribute also tests content for a RecordResolver -->
 		<amount currency="EUR">123456.78</amount>
+		<!-- decodes into "Hello World!", as UTF-8 bytes -->
 		<hexBytes>48656c6c6f20576f726c64210a</hexBytes>
+		<!-- decodes into "Hello World!", as UTF-8 bytes -->
 		<b64Bytes>SGVsbG8gV29ybGQhCg==</b64Bytes>
 	</inner>
+	<!-- this enum has a different value in the result (using enum defaults) -->
 	<switch>off</switch>
+	<!-- this decimal is read as float -->
 	<exactNumber>123456.78</exactNumber>
+	<!-- this float is read as double -->
 	<estimate>12.5</estimate>
+	<!-- the Avro schema has a single-field record array here, so it is not unwrapped -->
 	<exceptionToUnwrappingRule>
 		<number>1</number>
 		<number>1</number>
@@ -41,7 +58,9 @@
 		<number>5</number>
 		<number>8</number>
 	</exceptionToUnwrappingRule>
+	<!-- this enum is read as a string -->
 	<category>apple</category>
+	<!-- this (optional) non-repeated element is read into an array -->
 	<upgrade>
 		<key>single</key>
 		<value>value</value>
