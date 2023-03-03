@@ -1,4 +1,4 @@
-package opwvhk.avro.structure;
+package opwvhk.avro.xsd;
 
 import opwvhk.avro.util.Utils;
 

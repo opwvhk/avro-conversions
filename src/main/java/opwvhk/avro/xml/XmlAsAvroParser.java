@@ -51,14 +51,15 @@ public class XmlAsAvroParser {
 			new Rule(t -> t == FixedType.STRING, EnumType.class::isInstance, (s, r, w, m) -> resolverForScalarType(s, r, m)),
 			new Rule(cast(EnumType.class, (r, w) -> r.defaultSymbol() != null || r.enumSymbols().containsAll(w.enumSymbols())),
 					(s, r, w, m) -> resolverForScalarType(s, r, m)),
-			new Rule(cast(DecimalType.class, (r, w) -> r.scale() >= w.scale() && r.precision() >= w.precision()), (s, r, w, m) -> resolverForScalarType(s, r, m)),
+			new Rule(cast(DecimalType.class, (r, w) -> r.scale() >= w.scale() && r.precision() >= w.precision()),
+					(s, r, w, m) -> resolverForScalarType(s, r, m)),
 			new Rule(FLOATING_POINT_TYPES::contains, t -> t == FixedType.FLOAT || t instanceof DecimalType, (s, r, w, m) -> resolverForScalarType(s, r, m)),
 			// Note: Parse binary data using write type (this differentiates between hex & base64 encoding): they yield the same result (a ByteBuffer)
 			new Rule(BINARY_TYPES::contains, BINARY_TYPES::contains, (s, r, w, m) -> resolverForScalarType(s, w, m))
 	);
 
 	private static ValueResolver resolverForScalarType(Schema readSchema, Type readingType, GenericData model) {
-		Function<String, Object> converter = ((ScalarType)readingType)::parse;
+		Function<String, Object> converter = ((ScalarType) readingType)::parse;
 
 		if (readingType instanceof EnumType) {
 			converter = converter.andThen(symbol -> model.createEnum(symbol.toString(), readSchema));
@@ -95,7 +96,7 @@ public class XmlAsAvroParser {
 		ensureConversionFor(model, LogicalTypes.timeMicros(), TimeConversions.TimeMicrosConversion::new);
 		ensureConversionFor(model, LogicalTypes.timestampMillis(), TimeConversions.TimestampMillisConversion::new);
 		ensureConversionFor(model, LogicalTypes.timestampMicros(), TimeConversions.TimestampMicrosConversion::new);
-		ensureConversionFor(model, LogicalTypes.decimal(1,1), Conversions.DecimalConversion::new);
+		ensureConversionFor(model, LogicalTypes.decimal(1, 1), Conversions.DecimalConversion::new);
 		return resolve(readSchema, Type.fromSchema(readSchema), writeType, model);
 	}
 

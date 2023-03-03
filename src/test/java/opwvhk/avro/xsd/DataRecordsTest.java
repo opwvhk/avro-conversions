@@ -1,7 +1,5 @@
-package opwvhk.avro.datamodel;
+package opwvhk.avro.xsd;
 
-import opwvhk.avro.structure.FieldData;
-import opwvhk.avro.structure.TypeData;
 import org.assertj.core.api.Assertions;
 import org.junit.Test;
 
