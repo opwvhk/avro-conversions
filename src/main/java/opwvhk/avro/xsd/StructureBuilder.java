@@ -1,4 +1,4 @@
-package opwvhk.avro.structure;
+package opwvhk.avro.xsd;
 
 import java.util.List;
 

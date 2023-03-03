@@ -16,15 +16,13 @@ import java.util.stream.Stream;
 
 import opwvhk.avro.datamodel.Cardinality;
 import opwvhk.avro.datamodel.TypeWithUnparsedContent;
-import opwvhk.avro.structure.FieldData;
 import opwvhk.avro.datamodel.FixedType;
 import opwvhk.avro.datamodel.ScalarType;
 import opwvhk.avro.datamodel.StructType;
-import opwvhk.avro.structure.StructureBuilder;
 import opwvhk.avro.datamodel.Type;
 import opwvhk.avro.datamodel.TypeCollection;
-import opwvhk.avro.structure.TypeData;
 import opwvhk.avro.util.Utils;
+import org.apache.avro.Schema;
 import org.apache.ws.commons.schema.XmlSchema;
 import org.apache.ws.commons.schema.XmlSchemaCollection;
 import org.apache.ws.commons.schema.XmlSchemaElement;
@@ -115,15 +113,25 @@ public class XsdAnalyzer {
 	 * @param rootElement the name of a root element in the XSD
 	 * @return an Avro schema capable of containing any valid XML of the given root element
 	 */
+	public Schema schemaOf(String rootElement) {
+		return typeOf(rootElement).toSchema();
+	}
+
+	/**
+	 * Create a type description for the given root element using the avro namespace mapped to the target namespace.
+	 *
+	 * @param rootElement the name of a root element in the XSD
+	 * @return a descriptor describing the XML schema for use as an Object
+	 */
 	public Type typeOf(String rootElement) {
 		return typeOf(new QName(schema.getLogicalTargetNamespace(), rootElement));
 	}
 
 	/**
-	 * Create an Avro schema for the given root element using the avro namespace mapped to the given XML namespace.
+	 * Create a type description for the given root element using the avro namespace mapped to the given XML namespace.
 	 *
 	 * @param rootElement the root element in the XSD (with namespace URI)
-	 * @return an Avro schema capable of containing any valid XML of the given root element
+	 * @return a descriptor describing the XML schema for use as an Object
 	 */
 	public Type typeOf(QName rootElement) {
 		// Schemas by full name. Note that these schemas need not be records!
@@ -136,7 +144,7 @@ public class XsdAnalyzer {
 				String className = typeData.name();
 
 				ElementFields fields;
-				// If typeData.isMixed(), then the type must be complex and fieldData.simpleType() == null
+				// If typeData.shouldNotBeParsed(), then the type must be complex and fieldData.simpleType() == null
 				if (attributes.isEmpty() && fieldData.scalarType() != null) {
 					// Scalar element without attributes: behave like attribute
 					fields = new ElementFields(fieldData.scalarType());

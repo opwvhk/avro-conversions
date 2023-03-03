@@ -6,7 +6,6 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.net.URL;
 
-import opwvhk.avro.datamodel.Type;
 import opwvhk.avro.util.IdlUtils;
 import opwvhk.avro.xsd.XsdAnalyzer;
 import org.apache.avro.Protocol;
@@ -24,9 +23,7 @@ public class JavaTest {
 		URL resolvingTestXsd = requireNonNull(JavaTest.class.getResource("/opwvhk/avro/xml/resolvingTest.xsd"));
 		XsdAnalyzer xsdAnalyzer = new XsdAnalyzer(resolvingTestXsd);
 		xsdAnalyzer.mapTargetNamespace("opwvhk.resolvingTest");
-		Type outerType = xsdAnalyzer.typeOf("outer");
-		System.out.println(outerType);
-		System.out.println(outerType.toSchema());
+		System.out.println(xsdAnalyzer.schemaOf("outer"));
 	}
 
 	/*

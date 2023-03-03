@@ -9,11 +9,8 @@ import java.util.List;
 import java.util.Objects;
 
 import opwvhk.avro.datamodel.DecimalType;
-import opwvhk.avro.structure.FieldData;
 import opwvhk.avro.datamodel.StructType;
-import opwvhk.avro.structure.StructureBuilder;
 import opwvhk.avro.datamodel.Type;
-import opwvhk.avro.structure.TypeData;
 import org.apache.ws.commons.schema.XmlSchemaAll;
 import org.apache.ws.commons.schema.XmlSchemaAny;
 import org.apache.ws.commons.schema.XmlSchemaAnyAttribute;
