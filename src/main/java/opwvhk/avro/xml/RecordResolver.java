@@ -1,4 +1,4 @@
-package opwvhk.avro.io;
+package opwvhk.avro.xml;
 
 import java.util.ArrayList;
 import java.util.Collection;

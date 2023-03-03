@@ -1,8 +1,6 @@
-package opwvhk.avro.io;
+package opwvhk.avro.xml;
 
 import java.util.function.Function;
-
-import lombok.NonNull;
 
 public class ScalarValueResolver
 		extends ValueResolver {

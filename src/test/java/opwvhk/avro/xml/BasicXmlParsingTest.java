@@ -5,7 +5,6 @@ import java.net.URL;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import opwvhk.avro.io.ValueResolver;
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;

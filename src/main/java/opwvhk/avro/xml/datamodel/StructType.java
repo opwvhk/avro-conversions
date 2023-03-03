@@ -1,4 +1,4 @@
-package opwvhk.avro.datamodel;
+package opwvhk.avro.xml.datamodel;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -42,7 +42,9 @@ public final class StructType implements Type {
 		fields = null;
 		fieldsByName = null;
 
-		typeCollection.addType(this);
+		if (typeCollection != null) {
+			typeCollection.addType(this);
+		}
 	}
 
 	public String name() {

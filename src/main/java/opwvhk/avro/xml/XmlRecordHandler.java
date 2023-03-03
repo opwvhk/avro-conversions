@@ -3,7 +3,6 @@ package opwvhk.avro.xml;
 import java.util.ArrayDeque;
 import java.util.Deque;
 
-import opwvhk.avro.io.ValueResolver;
 import org.xml.sax.Attributes;
 
 import static java.util.Objects.requireNonNullElse;

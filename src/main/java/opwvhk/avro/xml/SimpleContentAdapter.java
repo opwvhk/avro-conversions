@@ -6,7 +6,7 @@ import org.xml.sax.helpers.AttributesImpl;
 import org.xml.sax.helpers.DefaultHandler;
 
 import static java.util.Objects.requireNonNull;
-import static opwvhk.avro.xsd.Constants.XML_SCHEMA_DEFINITION_NAMESPACES;
+import static opwvhk.avro.xml.Constants.XML_SCHEMA_DEFINITION_NAMESPACES;
 
 /**
  * Adapter to treat a {@link SimpleContentHandler} as a SAX {@link org.xml.sax.ContentHandler}.

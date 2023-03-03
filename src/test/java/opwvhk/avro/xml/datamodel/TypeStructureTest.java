@@ -1,4 +1,4 @@
-package opwvhk.avro.datamodel;
+package opwvhk.avro.xml.datamodel;
 
 import java.math.BigDecimal;
 import java.nio.ByteBuffer;
@@ -17,12 +17,12 @@ import org.junit.Test;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.time.Month.MARCH;
 import static java.time.ZoneOffset.UTC;
-import static opwvhk.avro.datamodel.StructType.Field.NULL_VALUE;
-import static opwvhk.avro.datamodel.TestStructures.enumType;
-import static opwvhk.avro.datamodel.TestStructures.optional;
-import static opwvhk.avro.datamodel.TestStructures.required;
-import static opwvhk.avro.datamodel.TestStructures.struct;
-import static opwvhk.avro.datamodel.TestStructures.unparsed;
+import static opwvhk.avro.xml.datamodel.StructType.Field.NULL_VALUE;
+import static opwvhk.avro.xml.datamodel.TestStructures.enumType;
+import static opwvhk.avro.xml.datamodel.TestStructures.optional;
+import static opwvhk.avro.xml.datamodel.TestStructures.required;
+import static opwvhk.avro.xml.datamodel.TestStructures.struct;
+import static opwvhk.avro.xml.datamodel.TestStructures.unparsed;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 

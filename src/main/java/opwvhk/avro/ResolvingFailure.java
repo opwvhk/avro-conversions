@@ -1,4 +1,4 @@
-package opwvhk.avro.io;
+package opwvhk.avro;
 
 public class ResolvingFailure extends RuntimeException {
 	public ResolvingFailure(String message) {

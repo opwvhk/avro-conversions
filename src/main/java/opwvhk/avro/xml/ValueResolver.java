@@ -1,4 +1,4 @@
-package opwvhk.avro.io;
+package opwvhk.avro.xml;
 
 /**
  * Class to resolve records with. Assumes records are and/or consist of properties and content.

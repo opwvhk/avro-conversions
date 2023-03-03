@@ -7,7 +7,7 @@ import java.io.StringWriter;
 import java.net.URL;
 
 import opwvhk.avro.util.IdlUtils;
-import opwvhk.avro.xsd.XsdAnalyzer;
+import opwvhk.avro.xml.XsdAnalyzer;
 import org.apache.avro.Protocol;
 import org.apache.avro.Schema;
 import org.apache.avro.compiler.idl.Idl;
