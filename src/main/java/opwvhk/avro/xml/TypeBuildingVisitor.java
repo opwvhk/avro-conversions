@@ -1,4 +1,4 @@
-package opwvhk.avro.xsd;
+package opwvhk.avro.xml;
 
 import javax.xml.namespace.QName;
 import java.math.BigDecimal;
@@ -15,11 +15,12 @@ import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import opwvhk.avro.datamodel.Cardinality;
-import opwvhk.avro.datamodel.DecimalType;
-import opwvhk.avro.datamodel.EnumType;
-import opwvhk.avro.datamodel.FixedType;
-import opwvhk.avro.datamodel.ScalarType;
+import opwvhk.avro.xml.datamodel.Cardinality;
+import opwvhk.avro.xml.datamodel.DecimalType;
+import opwvhk.avro.xml.datamodel.EnumType;
+import opwvhk.avro.xml.datamodel.FixedType;
+import opwvhk.avro.xml.datamodel.ScalarType;
+import opwvhk.avro.xml.datamodel.Type;
 import org.apache.ws.commons.schema.XmlSchema;
 import org.apache.ws.commons.schema.XmlSchemaAll;
 import org.apache.ws.commons.schema.XmlSchemaAnnotated;
@@ -65,18 +66,17 @@ import static org.apache.ws.commons.schema.walker.XmlSchemaRestriction.Type.EXCL
 import static org.apache.ws.commons.schema.walker.XmlSchemaRestriction.Type.INCLUSIVE_MAX;
 import static org.apache.ws.commons.schema.walker.XmlSchemaRestriction.Type.INCLUSIVE_MIN;
 
-public class StructuralSchemaVisitor<ElementState, Result>
-		implements XmlSchemaVisitor {
-	private final StructureBuilder<ElementState, Result> structureBuilder;
+public class TypeBuildingVisitor implements XmlSchemaVisitor {
+	private final TypeStructureBuilder structureBuilder;
 	private final Function<String, String> xmlToTypeNamespace;
 	private final int maxDuplicateClasses;
 	private final Deque<Cardinality> cardinalityStack;
-	private final Deque<VisitorContext<ElementState>> contextStack;
+	private final Deque<VisitorContext> contextStack;
 	private final IdentityHashMap<XmlSchemaType, String> generatedClassNames;
-	private Result result;
+	private Type result;
 
-	public StructuralSchemaVisitor(StructureBuilder<ElementState, Result> structureBuilder, Function<String, String> xmlToTypeNamespace,
-	                               int maxDuplicateClasses) {
+	public TypeBuildingVisitor(TypeStructureBuilder structureBuilder, Function<String, String> xmlToTypeNamespace,
+	                           int maxDuplicateClasses) {
 		this.structureBuilder = structureBuilder;
 		this.xmlToTypeNamespace = xmlToTypeNamespace;
 		this.maxDuplicateClasses = maxDuplicateClasses;
@@ -86,7 +86,7 @@ public class StructuralSchemaVisitor<ElementState, Result>
 		generatedClassNames = new IdentityHashMap<>();
 	}
 
-	public Result result() {
+	public Type result() {
 		return result;
 	}
 
@@ -117,7 +117,7 @@ public class StructuralSchemaVisitor<ElementState, Result>
 		FieldData fieldData = new FieldData(element.getName(), extractDocumentation(element), elementCardinality, scalarType, defaultValue);
 
 		cardinalityStack.push(Cardinality.defaultValue());
-		contextStack.push(new VisitorContext<>(fieldData, typeData, null));
+		contextStack.push(new VisitorContext(fieldData, typeData, null));
 	}
 
 	private TypeData typeData(XmlSchemaNamed element, XmlSchemaType schemaType) {
@@ -263,27 +263,27 @@ public class StructuralSchemaVisitor<ElementState, Result>
 	@Override
 	public void onExitElement(XmlSchemaElement element, XmlSchemaTypeInfo typeInfo, boolean previouslyVisited) {
 		cardinalityStack.pop();
-		VisitorContext<ElementState> context = contextStack.pop();
+		VisitorContext context = contextStack.pop();
 
-		Result result;
+		Type result;
 		if (previouslyVisited) {
-			result = structureBuilder.repeatedElement(context.fieldData, context.typeData);
+			result = structureBuilder.repeatedElement(context.typeData);
 		} else {
-			result = structureBuilder.endElement(context.elementState, context.fieldData, context.typeData);
+			result = structureBuilder.endElement(context.typeFields);
 		}
 
-		VisitorContext<ElementState> parentContext = contextStack.peek();
+		VisitorContext parentContext = contextStack.peek();
 		if (parentContext == null) {
 			this.result = result;
 		} else {
-			ElementState parentElementState = parentContext.elementState;
-			structureBuilder.element(parentElementState, context.fieldData, context.typeData, result);
+			TypeFields parentElementState = parentContext.typeFields;
+			structureBuilder.element(parentElementState, context.fieldData, result);
 		}
 	}
 
 	@Override
 	public void onVisitAttribute(XmlSchemaElement element, XmlSchemaAttrInfo attrInfo) {
-		VisitorContext<ElementState> context = contextStack.element();
+		VisitorContext context = contextStack.element();
 
 		XmlSchemaAttribute attribute = attrInfo.getAttribute();
 
@@ -300,9 +300,9 @@ public class StructuralSchemaVisitor<ElementState, Result>
 
 	@Override
 	public void onEndAttributes(XmlSchemaElement element, XmlSchemaTypeInfo typeInfo) {
-		VisitorContext<ElementState> context = contextStack.element();
-		ElementState state = structureBuilder.startElement(context.fieldData, context.typeData, context.typeAttributes);
-		context.setElementState(state);
+		VisitorContext context = contextStack.element();
+		TypeFields state = structureBuilder.startElement(context.fieldData, context.typeData, context.typeAttributes);
+		context.setTypeFields(state);
 	}
 
 	@Override
@@ -355,7 +355,7 @@ public class StructuralSchemaVisitor<ElementState, Result>
 
 	@Override
 	public void onVisitAny(XmlSchemaAny any) {
-		ElementState parentElementState = requireNonNull(contextStack.element(), "'any' element is not supported at toplevel").elementState;
+		TypeFields parentElementState = requireNonNull(contextStack.element(), "'any' element is not supported at toplevel").typeFields;
 		structureBuilder.elementContainsAny(parentElementState);
 	}
 
@@ -364,30 +364,25 @@ public class StructuralSchemaVisitor<ElementState, Result>
 		throw new IllegalArgumentException("'any' attributes are not supported");
 	}
 
-	static final class VisitorContext<ElementState> {
+	static final class VisitorContext {
 		private final FieldData fieldData;
 		private final TypeData typeData;
 		private final List<FieldData> typeAttributes;
-		private ElementState elementState;
+		private TypeFields typeFields;
 
-		public VisitorContext(FieldData fieldData, TypeData typeData, ElementState elementState) {
+		public VisitorContext(FieldData fieldData, TypeData typeData, TypeFields typeFields) {
 			this.fieldData = fieldData;
 			this.typeData = typeData;
 			typeAttributes = new ArrayList<>();
-			this.elementState = elementState;
+			this.typeFields = typeFields;
 		}
 
 		private void addAttribute(FieldData attributeField) {
 			typeAttributes.add(attributeField);
 		}
 
-		private void setElementState(ElementState elementState) {
-			this.elementState = elementState;
-		}
-
-		@Override
-		public String toString() {
-			return fieldData + " is a " + typeData + " with " + elementState;
+		private void setTypeFields(TypeFields typeFields) {
+			this.typeFields = typeFields;
 		}
 	}
 }

@@ -1,4 +1,4 @@
-package opwvhk.avro.xsd;
+package opwvhk.avro.xml;
 
 import java.util.Set;
 

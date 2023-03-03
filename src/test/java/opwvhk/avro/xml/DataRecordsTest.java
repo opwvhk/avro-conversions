@@ -1,12 +1,12 @@
-package opwvhk.avro.xsd;
+package opwvhk.avro.xml;
 
 import org.assertj.core.api.Assertions;
 import org.junit.Test;
 
-import static opwvhk.avro.datamodel.Cardinality.MULTIPLE;
-import static opwvhk.avro.datamodel.Cardinality.OPTIONAL;
-import static opwvhk.avro.datamodel.Cardinality.REQUIRED;
-import static opwvhk.avro.datamodel.FixedType.STRING;
+import static opwvhk.avro.xml.datamodel.Cardinality.MULTIPLE;
+import static opwvhk.avro.xml.datamodel.Cardinality.OPTIONAL;
+import static opwvhk.avro.xml.datamodel.Cardinality.REQUIRED;
+import static opwvhk.avro.xml.datamodel.FixedType.STRING;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class DataRecordsTest {

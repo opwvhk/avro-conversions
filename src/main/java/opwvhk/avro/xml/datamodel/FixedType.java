@@ -1,10 +1,9 @@
-package opwvhk.avro.datamodel;
+package opwvhk.avro.xml.datamodel;
 
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.time.OffsetTime;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;

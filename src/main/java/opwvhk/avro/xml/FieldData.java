@@ -1,7 +1,7 @@
-package opwvhk.avro.xsd;
+package opwvhk.avro.xml;
 
-import opwvhk.avro.datamodel.Cardinality;
-import opwvhk.avro.datamodel.ScalarType;
+import opwvhk.avro.xml.datamodel.Cardinality;
+import opwvhk.avro.xml.datamodel.ScalarType;
 
 import static opwvhk.avro.util.Utils.truncate;
 

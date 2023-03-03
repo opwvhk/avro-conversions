@@ -1,4 +1,4 @@
-package opwvhk.avro.datamodel;
+package opwvhk.avro.xml.datamodel;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -10,7 +10,6 @@ import org.apache.avro.LogicalTypes;
 import org.apache.avro.Schema;
 
 import static java.util.Collections.emptyList;
-import static opwvhk.avro.datamodel.StructType.Field.NULL_VALUE;
 import static org.apache.avro.Schema.Field.NULL_DEFAULT_VALUE;
 import static org.apache.avro.Schema.Type.*;
 
@@ -113,13 +112,13 @@ public sealed interface Type permits ScalarType, StructType, TypeWithUnparsedCon
 				if (f.cardinality() == Cardinality.MULTIPLE) {
 					fieldSchema = Schema.createArray(fieldSchema);
 				} else if (f.cardinality() == Cardinality.OPTIONAL) {
-					if (defaultValue != NULL_VALUE && defaultValue != JsonProperties.NULL_VALUE && defaultValue != NULL_DEFAULT_VALUE) {
+					if (defaultValue != StructType.Field.NULL_VALUE && defaultValue != JsonProperties.NULL_VALUE && defaultValue != NULL_DEFAULT_VALUE) {
 						fieldSchema = Schema. createUnion(fieldSchema, Schema.create(NULL));
 					} else {
 						fieldSchema = Schema. createUnion(Schema.create(NULL), fieldSchema);
 					}
 				}
-				Schema.Field field = new Schema.Field(f.name(), fieldSchema, f.documentation(), defaultValue == NULL_VALUE ? NULL_DEFAULT_VALUE : defaultValue);
+				Schema.Field field = new Schema.Field(f.name(), fieldSchema, f.documentation(), defaultValue == StructType.Field.NULL_VALUE ? NULL_DEFAULT_VALUE : defaultValue);
 				f.aliases().forEach(field::addAlias);
 				return field;
 			}).toList();

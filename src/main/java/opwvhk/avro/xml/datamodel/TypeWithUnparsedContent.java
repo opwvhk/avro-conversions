@@ -1,4 +1,4 @@
-package opwvhk.avro.datamodel;
+package opwvhk.avro.xml.datamodel;
 
 public record TypeWithUnparsedContent(Type actualType) implements Type {
 

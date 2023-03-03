@@ -1,4 +1,4 @@
-package opwvhk.avro.xsd;
+package opwvhk.avro.xml;
 
 import javax.xml.namespace.QName;
 import java.io.IOException;
@@ -8,9 +8,10 @@ import java.net.URL;
 import java.util.List;
 import java.util.Objects;
 
-import opwvhk.avro.datamodel.DecimalType;
-import opwvhk.avro.datamodel.StructType;
-import opwvhk.avro.datamodel.Type;
+import opwvhk.avro.xml.datamodel.DecimalType;
+import opwvhk.avro.xml.datamodel.StructType;
+import opwvhk.avro.xml.datamodel.Type;
+import org.apache.avro.Schema;
 import org.apache.ws.commons.schema.XmlSchemaAll;
 import org.apache.ws.commons.schema.XmlSchemaAny;
 import org.apache.ws.commons.schema.XmlSchemaAnyAttribute;
@@ -25,22 +26,21 @@ import org.assertj.core.api.Condition;
 import org.junit.Before;
 import org.junit.Test;
 
-import static opwvhk.avro.datamodel.Cardinality.REQUIRED;
-import static opwvhk.avro.datamodel.FixedType.BINARY_BASE64;
-import static opwvhk.avro.datamodel.FixedType.BINARY_HEX;
-import static opwvhk.avro.datamodel.FixedType.BOOLEAN;
-import static opwvhk.avro.datamodel.FixedType.DATE;
-import static opwvhk.avro.datamodel.FixedType.DATETIME;
-import static opwvhk.avro.datamodel.FixedType.DOUBLE;
-import static opwvhk.avro.datamodel.FixedType.FLOAT;
-import static opwvhk.avro.datamodel.FixedType.STRING;
-import static opwvhk.avro.datamodel.FixedType.TIME;
-import static opwvhk.avro.datamodel.TestStructures.array;
-import static opwvhk.avro.datamodel.TestStructures.enumType;
-import static opwvhk.avro.datamodel.TestStructures.optional;
-import static opwvhk.avro.datamodel.TestStructures.required;
-import static opwvhk.avro.datamodel.TestStructures.struct;
-import static opwvhk.avro.datamodel.TestStructures.unparsed;
+import static opwvhk.avro.xml.datamodel.FixedType.BINARY_BASE64;
+import static opwvhk.avro.xml.datamodel.FixedType.BINARY_HEX;
+import static opwvhk.avro.xml.datamodel.FixedType.BOOLEAN;
+import static opwvhk.avro.xml.datamodel.FixedType.DATE;
+import static opwvhk.avro.xml.datamodel.FixedType.DATETIME;
+import static opwvhk.avro.xml.datamodel.FixedType.DOUBLE;
+import static opwvhk.avro.xml.datamodel.FixedType.FLOAT;
+import static opwvhk.avro.xml.datamodel.FixedType.STRING;
+import static opwvhk.avro.xml.datamodel.FixedType.TIME;
+import static opwvhk.avro.xml.datamodel.TestStructures.array;
+import static opwvhk.avro.xml.datamodel.TestStructures.enumType;
+import static opwvhk.avro.xml.datamodel.TestStructures.optional;
+import static opwvhk.avro.xml.datamodel.TestStructures.required;
+import static opwvhk.avro.xml.datamodel.TestStructures.struct;
+import static opwvhk.avro.xml.datamodel.TestStructures.unparsed;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -96,12 +96,21 @@ public class XsdAnalyzerTest {
 
 	@Test
 	public void attributesAreSupported() {
-		Type type = analyzer.typeOf("AttributesAndAnnotationWithoutDocs");
 
-		assertThat(type).isEqualTo(struct("namespace.AttributesAndAnnotationWithoutDocs").withFields(
+		// Test twice: once to ensure we can convert to schemas correctly.
+		// Other tests use the structural model because that is easier.
+
+		assertThat(analyzer.typeOf("AttributesAndAnnotationWithoutDocs")).isEqualTo(struct("namespace.AttributesAndAnnotationWithoutDocs").withFields(
 				required("id", DecimalType.INTEGER_TYPE),
 				optional("something", DecimalType.INTEGER_TYPE)
 		));
+
+		assertThat(analyzer.schemaOf("AttributesAndAnnotationWithoutDocs")).isEqualTo(
+				Schema.createRecord("AttributesAndAnnotationWithoutDocs", null, "namespace", false, List.of(
+						new Schema.Field("something", Schema.createUnion(Schema.create(Schema.Type.NULL), Schema.create(Schema.Type.INT)), null,
+								Schema.Field.NULL_DEFAULT_VALUE),
+						new Schema.Field("id", Schema.create(Schema.Type.INT))
+				)));
 	}
 
 	@Test
@@ -456,33 +465,8 @@ public class XsdAnalyzerTest {
 
 	@Test
 	public void checkMaximumNumberOfDuplicateNames() {
-		// Duplicates
-		assertThatThrownBy(() -> analyzer.walkSchemaInTargetNamespace("Duplicates", new StructuralSchemaVisitor<>(new StructureBuilder<>() {
-			@Override
-			public Object startElement(FieldData fieldData, TypeData typeData, List<FieldData> attributes) {
-				return null;
-			}
-
-			@Override
-			public Object endElement(Object o, FieldData fieldData, TypeData typeData) {
-				return null;
-			}
-
-			@Override
-			public Object repeatedElement(FieldData fieldData, TypeData typeData) {
-				return null;
-			}
-
-			@Override
-			public void element(Object parentElementState, FieldData fieldData, TypeData typeData, Object elementResult) {
-
-			}
-
-			@Override
-			public void elementContainsAny(Object parentElementState) {
-
-			}
-		}, s -> s, 2))).isInstanceOf(IllegalStateException.class);
+		TypeBuildingVisitor visitor = new TypeBuildingVisitor(new TypeStructureBuilder(), s -> s, 2);
+		assertThatThrownBy(() -> analyzer.walkSchemaInTargetNamespace("Duplicates", visitor)).isInstanceOf(IllegalStateException.class);
 	}
 
 
@@ -705,20 +689,7 @@ public class XsdAnalyzerTest {
 	public void coverMethodThatCannotBeCalled() {
 		// As substitution groups are not supported, onEnterSubstitutionGroup(...) always throws and onExitSubstitutionGroup(...) is never called.
 		// We call it here to ensure that the statement "< 100% coverage means the code may fail unpredictably" is still true.
-		new StructuralSchemaVisitor<>((StructureBuilder<?, ?>) null, null, Integer.MAX_VALUE).onExitSubstitutionGroup(null);
-	}
-
-	/*
-	 * Test record toString()'s used when debugging.
-	 */
-
-	@Test
-	public void validateVisitorContextAsText() {
-		// Note that the given result is not nonsense: a field with a simpleType has a type that resulted in the simpleType
-		assertThat(new StructuralSchemaVisitor.VisitorContext<>(
-				new FieldData("field", null, REQUIRED, STRING, "abc"),
-				new TypeData("type", null, false),
-				"whatever").toString()).isEqualTo("field: string=abc is a type with whatever");
+		new TypeBuildingVisitor(null, null, Integer.MAX_VALUE).onExitSubstitutionGroup(null);
 	}
 
 	/*

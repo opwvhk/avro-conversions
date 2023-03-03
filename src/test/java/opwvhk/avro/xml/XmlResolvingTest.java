@@ -6,11 +6,10 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
-import opwvhk.avro.datamodel.DecimalType;
-import opwvhk.avro.datamodel.FixedType;
-import opwvhk.avro.datamodel.Type;
-import opwvhk.avro.io.ResolvingFailure;
-import opwvhk.avro.io.ValueResolver;
+import opwvhk.avro.xml.datamodel.DecimalType;
+import opwvhk.avro.xml.datamodel.FixedType;
+import opwvhk.avro.xml.datamodel.Type;
+import opwvhk.avro.ResolvingFailure;
 import org.apache.avro.Schema;
 import org.apache.avro.data.TimeConversions;
 import org.apache.avro.generic.GenericData;
@@ -24,11 +23,11 @@ import org.junit.Test;
 import org.xml.sax.SAXException;
 
 import static java.util.Objects.requireNonNull;
-import static opwvhk.avro.datamodel.TestStructures.array;
-import static opwvhk.avro.datamodel.TestStructures.enumType;
-import static opwvhk.avro.datamodel.TestStructures.optional;
-import static opwvhk.avro.datamodel.TestStructures.required;
-import static opwvhk.avro.datamodel.TestStructures.struct;
+import static opwvhk.avro.xml.datamodel.TestStructures.array;
+import static opwvhk.avro.xml.datamodel.TestStructures.enumType;
+import static opwvhk.avro.xml.datamodel.TestStructures.optional;
+import static opwvhk.avro.xml.datamodel.TestStructures.required;
+import static opwvhk.avro.xml.datamodel.TestStructures.struct;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -53,7 +52,7 @@ public class XmlResolvingTest {
 	@Test
 	public void testSuccessfulResolvingAndParsing() throws IOException, SAXException {
 		URL xsdLocation = requireNonNull(getClass().getResource("resolvingTest.xsd"));
-		//opwvhk.avro.xsd.XsdAnalyzer xsdAnalyzer = new opwvhk.avro.xsd.XsdAnalyzer(xsdLocation);
+		//opwvhk.avro.xml.XsdAnalyzer xsdAnalyzer = new opwvhk.avro.xml.XsdAnalyzer(xsdLocation);
 		//xsdAnalyzer.mapTargetNamespace("opwvhk.resolvingTest");
 		//Type outerType = xsdAnalyzer.typeOf("outer");
 		//System.out.println("====================================================================================================");
@@ -128,7 +127,7 @@ public class XmlResolvingTest {
 	@Test
 	public void testContentOfMixedElements() throws IOException, SAXException {
 		URL xsdLocation = requireNonNull(getClass().getResource("payload.xsd"));
-		//opwvhk.avro.xsd.XsdAnalyzer xsdAnalyzer = new opwvhk.avro.xsd.XsdAnalyzer(xsdLocation);
+		//opwvhk.avro.xml.XsdAnalyzer xsdAnalyzer = new opwvhk.avro.xml.XsdAnalyzer(xsdLocation);
 		//xsdAnalyzer.mapTargetNamespace("opwvhk.resolvingTest");
 		//Type outerType = xsdAnalyzer.typeOf("envelope");
 		//System.out.println("====================================================================================================");

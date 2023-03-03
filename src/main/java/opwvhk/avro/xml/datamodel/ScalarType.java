@@ -1,4 +1,4 @@
-package opwvhk.avro.datamodel;
+package opwvhk.avro.xml.datamodel;
 
 public sealed interface ScalarType extends Type
 		permits FixedType, DecimalType, EnumType {

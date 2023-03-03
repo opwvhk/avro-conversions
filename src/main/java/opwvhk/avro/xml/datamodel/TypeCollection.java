@@ -1,4 +1,4 @@
-package opwvhk.avro.datamodel;
+package opwvhk.avro.xml.datamodel;
 
 import java.util.HashMap;
 import java.util.LinkedHashSet;
