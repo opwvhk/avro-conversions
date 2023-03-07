@@ -46,8 +46,7 @@ public sealed interface Type permits ScalarType, StructType, TypeWithUnparsedCon
 			} else {
 				return LogicalTypes.decimal(decimalType.precision(), decimalType.scale()).addToSchema(Schema.create(BYTES));
 			}
-		} else {
-			FixedType fixedType = (FixedType) this;
+		} else if (this instanceof FixedType fixedType) {
 			return switch (fixedType) {
 				case BOOLEAN -> Schema.create(BOOLEAN);
 				case FLOAT -> Schema.create(FLOAT);
@@ -59,6 +58,8 @@ public sealed interface Type permits ScalarType, StructType, TypeWithUnparsedCon
 				case BINARY_HEX, BINARY_BASE64 -> Schema.create(BYTES);
 				default /* STRING */ -> Schema.create(STRING);
 			};
+		} else {
+			return ((TypeWithUnparsedContent)this).actualType().toSchema();
 		}
 	}
 
