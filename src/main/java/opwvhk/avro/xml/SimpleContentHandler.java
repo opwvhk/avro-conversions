@@ -22,7 +22,7 @@ import org.xml.sax.SAXException;
  *
  * <p>The element content yields either any number of calls to {@link #characters}, or any number of repetitions of items 2 to 4 above (this is recursive).</p>
  */
-public interface SimpleContentHandler {
+interface SimpleContentHandler {
 	/**
 	 * Called at the beginning of a document. This is the first method to be invoked.
 	 *

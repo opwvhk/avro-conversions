@@ -7,7 +7,7 @@ import org.xml.sax.Attributes;
 
 import static java.util.Objects.requireNonNullElse;
 
-public class XmlRecordHandler implements SimpleContentHandler {
+class XmlRecordHandler implements SimpleContentHandler {
 	private final ValueResolver rootHandler;
 	private final Deque<HandlerContext> contextStack;
 	private Object value;

@@ -1,0 +1,268 @@
+{
+	"type": "record",
+	"name": "outer",
+	"namespace": "ns",
+	"fields": [
+		{
+			"name": "obsolete",
+			"type": [
+				"null", {
+					"type": "record",
+					"name": "obsolete",
+					"fields": [
+						{
+							"name": "message",
+							"type": "string"
+						}, {
+							"name": "text",
+							"type": "string"
+						}, {
+							"name": "number",
+							"type": "int"
+						}
+					]
+				}
+			],
+			"default": null
+		}, {
+			"name": "requiredWithDefault",
+			"type": "string",
+			"default": "Good Enough"
+		}, {
+			"name": "missingOptional",
+			"type": ["null", "string"],
+			"default": null
+		}, {
+			"name": "missingArray",
+			"type": {
+				"type": "array",
+				"items": "string"
+			},
+			"default": []
+		}, {
+			"name": "presentRequired",
+			"type": "string"
+		}, {
+			"name": "presentOptional",
+			"type": ["null", "string"],
+			"default": null
+		}, {
+			"name": "presentArray",
+			"type": {
+				"type": "array",
+				"items": "string"
+			},
+			"default": []
+		}, {
+			"name": "inner",
+			"type": [
+				"null", {
+					"type": "record",
+					"name": "inner",
+					"fields": [
+						{
+							"name": "b",
+							"type": "boolean"
+						}, {
+							"name": "s",
+							"type": ["null", "string"],
+							"default": null
+						}, {
+							"name": "dt",
+							"type": {
+								"type": "long",
+								"logicalType": "timestamp-millis"
+							}
+						}, {
+							"name": "tu",
+							"type": [
+								"null", {
+									"type": "int",
+									"logicalType": "time-millis"
+								}
+							],
+							"default": null
+						}, {
+							"name": "d",
+							"type": [
+								"null", {
+									"type": "int",
+									"logicalType": "date"
+								}
+							],
+							"default": null
+						}, {
+							"name": "t",
+							"type": [
+								"null", {
+									"type": "int",
+									"logicalType": "time-millis"
+								}
+							],
+							"default": null
+						}, {
+							"name": "dtu",
+							"type": {
+								"type": "long",
+								"logicalType": "timestamp-millis"
+							}
+						}, {
+							"name": "e",
+							"type": [
+								{
+									"type": "enum",
+									"name": "e",
+									"symbols": ["one", "two", "three"]
+								}, "null"
+							],
+							"default": "one"
+						}, {
+							"name": "fd",
+							"type": ["null", "double"],
+							"default": null
+						}, {
+							"name": "fs",
+							"type": ["null", "float"],
+							"default": null
+						}, {
+							"name": "numbers",
+							"type": {
+								"type": "record",
+								"name": "numbers",
+								"fields": [
+									{
+										"name": "number",
+										"type": {
+											"type": "array",
+											"items": "int"
+										},
+										"default": []
+									}
+								]
+							}
+						}, {
+							"name": "numberInt",
+							"type": "int"
+						}, {
+							"name": "numberLong",
+							"type": "long"
+						}, {
+							"name": "numberUnbounded",
+							"type": "long"
+						}, {
+							"name": "numberHuge",
+							"type": {
+								"type": "bytes",
+								"logicalType": "decimal",
+								"precision": 80,
+								"scale": 0
+							}
+						}, {
+							"name": "amount",
+							"type": {
+								"type": "record",
+								"name": "amount",
+								"fields": [
+									{
+										"name": "currency",
+										"type": ["null", "string"],
+										"default": null
+									}, {
+										"name": "value",
+										"type": {
+											"type": "bytes",
+											"logicalType": "decimal",
+											"precision": 8,
+											"scale": 2
+										}
+									}
+								]
+							}
+						}, {
+							"name": "hexBytes",
+							"type": "bytes"
+						}, {
+							"name": "b64Bytes",
+							"type": "bytes"
+						}
+					]
+				}
+			],
+			"default": null
+		}, {
+			"name": "switch",
+			"type": {
+				"type": "enum",
+				"name": "switch",
+				"symbols": ["on", "off"]
+			}
+		}, {
+			"name": "exactNumber",
+			"type": {
+				"type": "bytes",
+				"logicalType": "decimal",
+				"precision": 8,
+				"scale": 2
+			}
+		}, {
+			"name": "largeExactNumber",
+			"type": [
+				"null", {
+					"type": "bytes",
+					"logicalType": "decimal",
+					"precision": 15,
+					"scale": 6
+				}
+			],
+			"default": null
+		}, {
+			"name": "estimate",
+			"type": ["null", "float"],
+			"default": null
+		}, {
+			"name": "exceptionToUnwrappingRule",
+			"type": {
+				"type": "record",
+				"name": "exceptionToUnwrappingRule",
+				"fields": [
+					{
+						"name": "number",
+						"type": {
+							"type": "array",
+							"items": "int"
+						},
+						"default": []
+					}
+				]
+			}
+		}, {
+			"name": "category",
+			"type": [
+				"null", {
+					"type": "enum",
+					"name": "category",
+					"symbols": ["apple", "orange"]
+				}
+			],
+			"default": null
+		}, {
+			"name": "upgrade",
+			"type": [
+				"null", {
+					"type": "record",
+					"name": "upgrade",
+					"fields": [
+						{
+							"name": "key",
+							"type": "string"
+						}, {
+							"name": "value",
+							"type": "string"
+						}
+					]
+				}
+			],
+			"default": null
+		}
+	]
+}

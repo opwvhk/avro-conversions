@@ -3,7 +3,7 @@ package opwvhk.avro.xml;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ListResolver extends ValueResolver {
+class ListResolver extends ValueResolver {
 	private final ValueResolver resolver;
 
 	public ListResolver(ValueResolver resolver) {

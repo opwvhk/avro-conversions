@@ -10,7 +10,7 @@ import java.util.Set;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericData;
 
-public class RecordResolver
+class RecordResolver
 		extends ValueResolver {
 	private final GenericData model;
 	private final Schema recordSchema;
@@ -44,42 +44,43 @@ public class RecordResolver
 
 	@Override
 	public Object createCollector() {
-		Object record = model.newRecord(null, recordSchema);
-		for (Schema.Field field : recordSchema.getFields()) {
-			if (field.hasDefaultValue()) {
-				Object defaultValue = model.getDefaultValue(field);
-				Object copyOfPossibleCachedDefaultValue = model.deepCopy(field.schema(), defaultValue);
-				model.setField(record, field.name(), field.pos(), copyOfPossibleCachedDefaultValue);
+		return model.newRecord(null, recordSchema);
+	}
+
+	@Override
+	public Object addProperty(Object record, String name, Object value) {
+		Integer position = fieldPositionsByName.get(name);
+		// If null, the field is unknown and should be ignored.
+		if (position != null) {
+			if (arrayFields.contains(name)) {
+				Collection<Object> list = (Collection<Object>) model.getField(record, name, position);
+				if (list == null) {
+					list = new ArrayList<>();
+					model.setField(record, name, position, list);
+				}
+				list.add(value);
+			} else {
+				model.setField(record, name, position, value);
 			}
 		}
 		return record;
 	}
 
 	@Override
-	public Object addProperty(Object collector, String name, Object value) {
-		Integer position = fieldPositionsByName.get(name);
-		// If null, the field is unknown and should be ignored.
-		if (position != null) {
-			if (arrayFields.contains(name)) {
-				Collection<Object> list = (Collection<Object>) model.getField(collector, name, position);
-				if (list == null) {
-					list = new ArrayList<>();
-					model.setField(collector, name, position, list);
-				}
-				list.add(value);
-			} else {
-				model.setField(collector, name, position, value);
-			}
-		}
-		return collector;
+	public Object addContent(Object record, String content) {
+		ValueResolver valueResolver = resolve("value");
+		Object value = valueResolver.complete(valueResolver.addContent(valueResolver.createCollector(), content));
+		return addProperty(record, "value", value);
 	}
 
 	@Override
-	public Object addContent(Object collector, String content) {
-		ValueResolver valueResolver = resolve("value");
-		Object valueCollector = valueResolver.createCollector();
-		valueCollector = valueResolver.addContent(valueCollector, content);
-		valueCollector = valueResolver.complete(valueCollector);
-		return addProperty(collector, "value", valueCollector);
+	public Object complete(Object collector) {
+		// Fill in default values for fields that have not been set.
+		for (Schema.Field field : recordSchema.getFields()) {
+			if (field.hasDefaultValue() && model.getField(collector, field.name(), field.pos()) == null) {
+				model.setField(collector, field.name(), field.pos(), model.getDefaultValue(field));
+			}
+		}
+		return collector;
 	}
 }

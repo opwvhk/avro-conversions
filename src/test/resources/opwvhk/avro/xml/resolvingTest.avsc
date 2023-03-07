@@ -18,7 +18,7 @@
 				"type": "array",
 				"items": "string"
 			},
-			"default": []
+			"noDefault": "This array has no default, so the XML parser will set "
 		}, {
 			"name": "inner",
 			"type": [
@@ -80,6 +80,16 @@
 							"default": null
 						},
 						{
+							"name": "dtu",
+							"type": [
+								"null", {
+									"type": "long",
+									"logicalType": "timestamp-micros"
+								}
+							],
+							"default": null
+						},
+						{
 							"name": "e",
 							"type": [
 								{
@@ -116,6 +126,16 @@
 								"null", {
 									"type": "int",
 									"logicalType": "time-millis"
+								}
+							],
+							"default": null
+						},
+						{
+							"name": "tu",
+							"type": [
+								"null", {
+									"type": "long",
+									"logicalType": "time-micros"
 								}
 							],
 							"default": null
@@ -165,6 +185,11 @@
 			"name": "approximation",
 			"aliases": ["exactNumber"],
 			"type": "float"
+		}, {
+			"name": "moreAccurateApproximation",
+			"aliases": ["largeExactNumber"],
+			"type": ["null", "double"],
+			"default": null
 		}, {
 			"name": "morePrecise",
 			"aliases": ["estimate"],

@@ -6,10 +6,13 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
+import opwvhk.avro.ResolvingFailure;
+import opwvhk.avro.xml.datamodel.Cardinality;
 import opwvhk.avro.xml.datamodel.DecimalType;
 import opwvhk.avro.xml.datamodel.FixedType;
+import opwvhk.avro.xml.datamodel.StructType;
 import opwvhk.avro.xml.datamodel.Type;
-import opwvhk.avro.ResolvingFailure;
+import org.apache.avro.LogicalTypes;
 import org.apache.avro.Schema;
 import org.apache.avro.data.TimeConversions;
 import org.apache.avro.generic.GenericData;
@@ -48,19 +51,20 @@ public class XmlResolvingTest {
 		MODEL.addLogicalTypeConversion(new TimeConversions.LocalTimestampMillisConversion());
 	}
 
+	@Test
+	public void testHappyFlowSchema() throws IOException {
+		URL xsdLocation = requireNonNull(getClass().getResource("resolvingTest.xsd"));
+		XsdAnalyzer xsdAnalyzer = new XsdAnalyzer(xsdLocation);
+		Schema actualSchema = xsdAnalyzer.schemaOf("outer");
+
+		Schema expectedSchema = new Schema.Parser().parse(getClass().getResourceAsStream("resolvingTestWriter.avsc"));
+		assertThat(actualSchema).isEqualTo(expectedSchema);
+	}
+
 	@SuppressWarnings("UnnecessaryUnicodeEscape")
 	@Test
 	public void testSuccessfulResolvingAndParsing() throws IOException, SAXException {
 		URL xsdLocation = requireNonNull(getClass().getResource("resolvingTest.xsd"));
-		//opwvhk.avro.xml.XsdAnalyzer xsdAnalyzer = new opwvhk.avro.xml.XsdAnalyzer(xsdLocation);
-		//xsdAnalyzer.mapTargetNamespace("opwvhk.resolvingTest");
-		//Type outerType = xsdAnalyzer.typeOf("outer");
-		//System.out.println("====================================================================================================");
-		//System.out.println(outerType);
-		//System.out.println("====================================================================================================");
-		//System.out.println(outerType.toSchema().toString(true));
-		//System.out.println("====================================================================================================");
-
 		Schema readSchema = new Schema.Parser().parse(getClass().getResourceAsStream("resolvingTest.avsc"));
 		XmlAsAvroParser parser = new XmlAsAvroParser(xsdLocation, "outer", readSchema, MODEL);
 
@@ -79,12 +83,14 @@ public class XmlResolvingTest {
 						"b64Bytes" : { "bytes" : "Hello World!\\n" },
 						"d" : { "int" : 19432 },
 						"dt" : { "long" : 1678974301123 },
+						"dtu" : { "long" : 1678974301123456 },
 						"e" : { "opwvhk.resolvingTest.e" : "three" },
 						"fd" : { "double" : 123456.789012 },
 						"fs" : { "float" : 123.456 },
 						"hexBytes" : { "bytes" : "Hello World!\\n" },
 						"s" : { "string" : "text" },
 						"t" : { "int" : 49501123 },
+						"tu" : { "long" : 49501123456 },
 						"numberHuge" : "\\u0001\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000",
 						"numberInt" : 93658723,
 						"numberLong" : 2147483648,
@@ -93,6 +99,7 @@ public class XmlResolvingTest {
 					} },
 					"switch" : "broken",
 					"approximation" : 123456.78,
+					"moreAccurateApproximation" : { "double" : 1.23456789012345E8 },
 					"morePrecise" : { "double" : 12.5 },
 					"exceptionToUnwrappingRule" : { "opwvhk.resolvingTest.mustMatch" : {
 						"number" : [ 1, 1, 2, 3, 5, 8 ]
@@ -114,6 +121,7 @@ public class XmlResolvingTest {
 					"inner" : null,
 					"switch" : "broken",
 					"approximation" : 123456.78,
+					"moreAccurateApproximation" : null,
 					"morePrecise" : null,
 					"exceptionToUnwrappingRule" : { "opwvhk.resolvingTest.mustMatch" : {
 						"number" : [ 1 ]
@@ -127,15 +135,6 @@ public class XmlResolvingTest {
 	@Test
 	public void testContentOfMixedElements() throws IOException, SAXException {
 		URL xsdLocation = requireNonNull(getClass().getResource("payload.xsd"));
-		//opwvhk.avro.xml.XsdAnalyzer xsdAnalyzer = new opwvhk.avro.xml.XsdAnalyzer(xsdLocation);
-		//xsdAnalyzer.mapTargetNamespace("opwvhk.resolvingTest");
-		//Type outerType = xsdAnalyzer.typeOf("envelope");
-		//System.out.println("====================================================================================================");
-		//System.out.println(outerType);
-		//System.out.println("====================================================================================================");
-		//System.out.println(outerType.toSchema().toString(true));
-		//System.out.println("====================================================================================================");
-
 		Schema readSchema = new Schema.Parser().parse(getClass().getResourceAsStream("envelope.avsc"));
 		XmlAsAvroParser parser = new XmlAsAvroParser(xsdLocation, "envelope", readSchema, MODEL);
 
@@ -199,7 +198,8 @@ public class XmlResolvingTest {
 
 					<title>Status Report</title><summary language="NL">Een korte omschrijving</summary><status>OPEN</status><sequence/>
 					<nested><description>No strings this time</description></nested>
-				</record>""";		GenericRecord resultDefault = parser.parse(requireNonNull(getClass().getResource("defaultAndCompactXmlPayload.xml")));
+				</record>""";
+		GenericRecord resultDefault = parser.parse(requireNonNull(getClass().getResource("defaultAndCompactXmlPayload.xml")));
 		assertThat(toJson(resultDefault)).isEqualToNormalizingWhitespace("""
 				{
 					"source" : "Bronsysteem",
@@ -223,6 +223,10 @@ public class XmlResolvingTest {
 
 		assertThatSchemasFailToResolve(enumType("A", List.of("A", "B"), null), enumType("A", List.of("B", "C"), "C"));
 
+		assertThatSchemasFailToResolve(DecimalType.INTEGER_TYPE, FixedType.BOOLEAN);
+		assertThatSchemasFailToResolve(DecimalType.INTEGER_TYPE, DecimalType.LONG_TYPE);
+		assertThatSchemasFailToResolve(DecimalType.LONG_TYPE, DecimalType.integer(70, 22));
+		assertThatSchemasFailToResolve(DecimalType.withFraction(6, 2), FixedType.FLOAT);
 		assertThatSchemasFailToResolve(DecimalType.withFraction(6, 2), DecimalType.withFraction(5, 3));
 		assertThatSchemasFailToResolve(DecimalType.withFraction(6, 2), DecimalType.withFraction(7, 1));
 
@@ -232,8 +236,11 @@ public class XmlResolvingTest {
 
 		assertThatSchemasFailToResolve(FixedType.STRING, struct("tooComplex").withFields(required("field", FixedType.STRING)));
 
-		// This tests the "mismatch on 2nd" code path in the predicate returned by cast(...)
-		assertThatSchemasFailToResolve(enumType("A", List.of("A", "B"), null), FixedType.STRING);
+		assertThatSchemasFailToResolve(FixedType.DATE, FixedType.BOOLEAN);
+		assertThatSchemasFailToResolve(LogicalTypes.timestampMillis().addToSchema(Schema.create(Schema.Type.LONG)), FixedType.BOOLEAN);
+		assertThatSchemasFailToResolve(LogicalTypes.timestampMicros().addToSchema(Schema.create(Schema.Type.LONG)), FixedType.BOOLEAN);
+		assertThatSchemasFailToResolve(LogicalTypes.timeMillis().addToSchema(Schema.create(Schema.Type.INT)), FixedType.BOOLEAN);
+		assertThatSchemasFailToResolve(LogicalTypes.timeMicros().addToSchema(Schema.create(Schema.Type.LONG)), FixedType.BOOLEAN);
 	}
 
 	@Test
@@ -271,6 +278,42 @@ public class XmlResolvingTest {
 				struct("read").withFields(required("field", FixedType.STRING)),
 				struct("write").withFields(required("field", FixedType.BINARY_BASE64))
 		);
+
+		assertThatSchemasFailToResolve(
+				struct("read").withFields(required("field", FixedType.STRING)),
+				struct("write").withFields(optional("field", FixedType.STRING))
+		);
+		assertThatSchemasFailToResolve(
+				struct("read").withFields(required("field", FixedType.STRING)),
+				struct("write").withFields(optional("field", FixedType.STRING))
+		);
+
+		assertThatSchemasFailToResolve(
+				struct("read").withFields(array("field", FixedType.STRING)),
+				struct("write").withFields(required("field", FixedType.BINARY_BASE64))
+		);
+
+		assertThatSchemasFailToResolve(Schema.createRecord("oops", null, null, false, List.of(
+				new Schema.Field("nestedArray", Schema.createArray(Schema.createArray(Schema.create(Schema.Type.STRING))))
+		)), struct("oops").withFields(array("nestedArray", FixedType.STRING)));
+
+		assertThatSchemasFailToResolve(Schema.createRecord("oops", null, null, false, List.of(
+				new Schema.Field("field", Schema.createArray(Schema.create(Schema.Type.STRING)))
+		)), struct("oops").withFields(optional("field", struct("multipleFields").withFields(
+				array("one", FixedType.STRING),
+				array("two", FixedType.STRING)
+		))));
+
+		assertThatSchemasFailToResolve(Schema.createRecord("oops", null, null, false, List.of(
+				new Schema.Field("field", Schema.createArray(
+						Schema.createRecord("twoFields", null, null, false, List.of(
+								new Schema.Field("one", Schema.create(Schema.Type.STRING)),
+								new Schema.Field("two", Schema.create(Schema.Type.STRING))
+						))
+				))
+		)), struct("oops").withFields(optional("field", struct("singleStringField").withFields(
+				array("single", FixedType.STRING)
+		))));
 	}
 
 	@Test
@@ -300,11 +343,15 @@ public class XmlResolvingTest {
 	@Test
 	public void coverMethodThatCannotBeCalled() {
 		// There is no code path that actively causes this failure (that would mean a bug in building resolvers).
-		assertThatThrownBy(() -> new ValueResolver(){}.addContent(null, null)).isInstanceOf(IllegalStateException.class);
+		assertThatThrownBy(() -> new ValueResolver() {}.addContent(null, null)).isInstanceOf(IllegalStateException.class);
 	}
 
 	private static void assertThatSchemasFailToResolve(Type readType, Type writeType) {
-		assertThatThrownBy(() -> XmlAsAvroParser.resolve(readType.toSchema(), readType, writeType, GenericData.get())).isInstanceOf(ResolvingFailure.class);
+		assertThatSchemasFailToResolve(readType.toSchema(), writeType);
+	}
+
+	private static void assertThatSchemasFailToResolve(Schema readSchema, Type writeType) {
+		assertThatThrownBy(() -> XmlAsAvroParser.resolve(writeType, readSchema, GenericData.get())).isInstanceOf(ResolvingFailure.class);
 	}
 
 	private static String toJson(GenericRecord record) throws IOException {

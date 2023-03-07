@@ -49,9 +49,9 @@ public class UtilsTest {
 
 	@Test
 	public void testRecursiveEquality() {
-		Dummy dummy1a = new Dummy("name", null, null);
-		Dummy dummy1b = new Dummy("name", "note", null);
-		Dummy dummy2 = new Dummy("other", "note", null);
+		Dummy dummy1a = new Dummy("name", null);
+		Dummy dummy1b = new Dummy("name", null);
+		Dummy dummy2 = new Dummy("other", null);
 
 		assertThat(dummy1a).isNotEqualTo(null);
 		//noinspection AssertBetweenInconvertibleTypes
@@ -62,12 +62,12 @@ public class UtilsTest {
 		assertThat(dummy1a.hashCode()).isEqualTo(dummy1b.hashCode());
 		assertThat(dummy1a.hashCode()).isNotEqualTo(dummy2.hashCode());
 
-		Dummy bert = new Dummy("Bert", null, null);
-		Dummy ernie = new Dummy("Ernie", null, bert);
+		Dummy bert = new Dummy("Bert", null);
+		Dummy ernie = new Dummy("Ernie", bert);
 		bert.setManager(ernie);
 
-		Dummy bert2 = new Dummy("Bert", null, null);
-		Dummy ernie2 = new Dummy("Ernie", null, bert2);
+		Dummy bert2 = new Dummy("Bert", null);
+		Dummy ernie2 = new Dummy("Ernie", bert2);
 		bert2.setManager(ernie2);
 
 		assertThat(bert).isNotEqualTo(ernie);
@@ -93,21 +93,15 @@ public class UtilsTest {
 	@SuppressWarnings({"FieldCanBeLocal", "unused"})
 	private static class Dummy {
 		private final String name;
-		private final transient String notes;
 		private Dummy manager;
 
-		public Dummy(String name, String notes, Dummy manager) {
+		public Dummy(String name, Dummy manager) {
 			this.name = name;
-			this.notes = notes;
 			this.manager = manager;
 		}
 
 		public String name() {
 			return name;
-		}
-
-		public String notes() {
-			return notes;
 		}
 
 		public Dummy manager() {

@@ -6,7 +6,7 @@ package opwvhk.avro.xml;
  * <p>Resolver implementations should be created with some callback mechanism to their caller. After parsing of a record, the method {@link #complete(Object)}
  * is called, allowing results to be communicated back to the caller.</p>
  */
-public abstract class ValueResolver {
+abstract class ValueResolver {
 	private static final ValueResolver NOOP = new ValueResolver() {
 		@Override
 		public Object addContent(Object collector, String content) {
