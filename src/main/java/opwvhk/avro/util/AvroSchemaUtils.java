@@ -5,7 +5,6 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.StringJoiner;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.avro.LogicalType;
@@ -86,9 +85,21 @@ public final class AvroSchemaUtils {
 	 * @return all name paths in the schema
 	 */
 	public static String documentAsMarkdown(Schema schema) {
-		return "| Field(path) | Type | Documentation |\n|-------------|------|---------------|\n" + describeSchema(schema)
-				.map(entry -> "| %s | %s | %s |".formatted(entry.path(), entry.type(), entry.docForMDTableCell()))
-				.collect(Collectors.joining("\n"));
+		StringBuilder buffer = new StringBuilder();
+		documentAsMarkdown(schema, buffer);
+		return buffer.toString();
+	}
+
+	/**
+	 * Lists all names in the Avro schema, as path from the schema root, combined its documentation (if any). Each entry in the result is a concatenation of 1
+	 * or more names, separated by dots.
+	 *
+	 * @param schema an Avro schema
+	 * @param buffer the buffer to write the result to
+	 */
+	public static void documentAsMarkdown(Schema schema, StringBuilder buffer) {
+		buffer.append("| Field(path) | Type | Documentation |\n|-------------|------|---------------|\n");
+		describeSchema(schema).forEach(entry -> buffer.append("| %s | %s | %s |\n".formatted(entry.path(), entry.type(), entry.docForMDTableCell())));
 	}
 
 	private static Stream<Entry> describeSchema(Schema schema) {

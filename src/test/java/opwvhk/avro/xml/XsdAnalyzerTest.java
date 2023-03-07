@@ -11,7 +11,6 @@ import java.util.Objects;
 import opwvhk.avro.xml.datamodel.DecimalType;
 import opwvhk.avro.xml.datamodel.StructType;
 import opwvhk.avro.xml.datamodel.Type;
-import org.apache.avro.JsonProperties;
 import org.apache.avro.Schema;
 import org.apache.ws.commons.schema.XmlSchemaAll;
 import org.apache.ws.commons.schema.XmlSchemaAny;
@@ -27,7 +26,6 @@ import org.assertj.core.api.Condition;
 import org.junit.Before;
 import org.junit.Test;
 
-import static java.util.Objects.requireNonNull;
 import static opwvhk.avro.xml.datamodel.FixedType.BINARY_BASE64;
 import static opwvhk.avro.xml.datamodel.FixedType.BINARY_HEX;
 import static opwvhk.avro.xml.datamodel.FixedType.BOOLEAN;
@@ -52,7 +50,7 @@ public class XsdAnalyzerTest {
 	@Before
 	public void setUp()
 			throws Exception {
-		URL StructTypeUrl = XsdAnalyzerTest.class.getResource("/testCases.xsd");
+		URL StructTypeUrl = getClass().getResource("testCases.xsd");
 		analyzer = new XsdAnalyzer(Objects.requireNonNull(StructTypeUrl));
 		analyzer.mapTargetNamespace("namespace");
 	}
@@ -67,7 +65,7 @@ public class XsdAnalyzerTest {
 			throws IOException {
 		assertThatThrownBy(() -> analyzer.typeOf(new QName("unknown", "unknown"))).isInstanceOf(IllegalArgumentException.class);
 
-		URL StructTypeUrl = XsdAnalyzerTest.class.getResource("/testCases.xsd");
+		URL StructTypeUrl = getClass().getResource("testCases.xsd");
 		XsdAnalyzer extraAnalyzer = new XsdAnalyzer(Objects.requireNonNull(StructTypeUrl));
 		extraAnalyzer.mapNamespace("https://www.schiphol.nl/avro-tools/tests", "namespace");
 		extraAnalyzer.mapNamespace("ExtraNameSpace", "extra");

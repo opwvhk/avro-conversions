@@ -76,7 +76,8 @@ public class AvroSchemaUtilsTest {
 				| journal[].why? | string | Why the payment was made |
 				| labelledNumbers() | int |  |
 				| textOrNumber | string | This is an unlikely field, containing either text or a number. |
-				| textOrNumber | int | This is an unlikely field, containing either text or a number. |""";
+				| textOrNumber | int | This is an unlikely field, containing either text or a number. |
+				""";
 
 		Schema schema = new Idl(new StringReader(idlSchema)).CompilationUnit().getType("MainRecord");
 		String result = AvroSchemaUtils.documentAsMarkdown(schema);
