@@ -2,7 +2,7 @@ package opwvhk.avro.xml;
 
 import opwvhk.avro.util.Utils;
 
-public record TypeData(String name, String doc, boolean shouldNotBeParsed) {
+record TypeData(String name, String doc, boolean shouldNotBeParsed) {
 	@Override
 	public String toString() {
 		String doc0 = Utils.truncate(10, doc);

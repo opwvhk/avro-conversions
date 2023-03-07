@@ -19,7 +19,7 @@ class TypeFields {
 	private final List<StructType.Field> elementFields;
 
 	TypeFields(TypeData typeData) {
-		recordType = new StructType(null, typeData.name(), typeData.doc());
+		recordType = new StructType(typeData.name(), typeData.doc());
 		this.shouldNotParseElements = typeData.shouldNotBeParsed();
 		attributeFields = new ArrayList<>();
 		elementFields = new ArrayList<>();

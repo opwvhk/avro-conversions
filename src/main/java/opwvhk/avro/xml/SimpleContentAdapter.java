@@ -13,7 +13,7 @@ import static opwvhk.avro.xml.Constants.XML_SCHEMA_DEFINITION_NAMESPACES;
  *
  * <p>Requires the parser to support namespaces (and return namespace attributes).</p>
  */
-public class SimpleContentAdapter extends DefaultHandler {
+class SimpleContentAdapter extends DefaultHandler {
 	private static final int DEFAULT_BUFFER_CAPACITY = 1024;
 	private final SimpleContentHandler simpleContentHandler;
 	private final StringBuilder charBuffer;

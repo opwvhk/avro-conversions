@@ -66,7 +66,7 @@ import static org.apache.ws.commons.schema.walker.XmlSchemaRestriction.Type.EXCL
 import static org.apache.ws.commons.schema.walker.XmlSchemaRestriction.Type.INCLUSIVE_MAX;
 import static org.apache.ws.commons.schema.walker.XmlSchemaRestriction.Type.INCLUSIVE_MIN;
 
-public class TypeBuildingVisitor implements XmlSchemaVisitor {
+class TypeBuildingVisitor implements XmlSchemaVisitor {
 	private final TypeStructureBuilder structureBuilder;
 	private final Function<String, String> xmlToTypeNamespace;
 	private final int maxDuplicateClasses;
@@ -234,7 +234,7 @@ public class TypeBuildingVisitor implements XmlSchemaVisitor {
 						return FixedType.STRING;
 					} else {
 						// typeCollection may be null, as this class prevents duplicate names itself.
-						return new EnumType(null, typeData.name(), typeData.doc(), symbols, null);
+						return new EnumType(typeData.name(), typeData.doc(), symbols, null);
 					}
 				} else if (XSD_ANYURI.equals(recognizedType)) {
 					return FixedType.STRING;

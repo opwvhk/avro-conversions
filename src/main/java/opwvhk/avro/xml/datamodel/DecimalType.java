@@ -8,7 +8,7 @@ public record DecimalType(int bitSize, int precision, int scale) implements Scal
 	public static final DecimalType LONG_TYPE = DecimalType.integer(Long.SIZE, Long.toString(Long.MAX_VALUE).length());
 
 	public static DecimalType withFraction(int precision, int scale) {
-		return new DecimalType(-1, precision, scale);
+		return new DecimalType(Integer.MAX_VALUE, precision, scale);
 	}
 
 	public static DecimalType integer(int bitSize, int precision) {
@@ -20,16 +20,17 @@ public record DecimalType(int bitSize, int precision, int scale) implements Scal
 			if (bitSize <= 0) {
 				throw new IllegalArgumentException("bitSize must be positive");
 			}
-		} else if (bitSize != -1) {
-			throw new IllegalArgumentException("Either scale needs to be 0 (for integer numbers), or bitSize needs to be -1 (for fractional numbers)");
+		} else if (bitSize != Integer.MAX_VALUE) {
+			throw new IllegalArgumentException(
+					"Either scale needs to be 0 (for integer numbers), or bitSize needs to be Integer.MAX_VALUE (for fractional numbers)");
 		}
 	}
 
 	@Override
 	public Object parseNonNull(String text) {
-		if (scale == 0 && bitSize < Integer.SIZE) {
+		if (bitSize < Integer.SIZE) {
 			return Integer.decode(text);
-		} else if (scale == 0 && bitSize < Long.SIZE) {
+		} else if (bitSize < Long.SIZE) {
 			return Long.decode(text);
 		} else {
 			BigDecimal decimal = new BigDecimal(text).setScale(scale, RoundingMode.UNNECESSARY);

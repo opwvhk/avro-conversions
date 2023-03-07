@@ -3,14 +3,12 @@ package opwvhk.avro.xml.datamodel;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Stream;
 
 import opwvhk.avro.util.Utils;
 
@@ -19,59 +17,24 @@ import static java.util.Collections.emptyList;
 import static opwvhk.avro.util.Utils.nonRecursive;
 
 public final class StructType implements Type {
-	private final TypeCollection typeCollection;
-	private String name;
-	private final Set<String> aliases;
-	private String documentation;
+	private final String name;
+	private final String documentation;
 	private List<Field> fields;
 	private Map<String, Field> fieldsByName;
 
-	public StructType(TypeCollection typeCollection, String name, String documentation) {
-		this(typeCollection, name, Set.of(), documentation);
-	}
-
-	public StructType(TypeCollection typeCollection, String name, Set<String> aliases, String documentation) {
-		if (aliases.contains(name)) {
-			throw new IllegalArgumentException("Duplicate name/aliases: " + String.join(", ", name));
-		}
-
-		this.typeCollection = typeCollection;
+	public StructType(String name, String documentation) {
 		this.name = name;
-		this.aliases = new HashSet<>(aliases);
 		this.documentation = documentation;
 		fields = null;
 		fieldsByName = null;
-
-		if (typeCollection != null) {
-			typeCollection.addType(this);
-		}
 	}
 
 	public String name() {
 		return name;
 	}
 
-	public Set<String> aliases() {
-		return aliases;
-	}
-
-	public void rename(String newName) {
-		Type existingType = typeCollection.getType(newName);
-		if (existingType != null) {
-			throw new IllegalArgumentException("There is already a type with that name/alias: %s".formatted(existingType));
-		}
-		aliases.remove(newName);
-		aliases.add(name);
-		name = newName;
-		typeCollection.addName(newName, this);
-	}
-
 	public String documentation() {
 		return documentation;
-	}
-
-	public void setDocumentation(String documentation) {
-		this.documentation = documentation;
 	}
 
 	public List<Field> fields() {
@@ -94,20 +57,12 @@ public final class StructType implements Type {
 			if (fieldsByName.putIfAbsent(name, field) != null) {
 				duplicateNames.add(name);
 			}
-			for (String alias : field.aliases()) {
-				if (fieldsByName.putIfAbsent(alias, field) != null) {
-					duplicateNames.add(alias);
-				}
-			}
 		}
 		if (!duplicateNames.isEmpty()) {
-			throw new IllegalArgumentException("All field names/aliases must be unique. These are not: " + String.join(", ", duplicateNames));
+			throw new IllegalArgumentException("All field names must be unique. These are not: " + String.join(", ", duplicateNames));
 		}
 		for (Field field : fields) {
 			field.setStructType(this);
-			if (field.type() instanceof EnumType enumType) {
-				enumType.setTypeCollection(typeCollection);
-			}
 		}
 		this.fieldsByName = fieldsByName;
 		this.fields = List.copyOf(fields);
@@ -115,10 +70,6 @@ public final class StructType implements Type {
 
 	Field getField(String name) {
 		return fieldsByName.get(name);
-	}
-
-	public Field getField(String name, Set<String> aliases) {
-		return Stream.concat(Stream.of(name), aliases.stream()).map(fieldsByName::get).filter(Objects::nonNull).findAny().orElse(null);
 	}
 
 	@Override
@@ -131,8 +82,7 @@ public final class StructType implements Type {
 		}
 		StructType that = (StructType) o;
 		return nonRecursive("StructEquality", this, that, true,
-				() -> name.equals(that.name) && aliases.equals(that.aliases) && Objects.equals(documentation, that.documentation) &&
-				      containSame(fields, that.fields));
+				() -> name.equals(that.name) && Objects.equals(documentation, that.documentation) && containSame(fields, that.fields));
 	}
 
 	private <T> boolean containSame(List<T> list1, List<T> list2) {
@@ -148,7 +98,7 @@ public final class StructType implements Type {
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(name, aliases, documentation);
+		return Objects.hash(name, documentation);
 	}
 
 	@Override
@@ -158,8 +108,7 @@ public final class StructType implements Type {
 
 	@Override
 	public String debugString(String indent) {
-		String names = aliases.isEmpty() ? name : name + ", " + String.join(", ", aliases);
-		return indent + "StructType(" + names + ")" +
+		return indent + "StructType(" + name + ")" +
 		       nonRecursive("debugString", this, "", () -> {
 			       StringBuilder buf = new StringBuilder();
 			       // No infinite recursion yet
@@ -174,9 +123,6 @@ public final class StructType implements Type {
 				       sortedFields.sort(Comparator.comparing(Field::name));
 				       for (Field field : sortedFields) {
 					       buf.append("\n  ").append(indent).append(field.cardinality.formatName(field.name));
-					       if (!field.aliases().isEmpty()) {
-						       field.aliases().forEach(alias -> buf.append(", ").append(alias));
-					       }
 					       if (field.documentation() != null) {
 						       buf.append("\n    ").append(indent).append("Doc: ").append(field.documentation());
 					       }
@@ -194,24 +140,19 @@ public final class StructType implements Type {
 	public static final class Field {
 		public static final Object NULL_VALUE = new Object();
 		private StructType structType;
-		private String name;
-		private final Set<String> aliases;
-		private String documentation;
+		private final String name;
+		private final String documentation;
 		private final Cardinality cardinality;
 		private final Type type;
 		private final Object defaultValue;
 
-		public Field(String name, Set<String> aliases, String documentation, Cardinality cardinality, Type type, Object defaultValue) {
+		public Field(String name, String documentation, Cardinality cardinality, Type type, Object defaultValue) {
 			if (type == null) {
 				throw new NullPointerException("Cannot create field without a type.");
-			}
-			if (aliases.contains(name)) {
-				throw new IllegalArgumentException("Duplicate name/aliases: " + String.join(", ", name));
 			}
 
 			structType = null;
 			this.name = name;
-			this.aliases = new HashSet<>(aliases);
 			this.documentation = documentation;
 			this.cardinality = cardinality;
 			this.type = type;
@@ -222,10 +163,6 @@ public final class StructType implements Type {
 				case OPTIONAL -> Optional.ofNullable(defaultValue).orElse(StructType.Field.NULL_VALUE);
 				default -> defaultValue;
 			};
-		}
-
-		public Field(String name, String documentation, Cardinality cardinality, Type type, Object defaultValue) {
-			this(name, Set.of(), documentation, cardinality, type, defaultValue);
 		}
 
 		void setStructType(StructType structType) {
@@ -239,29 +176,8 @@ public final class StructType implements Type {
 			return name;
 		}
 
-		public Set<String> aliases() {
-			return aliases;
-		}
-
-		public void rename(String newName) {
-			if (structType != null) {
-				Field existingField = structType.getField(newName);
-				if (existingField != null) {
-					throw new IllegalArgumentException("There is already a field with that name/alias: %s".formatted(existingField));
-				}
-				structType.fieldsByName.put(newName, this);
-			}
-			aliases.remove(newName);
-			aliases.add(name);
-			name = newName;
-		}
-
 		public String documentation() {
 			return documentation;
-		}
-
-		public void setDocumentation(String newDocumentation) {
-			documentation = newDocumentation;
 		}
 
 		public Cardinality cardinality() {
@@ -279,12 +195,12 @@ public final class StructType implements Type {
 		@SuppressWarnings("EqualsWhichDoesntCheckParameterClass")
 		@Override
 		public boolean equals(Object o) {
-			return Utils.recursionSafeEquals(this, o, Field::name, Field::aliases, Field::documentation, Field::cardinality, Field::type, Field::defaultValue);
+			return Utils.recursionSafeEquals(this, o, Field::name, Field::documentation, Field::cardinality, Field::type, Field::defaultValue);
 		}
 
 		@Override
 		public int hashCode() {
-			return Utils.recursionSafeHashCode(this, name, aliases, documentation, cardinality, type, defaultValue);
+			return Utils.recursionSafeHashCode(this, name, documentation, cardinality, type, defaultValue);
 		}
 	}
 }

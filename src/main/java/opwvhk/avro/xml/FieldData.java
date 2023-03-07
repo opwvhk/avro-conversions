@@ -5,7 +5,7 @@ import opwvhk.avro.xml.datamodel.ScalarType;
 
 import static opwvhk.avro.util.Utils.truncate;
 
-public record FieldData(String name, String doc, Cardinality cardinality, ScalarType scalarType, Object defaultValue) {
+record FieldData(String name, String doc, Cardinality cardinality, ScalarType scalarType, Object defaultValue) {
 
 	public FieldData withName(String newName) {
 		return new FieldData(newName, doc, cardinality, scalarType, defaultValue);

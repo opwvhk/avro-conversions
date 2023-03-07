@@ -6,5 +6,7 @@ public sealed interface ScalarType extends Type
 		return text == null ? null : parseNonNull(text);
 	}
 
-	Object parseNonNull(String text);
+	default Object parseNonNull(String text) {
+		throw new UnsupportedOperationException("Default values for this type are not supported.");
+	}
 }

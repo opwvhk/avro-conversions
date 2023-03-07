@@ -11,6 +11,7 @@ import java.util.Objects;
 import opwvhk.avro.xml.datamodel.DecimalType;
 import opwvhk.avro.xml.datamodel.StructType;
 import opwvhk.avro.xml.datamodel.Type;
+import org.apache.avro.JsonProperties;
 import org.apache.avro.Schema;
 import org.apache.ws.commons.schema.XmlSchemaAll;
 import org.apache.ws.commons.schema.XmlSchemaAny;
@@ -26,6 +27,7 @@ import org.assertj.core.api.Condition;
 import org.junit.Before;
 import org.junit.Test;
 
+import static java.util.Objects.requireNonNull;
 import static opwvhk.avro.xml.datamodel.FixedType.BINARY_BASE64;
 import static opwvhk.avro.xml.datamodel.FixedType.BINARY_HEX;
 import static opwvhk.avro.xml.datamodel.FixedType.BOOLEAN;

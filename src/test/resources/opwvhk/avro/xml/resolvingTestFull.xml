@@ -19,7 +19,7 @@
 	<!-- the Avro schema has a string array here -->
 	<presentArray>Me too</presentArray>
 	<presentArray>Hey, that's my line!</presentArray>
-	<inner b="true" d="2023-03-16" dt="2023-03-16T13:45:01.123456Z" t="13:45:01.123456Z" e="three" fs="123.456" fd="123456.789012" s="text">
+	<inner b="true" d="2023-03-16" dt="2023-03-16T13:45:01.123456789Z" t="13:45:01.123456789Z" dtu="2023-03-16T13:45:01.12345678Z" tu="13:45:01.123456789Z" e="three" fs="123.456" fd="123456.789012" s="text">
 		<!-- the Avro schema has an int array here, to the element is unwrapped -->
 		<numbers>
 			<number>1</number>
@@ -47,6 +47,8 @@
 	<switch>off</switch>
 	<!-- this decimal is read as float -->
 	<exactNumber>123456.78</exactNumber>
+	<!-- this decimal is read as double -->
+	<largeExactNumber>123456789.012345</largeExactNumber>
 	<!-- this float is read as double -->
 	<estimate>12.5</estimate>
 	<!-- the Avro schema has a single-field record array here, so it is not unwrapped -->
