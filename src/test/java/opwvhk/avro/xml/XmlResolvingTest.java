@@ -75,6 +75,7 @@ public class XmlResolvingTest {
 					"optionalField" : { "string" : "I'm here too" },
 					"textList" : [ "Me too", "Hey, that's my line!" ],
 					"inner" : { "opwvhk.resolvingTest.innerType" : {
+						"e" : { "opwvhk.resolvingTest.e" : "three" },
 						"amount" : {
 							"currency" : { "string" : "EUR" },
 							"value" : "\\u0007\u005B\u00CD\\f"
@@ -84,7 +85,6 @@ public class XmlResolvingTest {
 						"d" : { "int" : 19432 },
 						"dt" : { "long" : 1678974301123 },
 						"dtu" : { "long" : 1678974301123456 },
-						"e" : { "opwvhk.resolvingTest.e" : "three" },
 						"fd" : { "double" : 123456.789012 },
 						"fs" : { "float" : 123.456 },
 						"hexBytes" : { "bytes" : "Hello World!\\n" },
@@ -130,6 +130,43 @@ public class XmlResolvingTest {
 					"category" : null
 				}
 				""");
+	}
+
+	@Test
+	public void testResolvingAndParsingWithoutNamespace() throws IOException, SAXException {
+		URL xsdLocation = requireNonNull(getClass().getResource("resolvingTest.xsd"));
+		Schema readSchema = new Schema.Parser().parse(getClass().getResourceAsStream("resolvingTest.avsc"));
+		XmlAsAvroParser parser = new XmlAsAvroParser(xsdLocation, "outer", readSchema, MODEL);
+
+		GenericRecord resultMinimal = parser.parse(requireNonNull(getClass().getResource("resolvingTestMinimalWithoutNamespace.xml")));
+		assertThat(toJson(resultMinimal)).isEqualToNormalizingWhitespace("""
+				{
+					"presentRequired" : "I'm here",
+					"optionalField" : null,
+					"textList" : [ "Hey, that's my line!" ],
+					"inner" : null,
+					"switch" : "broken",
+					"approximation" : 123456.78,
+					"moreAccurateApproximation" : null,
+					"morePrecise" : null,
+					"exceptionToUnwrappingRule" : { "opwvhk.resolvingTest.mustMatch" : {
+						"number" : [ 1 ]
+					} },
+					"upgrade" : [ ],
+					"category" : null
+				}
+				""");
+
+		// If the data is missing required fields, parsing will succeed but yield an invalid object.
+
+		GenericRecord resultTooMinimal = parser.parse(requireNonNull(getClass().getResource("resolvingTestTooMinimalWithoutNamespace.xml")));
+		assertThat(resultTooMinimal).isNotNull();
+		assertThatThrownBy(() -> toJson(resultTooMinimal)).isInstanceOf(NullPointerException.class); // Missing value for required field
+
+		// If the data is outright invalid, parsing may fail (enums, for example, yield null value instead).
+
+		URL invalidXmlLocation = requireNonNull(getClass().getResource("resolvingTestInvalidWithoutNamespace.xml"));
+		assertThatThrownBy(() -> parser.parse(invalidXmlLocation)).isInstanceOf(Exception.class);
 	}
 
 	@Test
