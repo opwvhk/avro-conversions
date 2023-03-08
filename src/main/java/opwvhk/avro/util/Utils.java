@@ -16,7 +16,7 @@ import java.util.regex.Pattern;
 import static java.util.Objects.requireNonNull;
 
 /**
- * COntainer class with various utilities that didn't fit elsewhere.
+ * Container class with various utilities that didn't fit elsewhere.
  */
 public final class Utils {
 	private static final Pattern UNDERSCORES_PLUS_FOLLOWERS = Pattern.compile("(?U)_([^_])([^_]*)");

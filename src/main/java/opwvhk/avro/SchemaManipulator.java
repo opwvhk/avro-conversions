@@ -366,10 +366,10 @@ public class SchemaManipulator {
 	}
 
 	/**
-	 * <p></p>
+	 * <p>Unwrap the array whose wrapping field is at the specified path.</p>
 	 *
 	 * <p>Wrapped arrays are an XML construct. They result in array fields without siblings in a record field (optionally in a union with null). In Avro,
-	 * Parquet, and in fact most/all other formats, they are both not needed and unwanted. This method unwraps them based on .</p>
+	 * Parquet, and in fact most/all other formats, they are both not needed and unwanted. This method unwraps them based on the path to the wrapping field.</p>
 	 *
 	 * <p>When unwrapping, wrapped field will replace the wrapping field using the name of the wrapping field. As this is not a renaming action, no alias will
 	 * be added.</p>

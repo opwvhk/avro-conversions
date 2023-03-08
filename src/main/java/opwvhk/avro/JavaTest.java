@@ -16,7 +16,7 @@ import org.apache.avro.specific.AvroGenerated;
 
 import static java.util.Objects.requireNonNull;
 
-@SuppressWarnings("unused")
+@SuppressWarnings({"unused", "MissingJavadoc"})
 @AvroGenerated // HACK: an annotation with "Generated" in the name causes JaCoCo to exclude this class/method from code coverage
 public class JavaTest {
 	public static void main(String[] args) throws Exception {
