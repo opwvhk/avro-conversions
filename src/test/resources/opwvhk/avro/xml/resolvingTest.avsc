@@ -28,6 +28,17 @@
 					"aliases": ["inner", "typeNamesAreUsedInUnions"],
 					"fields": [
 						{
+							"name": "e",
+							"type": [
+								{
+									"type": "enum",
+									"name": "e",
+									"symbols": ["one", "two", "three"]
+								}, "null"
+							],
+							"default": "one"
+						},
+						{
 							"name": "amount",
 							"type": {
 								"type": "record",
@@ -88,17 +99,6 @@
 								}
 							],
 							"default": null
-						},
-						{
-							"name": "e",
-							"type": [
-								{
-									"type": "enum",
-									"name": "e",
-									"symbols": ["one", "two", "three"]
-								}, "null"
-							],
-							"default": "one"
 						},
 						{
 							"name": "fd",
