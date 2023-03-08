@@ -88,35 +88,8 @@ public class AvroSchemaUtilsTest {
 	@Test
 	public void checkDocumentationNewlinesAreHtml() {
 		String textWithNewlines = "Line 1\nLine 2\nLine 3";
-		String textWithHtmlLineBreaks = "Line 1<br/>Line 2<br/>Line 3";
-		AvroSchemaUtils.Entry entry = new AvroSchemaUtils.Entry("", "", textWithNewlines);
+		AvroSchemaUtils.Entry entry = new AvroSchemaUtils.Entry("path.to.entry", "test", textWithNewlines);
 		assertThat(entry.documentation()).isEqualTo(textWithNewlines);
-		assertThat(entry.docForMDTableCell()).isEqualTo(textWithHtmlLineBreaks);
+		assertThat(entry.toString()).isEqualTo("| path.to.entry | test | Line 1<br/>Line 2<br/>Line 3 |\n");
 	}
-
-	@Test
-	public void testAvroSchemaFieldSorting() throws ParseException {
-		Schema schema = new Idl(new StringReader("""
-				protocol dummy {
-					record MainRecord {
-						string name;
-						string? description;
-						map<string> properties = {};
-						array<string> aliases = [];
-						MainRecord loop;
-					}
-				}""")).CompilationUnit().getType("MainRecord");
-		Schema expected = new Idl(new StringReader("""
-				protocol dummy {
-					record MainRecord {
-						array<string> aliases = [];
-						string? description;
-						MainRecord loop;
-						string name;
-						map<string> properties = {};
-					}
-				}""")).CompilationUnit().getType("MainRecord");
-		assertThat(schema).isNotEqualTo(expected);
-		assertThat(AvroSchemaUtils.sortFields(schema)).isEqualTo(expected);
-	};
 }

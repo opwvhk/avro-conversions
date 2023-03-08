@@ -16,14 +16,18 @@ import org.apache.avro.Schema;
 
 import static java.util.Objects.requireNonNull;
 
+/**
+ * Starting point for schema manipulation and documentation. Typical use case is to read an XSD, rename fields and schemata where needed, unwrap nested arrays,
+ * and generate and document the resulting schema.
+ */
 public class SchemaManipulator {
 	private Schema initialSchema;
 	private boolean sortFields;
 	private boolean renameWithAliases;
 	private StringBuilder markdownBuffer;
-	List<SchemaRenamer> schemaRenamerList;
-	List<FieldRenamer> fieldRenamerList;
-	List<UnwrapTest> unwrapTests;
+	private List<SchemaRenamer> schemaRenamerList;
+	private List<FieldRenamer> fieldRenamerList;
+	private List<UnwrapTest> unwrapTests;
 
 	private SchemaManipulator(Schema initialSchema) {
 		reset(initialSchema);
@@ -39,11 +43,23 @@ public class SchemaManipulator {
 		unwrapTests = new ArrayList<>();
 	}
 
+	/**
+	 * Create a schema manipulator from an Avro schema as String.
+	 *
+	 * @param avroSchemaAsString an Avro schema (content of a {@code .avsc} file)
+	 * @return a {@code SchemaManipulator}
+	 */
 	public static SchemaManipulator startFromAvro(String avroSchemaAsString) {
 		Schema schema = new Schema.Parser().parse(avroSchemaAsString);
 		return new SchemaManipulator(schema);
 	}
 
+	/**
+	 * Create a schema manipulator from an Avro schema.
+	 *
+	 * @param schemaLocation the location of an Avro schema ({@code .avsc} file)
+	 * @return a {@code SchemaManipulator}
+	 */
 	public static SchemaManipulator startFromAvro(URL schemaLocation) throws IOException {
 		try (InputStream inputStream = schemaLocation.openStream()) {
 			Schema schema = new Schema.Parser().parse(inputStream);
@@ -51,12 +67,26 @@ public class SchemaManipulator {
 		}
 	}
 
+	/**
+	 * Create a schema manipulator from an XML Schema Definition (XSD). The location of the main {@code .xsd} file is provided, both to provide the XSD content,
+	 * as to provide a way to locate imported/included {@code .xsd} files.
+	 *
+	 * @param schemaLocation the location of the main {@code .xsd} file (it may include/import other {@code .xsd} files)
+	 * @return a {@code SchemaManipulator}
+	 */
 	public static SchemaManipulator startFromXsd(URL schemaLocation, String rootElementName) throws IOException {
 		XsdAnalyzer analyzer = new XsdAnalyzer(schemaLocation);
 		Schema schema = analyzer.schemaOf(rootElementName);
 		return new SchemaManipulator(schema);
 	}
 
+	/**
+	 * <p>Complete the schema manipulation, write the documentation (if requested), and return the result.</p>
+	 *
+	 * <p>The {@code SchemaManipulator} remains available after calling this method, as if it were created with the resulting schema.</p>
+	 *
+	 * @return the resulting schema
+	 */
 	public Schema finish() {
 		Schema result = applySchemaChanges(initialSchema);
 
@@ -193,16 +223,39 @@ public class SchemaManipulator {
 		return null;
 	}
 
+	/**
+	 * Return the resulting schema with sorted fields.
+	 *
+	 * @return this {@code SchemaManipulator}
+	 */
 	public SchemaManipulator sortFields() {
 		sortFields = true;
 		return this;
 	}
 
+	/**
+	 * When renaming a field/schema, do not add the old name as alias (the default is to add aliases).
+	 *
+	 * @return this {@code SchemaManipulator}
+	 * @see #renameSchema(String, String)
+	 * @see #renameField(String, String, String)
+	 * @see #renameSchemaAtPath(String, String...)
+	 * @see #renameFieldAtPath(String, String...)
+	 */
 	public SchemaManipulator renameWithoutAliases() {
 		renameWithAliases = false;
 		return this;
 	}
 
+	/**
+	 * Rename the specified schema.
+	 *
+	 * @param schemaName    the current name of the schema to rename
+	 * @param newSchemaName the new name for the schema
+	 * @return this {@code SchemaManipulator}
+	 * @see #renameWithoutAliases()
+	 * @see #renameSchemaAtPath(String, String...)
+	 */
 	public SchemaManipulator renameSchema(String schemaName, String newSchemaName) {
 		schemaRenamerList.add((pathToField, fieldSchema) ->
 				isOneOf(schemaName, fieldSchema.getFullName(), fieldSchema.getAliases()) ? newSchemaName : null);
@@ -213,6 +266,15 @@ public class SchemaManipulator {
 		return first.equals(test) || others.contains(test);
 	}
 
+	/**
+	 * Rename the schema of the field at the specified path. To rename the main schema, provide an empty (no) path.
+	 *
+	 * @param newSchemaName                 the new name for the schema
+	 * @param pathToFieldWithSchemaToRename the path to the field whose schema to rename
+	 * @return this {@code SchemaManipulator}
+	 * @see #renameWithoutAliases()
+	 * @see #renameSchema(String, String)
+	 */
 	public SchemaManipulator renameSchemaAtPath(String newSchemaName, String... pathToFieldWithSchemaToRename) {
 		String pathToMatch = String.join(".", pathToFieldWithSchemaToRename);
 		schemaRenamerList.add((pathToField, fieldSchema) ->
@@ -220,6 +282,16 @@ public class SchemaManipulator {
 		return this;
 	}
 
+	/**
+	 * Rename the specified field in the (named) schema.
+	 *
+	 * @param schemaName   the name of the schema with the field to rename
+	 * @param fieldName    the current name of the field to rename
+	 * @param newFieldName the new name for the field
+	 * @return this {@code SchemaManipulator}
+	 * @see #renameWithoutAliases()
+	 * @see #renameFieldAtPath(String, String...)
+	 */
 	public SchemaManipulator renameField(String schemaName, String fieldName, String newFieldName) {
 		fieldRenamerList.add((pathToField, schemaWithField, field) ->
 				isOneOf(schemaName, schemaWithField.getFullName(), schemaWithField.getAliases()) &&
@@ -227,6 +299,15 @@ public class SchemaManipulator {
 		return this;
 	}
 
+	/**
+	 * Rename the field at the specified path.
+	 *
+	 * @param newFieldName        the new name for the field
+	 * @param pathToFieldToRename the path to the field to rename
+	 * @return this {@code SchemaManipulator}
+	 * @see #renameWithoutAliases()
+	 * @see #renameField(String, String, String)
+	 */
 	public SchemaManipulator renameFieldAtPath(String newFieldName, String... pathToFieldToRename) {
 		String pathToMatch = String.join(".", pathToFieldToRename);
 		fieldRenamerList.add((pathToField, schemaWithField, fieldSchema) ->
@@ -234,16 +315,48 @@ public class SchemaManipulator {
 		return this;
 	}
 
+	/**
+	 * <p>Unwrap all arrays whose field names (except up to the last {@code ignoredMaxSuffixLength} characters) are equal.</p>
+	 *
+	 * <p>Wrapped arrays are an XML construct. They result in array fields without siblings in a record field (optionally in a union with null). In Avro,
+	 * Parquet, and in fact most/all other formats, they are both not needed and unwanted. This method unwraps them based on the names of the wrapped and
+	 * wrapping fields.</p>
+	 *
+	 * <p>When unwrapping, wrapped field will replace the wrapping field using the name of the wrapping field. As this is not a renaming action, no alias will
+	 * be added.</p>
+	 *
+	 * @param ignoredMaxSuffixLength the length of the field suffix to ignore
+	 * @return this {@code SchemaManipulator}
+	 * @see #unwrapArray(String, String)
+	 * @see #unwrapArrayAtPath(String...)
+	 */
 	public SchemaManipulator unwrapArrays(int ignoredMaxSuffixLength) {
 		unwrapTests.add((path, schema, wrapping, wrapped) -> {
 			String wrappingName = wrapping.name();
 			String wrappedName = wrapped.name();
+			// Determine the length of the shortest name to calculate the length of the prefix that must be equal.
 			int prefixLength = Math.max(0, Math.min(wrappingName.length(), wrappedName.length()) - ignoredMaxSuffixLength);
 			return wrappingName.substring(0, prefixLength).equals(wrappedName.substring(0, prefixLength));
 		});
 		return this;
 	}
 
+	/**
+	 * <p>Unwrap the array in the specified wrapping field.</p>
+	 *
+	 * <p>Wrapped arrays are an XML construct. They result in array fields without siblings in a record field (optionally in a union with null). In Avro,
+	 * Parquet, and in fact most/all other formats, they are both not needed and unwanted. This method unwraps them based on the name of the wrapping field and
+	 * the name of the schema that contains it.</p>
+	 *
+	 * <p>When unwrapping, wrapped field will replace the wrapping field using the name of the wrapping field. As this is not a renaming action, no alias will
+	 * be added.</p>
+	 *
+	 * @param schemaName    the name of the schema with the wrapping field
+	 * @param wrappingField the wrapping field; it'll get the
+	 * @return this {@code SchemaManipulator}
+	 * @see #unwrapArrays(int)
+	 * @see #unwrapArrayAtPath(String...)
+	 */
 	public SchemaManipulator unwrapArray(String schemaName, String wrappingField) {
 		unwrapTests.add((path, schema, wrapping, wrapped) ->
 				isOneOf(schemaName, schema.getFullName(), schema.getAliases()) &&
@@ -252,17 +365,46 @@ public class SchemaManipulator {
 		return this;
 	}
 
+	/**
+	 * <p></p>
+	 *
+	 * <p>Wrapped arrays are an XML construct. They result in array fields without siblings in a record field (optionally in a union with null). In Avro,
+	 * Parquet, and in fact most/all other formats, they are both not needed and unwanted. This method unwraps them based on .</p>
+	 *
+	 * <p>When unwrapping, wrapped field will replace the wrapping field using the name of the wrapping field. As this is not a renaming action, no alias will
+	 * be added.</p>
+	 *
+	 * @param pathToWrappingField the path to the wrapping field
+	 * @return this {@code SchemaManipulator}
+	 * @see #unwrapArrays(int)
+	 * @see #unwrapArray(String, String)
+	 */
 	public SchemaManipulator unwrapArrayAtPath(String... pathToWrappingField) {
 		String pathToMatch = String.join(".", pathToWrappingField);
 		unwrapTests.add((p, s, wr, wd) -> p.equals(pathToMatch));
 		return this;
 	}
 
+	/**
+	 * <p>Document the schema as Markdown table when completing the schema manipulation.</p>
+	 *
+	 * <p>The table is written into the provided {@code StringBuilder}.</p>
+	 *
+	 * @return this {@code SchemaManipulator}
+	 */
 	public SchemaManipulator alsoDocumentAsMarkdownTable(StringBuilder buffer) {
 		markdownBuffer = buffer;
 		return this;
 	}
 
+	/**
+	 * <p>Finish the schema manipulation, but discard the resulting schema and return the Markdown table documenting the schema instead.</p>
+	 *
+	 * <p>After calling this method, the schema manipulator remains usable. You can get the resulting schema by calling {@link #finish()}.</p>
+	 *
+	 * @return the Markdown table documenting the schema.
+	 * @see #finish()
+	 */
 	public String asMarkdownTable() {
 		StringBuilder buffer = new StringBuilder();
 		alsoDocumentAsMarkdownTable(buffer).finish();
