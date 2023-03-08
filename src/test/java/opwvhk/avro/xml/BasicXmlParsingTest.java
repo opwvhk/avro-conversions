@@ -22,20 +22,11 @@ public class BasicXmlParsingTest {
 	private static final Logger LOGGER = LoggerFactory.getLogger(BasicXmlParsingTest.class);
 
 	private XmlAsAvroParser parser;
-	private URL testdataTextPayload;
-	private URL testdataBinaryPayload;
-	private URL testdataXmlPayload;
-	private URL testdataDefaultAndCompactXmlPayload;
 
 	@Before
 	public void setUp() {
 		URL payloadXsd = requireNonNull(getClass().getResource("payload.xsd"));
 		parser = new XmlAsAvroParser(payloadXsd.toExternalForm(), new PayloadDebugHandler());
-
-		testdataTextPayload = getClass().getResource("textPayload.xml");
-		testdataBinaryPayload = getClass().getResource("binaryPayload.xml");
-		testdataXmlPayload = getClass().getResource("xmlPayload.xml");
-		testdataDefaultAndCompactXmlPayload = getClass().getResource("defaultAndCompactXmlPayload.xml");
 	}
 
 	@Test
@@ -45,7 +36,21 @@ public class BasicXmlParsingTest {
 
 	@Test
 	public void testTextPayload() throws IOException, SAXException {
-		assertThat(parser.<Map<String, Object>>parse(testdataTextPayload)).isEqualTo(Map.of(
+		URL payloadLocation = requireNonNull(getClass().getResource("textPayload.xml"));
+		assertThat(parser.<Map<String, Object>>parse(payloadLocation)).isEqualTo(Map.of(
+				"source", "Bronsysteem",
+				"target", "Bestemming",
+				"payload", Map.of(
+						"type", "text",
+						"", "Hello World!"
+				)
+		));
+	}
+
+	@Test
+	public void testTextPayloadWithoutNamespace() throws IOException, SAXException {
+		URL payloadLocation = requireNonNull(getClass().getResource("textPayloadWithoutNamespace.xml"));
+		assertThat(parser.<Map<String, Object>>parse(payloadLocation)).isEqualTo(Map.of(
 				"source", "Bronsysteem",
 				"target", "Bestemming",
 				"payload", Map.of(
@@ -57,7 +62,8 @@ public class BasicXmlParsingTest {
 
 	@Test
 	public void testRawBinaryPayload() throws IOException, SAXException {
-		assertThat(parser.<Map<String, Object>>parse(testdataBinaryPayload)).isEqualTo(Map.of(
+		URL payloadLocation = requireNonNull(getClass().getResource("binaryPayload.xml"));
+		assertThat(parser.<Map<String, Object>>parse(payloadLocation)).isEqualTo(Map.of(
 				"source", "Bronsysteem",
 				"target", "Bestemming",
 				"payload", Map.of(
@@ -69,7 +75,8 @@ public class BasicXmlParsingTest {
 
 	@Test
 	public void testXmlPayload() throws IOException, SAXException {
-		assertThat(parser.<Map<String, Object>>parse(testdataXmlPayload)).isEqualTo(Map.of(
+		URL payloadLocation = requireNonNull(getClass().getResource("xmlPayload.xml"));
+		assertThat(parser.<Map<String, Object>>parse(payloadLocation)).isEqualTo(Map.of(
 				"source", "Bronsysteem",
 				"target", "Bestemming",
 				"payload", Map.of(
@@ -99,7 +106,8 @@ public class BasicXmlParsingTest {
 
 	@Test
 	public void testDefaultPayload() throws IOException, SAXException {
-		assertThat(parser.<Map<String, Object>>parse(testdataDefaultAndCompactXmlPayload)).isEqualTo(Map.of(
+		URL payloadLocation = requireNonNull(getClass().getResource("defaultAndCompactXmlPayload.xml"));
+		assertThat(parser.<Map<String, Object>>parse(payloadLocation)).isEqualTo(Map.of(
 				"source", "Bronsysteem",
 				"target", "Bestemming",
 				"payload", Map.of(
