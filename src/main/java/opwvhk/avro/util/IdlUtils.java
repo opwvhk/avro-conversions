@@ -29,6 +29,9 @@ import org.apache.avro.Schema.Field;
 
 import static java.util.Objects.requireNonNull;
 
+/**
+ * Utility class to write IDL protocols, a more readable format than JSON for Avro schemas.
+ */
 public final class IdlUtils {
 	static final JsonFactory SCHEMA_FACTORY;
 	private static final Function<Field, JsonNode> DEFAULT_VALUE;
@@ -86,6 +89,15 @@ public final class IdlUtils {
 		// Utility class: do not instantiate.
 	}
 
+	/**
+	 * Write an Avro Protocol with the given name and namespace containing the specified schemas as IDL (suitable for a {@code .avdl} file).
+	 *
+	 * @param protocolNameSpace the namespace for the protocol
+	 * @param protocolName      the name for the protocol
+	 * @param writer            where to write the IDL to
+	 * @param schemas           the schemas for the protocol
+	 * @throws IOException when the protocol cannot be written
+	 */
 	public static void writeIdlProtocol(final String protocolNameSpace, final String protocolName, final Writer writer, final Schema... schemas)
 			throws IOException {
 		try (JsonGenerator jsonGen = SCHEMA_FACTORY.createGenerator(writer)) {

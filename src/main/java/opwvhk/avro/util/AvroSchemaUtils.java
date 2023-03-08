@@ -1,8 +1,5 @@
 package opwvhk.avro.util;
 
-import java.util.Comparator;
-import java.util.IdentityHashMap;
-import java.util.List;
 import java.util.Optional;
 import java.util.StringJoiner;
 import java.util.stream.Stream;
@@ -10,72 +7,10 @@ import java.util.stream.Stream;
 import org.apache.avro.LogicalType;
 import org.apache.avro.LogicalTypes;
 import org.apache.avro.Schema;
-import org.apache.avro.compiler.schema.SchemaVisitor;
-import org.apache.avro.compiler.schema.SchemaVisitorAction;
-import org.apache.avro.compiler.schema.Schemas;
 
 import static java.util.stream.Stream.concat;
-import static org.apache.avro.Schema.Type.RECORD;
 
 public final class AvroSchemaUtils {
-
-	/**
-	 * Return an equivalent Avro schema, with all fields sorted by name.
-	 *
-	 * @param schema an Avro schema
-	 * @return the equivalent Avro schema, but with sorted fields
-	 */
-	public static Schema sortFields(Schema schema) {
-		Comparator<Schema.Field> comparator = Comparator.comparing(Schema.Field::name);
-
-		IdentityHashMap<Schema, Schema> updatedSchemas = new IdentityHashMap<>();
-		return Schemas.visit(schema, new SchemaVisitor<>() {
-			@Override
-			public SchemaVisitorAction visitTerminal(Schema terminal) {
-				return SchemaVisitorAction.CONTINUE;
-			}
-
-			@Override
-			public SchemaVisitorAction visitNonTerminal(Schema nonTerminal) {
-				if (nonTerminal.getType() == RECORD) {
-					// Records can be referenced before they're redefined!
-					Schema newRecord = Schema.createRecord(nonTerminal.getName(), nonTerminal.getDoc(), nonTerminal.getNamespace(), nonTerminal.isError());
-					newRecord.addAllProps(nonTerminal);
-					updatedSchemas.put(nonTerminal, newRecord);
-				}
-				return SchemaVisitorAction.CONTINUE;
-			}
-
-			@Override
-			public SchemaVisitorAction afterVisitNonTerminal(Schema nonTerminal) {
-				switch (nonTerminal.getType()) {
-					case RECORD -> {
-						List<Schema.Field> sortedFieldList = nonTerminal.getFields().stream().sorted(comparator)
-								// We recreate the fields because once added to a record they cannot be reused as-is
-								// Also, the schema lookup is to ensure we're using updated, sorted types even if the fields of this record were sorted
-								.map(f -> new Schema.Field(f, get(f.schema()))).toList();
-						updatedSchemas.get(nonTerminal).setFields(sortedFieldList);
-					}
-					case ARRAY -> updatedSchemas.put(nonTerminal, Schema.createArray(get(nonTerminal.getElementType())));
-					case MAP -> updatedSchemas.put(nonTerminal, Schema.createMap(get(nonTerminal.getValueType())));
-					default -> {  // nonTerminal.getType() == UNION
-						List<Schema> newUnionTypes = nonTerminal.getTypes().stream().map(this::get).toList();
-						updatedSchemas.put(nonTerminal, Schema.createUnion(newUnionTypes));
-					}
-				}
-				return SchemaVisitorAction.CONTINUE;
-			}
-
-			private Schema get(Schema schema) {
-				return updatedSchemas.getOrDefault(schema, schema);
-			}
-
-			@Override
-			public Schema get() {
-				return get(schema);
-			}
-		});
-	}
 
 	/**
 	 * Lists all names in the Avro schema, as path from the schema root, combined its documentation (if any). Each entry in the result is a concatenation of 1
@@ -98,8 +33,8 @@ public final class AvroSchemaUtils {
 	 * @param buffer the buffer to write the result to
 	 */
 	public static void documentAsMarkdown(Schema schema, StringBuilder buffer) {
-		buffer.append("| Field(path) | Type | Documentation |\n|-------------|------|---------------|\n");
-		describeSchema(schema).forEach(entry -> buffer.append("| %s | %s | %s |\n".formatted(entry.path(), entry.type(), entry.docForMDTableCell())));
+		buffer.append(Entry.TABLE_HEADER);
+		describeSchema(schema).forEach(buffer::append);
 	}
 
 	private static Stream<Entry> describeSchema(Schema schema) {
@@ -146,13 +81,15 @@ public final class AvroSchemaUtils {
 	}
 
 	record Entry(String path, String type, String documentation) {
-		/**
-		 * Returns the documentation with some rudimentary escapes, ensuring display in a Markdown table cell works well.
-		 *
-		 * @return the documentation, escaped to be used in Markdown table cells
-		 */
-		public String docForMDTableCell() {
-			return documentation.replace("<", "&lt;").replace("\n", "<br/>");
+		private static final String TABLE_HEADER = "| Field(path) | Type | Documentation |\n|-------------|------|---------------|\n";
+		private static final String TABLE_ENTRY_FORMAT = "| %s | %s | %s |\n";
+
+		@Override
+		public String toString() {
+			// The path and type are either validated or under our control. But documentation needs escaping.
+			// Also, documentation should show newlines, which is done in tables in Markdown using <br/> tags.
+			String docForMDTableCell = this.documentation().replace("<", "&lt;").replace("\n", "<br/>");
+			return TABLE_ENTRY_FORMAT.formatted(path(), type(), docForMDTableCell);
 		}
 	}
 
