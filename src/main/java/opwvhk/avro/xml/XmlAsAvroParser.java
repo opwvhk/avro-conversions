@@ -48,6 +48,11 @@ import org.xml.sax.SAXException;
 
 import static java.util.Objects.requireNonNull;
 
+/**
+ * <p>XML parser to read Avro records.</p>
+ *
+ * <p>This parser is </p>
+ */
 public class XmlAsAvroParser {
 	private static final EnumSet<FixedType> FLOATING_POINT_TYPES = EnumSet.of(FixedType.FLOAT, FixedType.DOUBLE);
 	/**

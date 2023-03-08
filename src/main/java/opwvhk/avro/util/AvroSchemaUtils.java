@@ -10,11 +10,14 @@ import org.apache.avro.Schema;
 
 import static java.util.stream.Stream.concat;
 
+/**
+ * Utility class to document Avro schemas.
+ */
 public final class AvroSchemaUtils {
 
 	/**
-	 * Lists all names in the Avro schema, as path from the schema root, combined its documentation (if any). Each entry in the result is a concatenation of 1
-	 * or more names, separated by dots.
+	 * Lists all names in the Avro schema as rows in a Markdown table, as path from the schema root, combined its documentation (if any). Each entry in the
+	 * result is a concatenation of 1 or more names, separated by dots.
 	 *
 	 * @param schema an Avro schema
 	 * @return all name paths in the schema
@@ -26,8 +29,8 @@ public final class AvroSchemaUtils {
 	}
 
 	/**
-	 * Lists all names in the Avro schema, as path from the schema root, combined its documentation (if any). Each entry in the result is a concatenation of 1
-	 * or more names, separated by dots.
+	 * Lists all names in the Avro schema as rows in a Markdown table, as path from the schema root, combined its documentation (if any). Each entry in the
+	 * result is a concatenation of 1 or more names, separated by dots.
 	 *
 	 * @param schema an Avro schema
 	 * @param buffer the buffer to write the result to
