@@ -9,8 +9,10 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.net.URL;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.OffsetTime;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
@@ -51,7 +53,13 @@ import static java.util.Objects.requireNonNull;
 /**
  * <p>XML parser to read Avro records.</p>
  *
- * <p>This parser is </p>
+ * <p>This parser requires an XSD and Avro schema, and yields a parser that correctly parses the XML, including binary data, unwrapping
+ * arrays, etc. into an Avro record that adheres to the specified schema.</p>
+ *
+ * <p>When reading XML, any conversion that "fits" is supported. Apart from exact (scalar) type matches and matching record fields by name/alias, this includes
+ * widening conversions, reading single values as array and enum values as string. Additionally, any number can be read as float/double (losing some
+ * precision).
+ * </p>
  */
 public class XmlAsAvroParser {
 	private static final EnumSet<FixedType> FLOATING_POINT_TYPES = EnumSet.of(FixedType.FLOAT, FixedType.DOUBLE);
@@ -108,13 +116,15 @@ public class XmlAsAvroParser {
 			new Rule(logicalType(LogicalTypes.Date.class), t -> t == FixedType.DATE,
 					(r, w, m) -> new ScalarValueResolver(str -> convert(m, r, LocalDate.parse(str, DATE_FORMAT)))),
 			new Rule(logicalType(LogicalTypes.TimeMillis.class), t -> t == FixedType.TIME,
-					(r, w, m) -> new ScalarValueResolver(str -> convert(m, r, LocalTime.parse(str, TIME_FORMAT).truncatedTo(ChronoUnit.MILLIS)))),
+					(r, w, m) -> new ScalarValueResolver(str -> convert(m, r, OffsetTime.parse(str, TIME_FORMAT).truncatedTo(ChronoUnit.MILLIS)))),
 			new Rule(logicalType(LogicalTypes.TimeMicros.class), t -> t == FixedType.TIME,
-					(r, w, m) -> new ScalarValueResolver(str -> convert(m, r, LocalTime.parse(str, TIME_FORMAT).truncatedTo(ChronoUnit.MICROS)))),
+					(r, w, m) -> new ScalarValueResolver(str -> convert(m, r, OffsetTime.parse(str, TIME_FORMAT).truncatedTo(ChronoUnit.MICROS)))),
 			new Rule(logicalType(LogicalTypes.TimestampMillis.class), t -> t == FixedType.DATETIME,
-					(r, w, m) -> new ScalarValueResolver(str -> convert(m, r, ZonedDateTime.parse(str, DATE_TIME_FORMAT).toInstant().truncatedTo(ChronoUnit.MILLIS)))),
+					(r, w, m) -> new ScalarValueResolver(str -> convert(m, r, ZonedDateTime.parse(str, DATE_TIME_FORMAT).toInstant()
+							.truncatedTo(ChronoUnit.MILLIS)))),
 			new Rule(logicalType(LogicalTypes.TimestampMicros.class), t -> t == FixedType.DATETIME,
-					(r, w, m) -> new ScalarValueResolver(str -> convert(m, r, ZonedDateTime.parse(str, DATE_TIME_FORMAT).toInstant().truncatedTo(ChronoUnit.MICROS)))),
+					(r, w, m) -> new ScalarValueResolver(str -> convert(m, r, ZonedDateTime.parse(str, DATE_TIME_FORMAT).toInstant()
+							.truncatedTo(ChronoUnit.MICROS)))),
 			// Binary types: the XML decides how to parse them (hex or base64)
 			new Rule(rawType(Schema.Type.BYTES), t -> t == FixedType.BINARY_HEX, (r, w, m) -> new ScalarValueResolver(FixedType.BINARY_HEX::parse)),
 			new Rule(rawType(Schema.Type.BYTES), t -> t == FixedType.BINARY_BASE64, (r, w, m) -> new ScalarValueResolver(FixedType.BINARY_BASE64::parse))
@@ -137,7 +147,13 @@ public class XmlAsAvroParser {
 
 	static Object enumSymbol(String input, Schema enumSchema, GenericData model) {
 		// As the XML was validated before parsing, we know this code will work
-		return model.createEnum(enumSchema.getEnumSymbols().contains(input) ? input : enumSchema.getEnumDefault(), enumSchema);
+		String symbol;
+		if (enumSchema.getEnumSymbols().contains(input)) {
+			symbol = input;
+		} else {
+			symbol = requireNonNull(enumSchema.getEnumDefault(), "Invalid symbol for enum without default: " + input);
+		}
+		return model.createEnum(symbol, enumSchema);
 	}
 
 	static Predicate<Type> decimal(int maxBitSize) {
@@ -159,10 +175,8 @@ public class XmlAsAvroParser {
 		// Note: as the XML was validated before parsing, we're certain the precision is not too large.
 		return text -> convert(model, readSchema, new BigDecimal(text).setScale(scale, RoundingMode.UNNECESSARY));
 	}
+
 	private static Object convert(GenericData model, Schema schemaWithLogicalType, Object value) {
-		if (value == null) {
-			return null;
-		}
 		LogicalType logicalType = schemaWithLogicalType.getLogicalType();
 		Conversion<?> conversion = model.getConversionByClass(value.getClass(), logicalType);
 		return Conversions.convertToRawType(value, schemaWithLogicalType, logicalType, conversion);
@@ -172,6 +186,18 @@ public class XmlAsAvroParser {
 
 	private final ValueResolver resolver;
 
+	/**
+	 * <p>Create an XML parser for the specified XSD and root element, reading data into records created by the model for the given read schema.</p>
+	 *
+	 * <p>The resulting parser can read any data, also invalid data, as long as it fits the result. Be aware though, that parsing invalid data is likely to
+	 * result in invalid records. These may/will cause unspecified problems downstream.</p>
+	 *
+	 * @param xsdLocation the XSD defining the data to read
+	 * @param rootElement the root element that will be read
+	 * @param readSchema  the schema of the resulting records
+	 * @param model       the model to create records
+	 * @throws IOException when the XSD cannot be read
+	 */
 	public XmlAsAvroParser(URL xsdLocation, String rootElement, Schema readSchema, GenericData model) throws IOException {
 		this(xsdLocation.toExternalForm(), createResolver(xsdLocation, rootElement, readSchema, model));
 	}
@@ -180,17 +206,20 @@ public class XmlAsAvroParser {
 		XsdAnalyzer xsdAnalyzer = new XsdAnalyzer(xsdLocation);
 		Type writeType = xsdAnalyzer.typeOf(rootElement);
 
-		ensureConversionFor(model, LogicalTypes.date(), TimeConversions.DateConversion::new);
-		ensureConversionFor(model, LogicalTypes.timeMillis(), TimeConversions.TimeMillisConversion::new);
-		ensureConversionFor(model, LogicalTypes.timeMicros(), TimeConversions.TimeMicrosConversion::new);
-		ensureConversionFor(model, LogicalTypes.timestampMillis(), TimeConversions.TimestampMillisConversion::new);
-		ensureConversionFor(model, LogicalTypes.timestampMicros(), TimeConversions.TimestampMicrosConversion::new);
-		ensureConversionFor(model, LogicalTypes.decimal(1, 1), Conversions.DecimalConversion::new);
+		ensureConversionFor(model, LogicalTypes.date(), LocalDate.class, TimeConversions.DateConversion::new);
+		ensureConversionFor(model, LogicalTypes.timestampMillis(), Instant.class, TimeConversions.TimestampMillisConversion::new);
+		ensureConversionFor(model, LogicalTypes.timestampMicros(), Instant.class, TimeConversions.TimestampMicrosConversion::new);
+		ensureConversionFor(model, LogicalTypes.decimal(1, 1), BigDecimal.class, Conversions.DecimalConversion::new);
+		// Note: for each of the logical types, the last conversion becomes the default for the logical type (if queried without class).
+		ensureConversionFor(model, LogicalTypes.timeMillis(), LocalTime.class, TimeConversions.TimeMillisConversion::new);
+		ensureConversionFor(model, LogicalTypes.timeMillis(), OffsetTime.class, AvroConversions.OffsetTimeMillisConversion::new);
+		ensureConversionFor(model, LogicalTypes.timeMicros(), LocalTime.class, TimeConversions.TimeMicrosConversion::new);
+		ensureConversionFor(model, LogicalTypes.timeMicros(), OffsetTime.class, AvroConversions.OffsetTimeMicrosConversion::new);
 		return resolve(writeType, readSchema, model);
 	}
 
-	private static void ensureConversionFor(GenericData model, LogicalType logicalType, Supplier<Conversion<?>> conversionSupplier) {
-		if (model.getConversionFor(logicalType) == null) {
+	private static void ensureConversionFor(GenericData model, LogicalType logicalType, Class<?> valueClass, Supplier<Conversion<?>> conversionSupplier) {
+		if (model.getConversionByClass(valueClass, logicalType) == null) {
 			model.addLogicalTypeConversion(conversionSupplier.get());
 		}
 	}
@@ -324,16 +353,44 @@ public class XmlAsAvroParser {
 		}
 	}
 
+	/**
+	 * Parse the given source into records.
+	 *
+	 * @param source a source of XML data
+	 * @param <T>    the record type
+	 * @return the parsed record
+	 * @throws IOException  when the XML cannot be read
+	 * @throws SAXException when the XML cannot be parsed
+	 */
 	public <T> T parse(InputSource source) throws IOException, SAXException {
 		return parse(source, false);
 	}
 
+	/**
+	 * Parse the given source into records.
+	 *
+	 * @param source     a source of XML data
+	 * @param enforceXsd if {@code true}, parsing will fail if the XML is not valid (this includes a missing namespace)
+	 * @param <T>        the record type
+	 * @return the parsed record
+	 * @throws IOException  when the XML cannot be read
+	 * @throws SAXException when the XML cannot be parsed
+	 */
 	public <T> T parse(InputSource source, boolean enforceXsd) throws IOException, SAXException {
 		XmlRecordHandler handler = new XmlRecordHandler(resolver);
 		parser.parse(source, new SimpleContentAdapter(handler, enforceXsd));
 		return handler.getValue();
 	}
 
+	/**
+	 * Parse the given source into records.
+	 *
+	 * @param url a location to read XML data from
+	 * @param <T> the record type
+	 * @return the parsed record
+	 * @throws IOException  when the XML cannot be read
+	 * @throws SAXException when the XML cannot be parsed
+	 */
 	public <T> T parse(URL url) throws IOException, SAXException {
 		InputSource inputSource = new InputSource();
 		inputSource.setSystemId(url.toExternalForm());
