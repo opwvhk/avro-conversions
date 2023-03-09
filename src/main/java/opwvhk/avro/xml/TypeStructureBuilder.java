@@ -12,7 +12,9 @@ import opwvhk.avro.xml.datamodel.Type;
 import static java.util.Objects.requireNonNull;
 
 /**
- * <p>Methods in this class are always called in a specific order, depending on whether a specific element type was already encountered:<ol>
+ * <p>Methods in this class are always called in a specific order, depending on whether a specific element type was already encountered:</p>
+ *
+ * <ol>
  *
  * <li>{@link #startElement(FieldData, TypeData, List) startElement(FieldData, TypeData, List&lt;FieldData&gt;)}<br/>
  * Called for each <em>new</em> type. If the type has already been encountered, skip to
@@ -33,7 +35,7 @@ import static java.util.Objects.requireNonNull;
  * <li>{@link #element(TypeFields, FieldData, Type)}<br/>
  * Called after each nested call sequence, to embed the resulting schema in the parent element.</li>
  *
- * </ol></p>
+ * </ol>
  *
  * <p><strong>Preventing infinite recursion for recursive XML schemas</strong></p>
  *
