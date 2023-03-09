@@ -1,7 +1,10 @@
 package opwvhk.avro.xml;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
 import org.xml.sax.helpers.AttributesImpl;
 import org.xml.sax.helpers.DefaultHandler;
 
@@ -14,14 +17,20 @@ import static opwvhk.avro.xml.Constants.XML_SCHEMA_DEFINITION_NAMESPACES;
  * <p>Requires the parser to support namespaces (and return namespace attributes).</p>
  */
 class SimpleContentAdapter extends DefaultHandler {
+	/**
+	 * Logger for this class.
+	 */
+	private static final Logger LOGGER = LoggerFactory.getLogger(SimpleContentAdapter.class);
 	private static final int DEFAULT_BUFFER_CAPACITY = 1024;
 	private final SimpleContentHandler simpleContentHandler;
+	private final boolean enforceXsd;
 	private final StringBuilder charBuffer;
 	private int reassemblingDepth;
 	private boolean reassemblingStartTag;
 
-	public SimpleContentAdapter(SimpleContentHandler simpleContentHandler) {
+	public SimpleContentAdapter(SimpleContentHandler simpleContentHandler, boolean enforceXsd) {
 		this.simpleContentHandler = simpleContentHandler;
+		this.enforceXsd = enforceXsd;
 		charBuffer = new StringBuilder(DEFAULT_BUFFER_CAPACITY);
 	}
 
@@ -125,6 +134,13 @@ class SimpleContentAdapter extends DefaultHandler {
 			}
 			// Can be added as-is, because whitespace does not need escaping for XML parsers
 			charBuffer.append(ch, start, length);
+		}
+	}
+
+	@Override
+	public void error(SAXParseException e) throws SAXException {
+		if (enforceXsd) {
+			throw e;
 		}
 	}
 }

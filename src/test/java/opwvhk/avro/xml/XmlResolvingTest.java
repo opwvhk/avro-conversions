@@ -23,7 +23,9 @@ import org.apache.avro.io.JsonEncoder;
 import org.assertj.core.api.Assertions;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
 
 import static java.util.Objects.requireNonNull;
 import static opwvhk.avro.xml.datamodel.TestStructures.array;
@@ -167,6 +169,21 @@ public class XmlResolvingTest {
 
 		URL invalidXmlLocation = requireNonNull(getClass().getResource("resolvingTestInvalidWithoutNamespace.xml"));
 		assertThatThrownBy(() -> parser.parse(invalidXmlLocation)).isInstanceOf(Exception.class);
+	}
+
+	@Test
+	public void testFailuresForFoo() throws IOException {
+		URL xsdLocation = requireNonNull(getClass().getResource("resolvingTest.xsd"));
+		Schema readSchema = new Schema.Parser().parse(getClass().getResourceAsStream("resolvingTest.avsc"));
+		XmlAsAvroParser parser = new XmlAsAvroParser(xsdLocation, "outer", readSchema, MODEL);
+
+		InputSource inputSource1 = new InputSource();
+		inputSource1.setSystemId(requireNonNull(getClass().getResource("resolvingTestMinimalWithoutNamespace.xml")).toExternalForm());
+		assertThatThrownBy(() -> parser.parse(inputSource1, true)).isInstanceOf(SAXException.class);
+
+		InputSource inputSource3 = new InputSource();
+		inputSource3.setSystemId(requireNonNull(getClass().getResource("resolvingTestInvalidWithNamespace.xml")).toExternalForm());
+		assertThatThrownBy(() -> parser.parse(inputSource3, true)).isInstanceOf(SAXException.class);
 	}
 
 	@Test

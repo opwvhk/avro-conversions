@@ -160,8 +160,12 @@ public class XmlAsAvroParser {
 		return text -> convert(model, readSchema, new BigDecimal(text).setScale(scale, RoundingMode.UNNECESSARY));
 	}
 	private static Object convert(GenericData model, Schema schemaWithLogicalType, Object value) {
+		if (value == null) {
+			return null;
+		}
 		LogicalType logicalType = schemaWithLogicalType.getLogicalType();
-		return Conversions.convertToRawType(value, schemaWithLogicalType, logicalType, model.getConversionFor(logicalType));
+		Conversion<?> conversion = model.getConversionByClass(value.getClass(), logicalType);
+		return Conversions.convertToRawType(value, schemaWithLogicalType, logicalType, conversion);
 	}
 
 	private final SAXParser parser;
@@ -321,8 +325,12 @@ public class XmlAsAvroParser {
 	}
 
 	public <T> T parse(InputSource source) throws IOException, SAXException {
+		return parse(source, false);
+	}
+
+	public <T> T parse(InputSource source, boolean enforceXsd) throws IOException, SAXException {
 		XmlRecordHandler handler = new XmlRecordHandler(resolver);
-		parser.parse(source, new SimpleContentAdapter(handler));
+		parser.parse(source, new SimpleContentAdapter(handler, enforceXsd));
 		return handler.getValue();
 	}
 
