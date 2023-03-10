@@ -144,7 +144,7 @@ class TypeStructureBuilder {
 	}
 
 	/**
-	 * Called when encountering an 'any' tag inside an XML element definition
+	 * Called when encountering an 'any' tag inside an XML element definition.
 	 *
 	 * @param parentTypeFields the fields for the element that contains any tag
 	 */

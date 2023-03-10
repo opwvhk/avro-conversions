@@ -18,6 +18,7 @@ import static java.util.Objects.requireNonNull;
 /**
  * Container class with various utilities that didn't fit elsewhere.
  */
+@SuppressWarnings("WeakerAccess")
 public final class Utils {
 	private static final Pattern UNDERSCORES_PLUS_FOLLOWERS = Pattern.compile("(?U)_([^_])([^_]*)");
 	private static final Function<MatchResult, String> TWO_GROUPS_TO_UPPER_LOWER_CASE = m -> m.group(1).toUpperCase(Locale.ROOT) + m.group(2).toLowerCase(

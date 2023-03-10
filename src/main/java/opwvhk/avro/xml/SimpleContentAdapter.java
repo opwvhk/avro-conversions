@@ -28,14 +28,14 @@ class SimpleContentAdapter extends DefaultHandler {
 	private int reassemblingDepth;
 	private boolean reassemblingStartTag;
 
-	public SimpleContentAdapter(SimpleContentHandler simpleContentHandler, boolean enforceXsd) {
+	SimpleContentAdapter(SimpleContentHandler simpleContentHandler, boolean enforceXsd) {
 		this.simpleContentHandler = simpleContentHandler;
 		this.enforceXsd = enforceXsd;
 		charBuffer = new StringBuilder(DEFAULT_BUFFER_CAPACITY);
 	}
 
 	@Override
-	public void startDocument() throws SAXException {
+	public void startDocument() {
 		charBuffer.setLength(0);
 		reassemblingDepth = -1;
 		reassemblingStartTag = false;
@@ -44,12 +44,12 @@ class SimpleContentAdapter extends DefaultHandler {
 	}
 
 	@Override
-	public void endDocument() throws SAXException {
+	public void endDocument() {
 		simpleContentHandler.endDocument();
 	}
 
 	@Override
-	public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
+	public void startElement(String uri, String localName, String qName, Attributes attributes) {
 		if (reassemblingDepth < 0) {
 			AttributesImpl filteredAttrs = new AttributesImpl();
 			for (int i = 0; i < attributes.getLength(); i++) {
@@ -81,7 +81,7 @@ class SimpleContentAdapter extends DefaultHandler {
 	}
 
 	@Override
-	public void endElement(String uri, String localName, String qName) throws SAXException {
+	public void endElement(String uri, String localName, String qName) {
 		if (reassemblingDepth > 0) {
 			if (reassemblingStartTag) {
 				charBuffer.append("/>");
@@ -105,7 +105,7 @@ class SimpleContentAdapter extends DefaultHandler {
 	}
 
 	@Override
-	public void characters(char[] ch, int start, int length) throws SAXException {
+	public void characters(char[] ch, int start, int length) {
 		String content = String.valueOf(ch, start, length);
 		if (reassemblingDepth >= 0) {
 			if (reassemblingStartTag) {

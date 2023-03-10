@@ -66,7 +66,7 @@ public class XmlAsAvroParser {
 	/**
 	 * Date format as specified for XML.
 	 */
-	public static final DateTimeFormatter DATE_FORMAT = new DateTimeFormatterBuilder()
+	private static final DateTimeFormatter DATE_FORMAT = new DateTimeFormatterBuilder()
 			.appendValue(ChronoField.YEAR, 4)
 			.appendLiteral("-")
 			.appendValue(ChronoField.MONTH_OF_YEAR, 2)
@@ -76,7 +76,7 @@ public class XmlAsAvroParser {
 	/**
 	 * Time format as specified for XML, but limited to nanoseconds (XML specified no limit to the precision).
 	 */
-	public static final DateTimeFormatter TIME_FORMAT = new DateTimeFormatterBuilder()
+	private static final DateTimeFormatter TIME_FORMAT = new DateTimeFormatterBuilder()
 			.parseCaseInsensitive()
 			.appendValue(ChronoField.HOUR_OF_DAY, 2)
 			.appendLiteral(":")
@@ -91,7 +91,7 @@ public class XmlAsAvroParser {
 	/**
 	 * DateTime format as specified for XML, but limited to nanoseconds (XML specified no limit to the precision).
 	 */
-	public static final DateTimeFormatter DATE_TIME_FORMAT = new DateTimeFormatterBuilder()
+	private static final DateTimeFormatter DATE_TIME_FORMAT = new DateTimeFormatterBuilder()
 			.parseCaseInsensitive()
 			.append(DATE_FORMAT)
 			.appendLiteral("T")
@@ -130,22 +130,22 @@ public class XmlAsAvroParser {
 			new Rule(rawType(Schema.Type.BYTES), t -> t == FixedType.BINARY_BASE64, (r, w, m) -> new ScalarValueResolver(FixedType.BINARY_BASE64::parse))
 	);
 
-	static Predicate<Schema> rawType(Schema.Type type) {
+	private static Predicate<Schema> rawType(Schema.Type type) {
 		return s -> s.getLogicalType() == null && s.getType() == type;
 	}
 
-	static Predicate<Schema> logicalType(Class<? extends LogicalType> logicalTypeClass) {
+	private static Predicate<Schema> logicalType(Class<? extends LogicalType> logicalTypeClass) {
 		return s -> s.getLogicalType() != null && logicalTypeClass.isInstance(s.getLogicalType());
 	}
 
-	static boolean isValidEnum(Schema readSchema, Type writeType) {
+	private static boolean isValidEnum(Schema readSchema, Type writeType) {
 		// Not an issue: enums are generally not that large
 		//noinspection SlowListContainsAll
 		return writeType instanceof EnumType writeEnum && readSchema.getType() == Schema.Type.ENUM &&
 		       (readSchema.getEnumDefault() != null || readSchema.getEnumSymbols().containsAll(writeEnum.enumSymbols()));
 	}
 
-	static Object enumSymbol(String input, Schema enumSchema, GenericData model) {
+	private static Object enumSymbol(String input, Schema enumSchema, GenericData model) {
 		// As the XML was validated before parsing, we know this code will work
 		String symbol;
 		if (enumSchema.getEnumSymbols().contains(input)) {
@@ -156,7 +156,7 @@ public class XmlAsAvroParser {
 		return model.createEnum(symbol, enumSchema);
 	}
 
-	static Predicate<Type> decimal(int maxBitSize) {
+	private static Predicate<Type> decimal(int maxBitSize) {
 		return t -> t instanceof DecimalType dt &&
 		            dt.bitSize() <= maxBitSize;
 	}
@@ -169,7 +169,7 @@ public class XmlAsAvroParser {
 		       readDecimal.getScale() >= writeDecimal.scale();
 	}
 
-	static Function<String, Object> decimalParser(Schema readSchema, GenericData model) {
+	private static Function<String, Object> decimalParser(Schema readSchema, GenericData model) {
 		LogicalTypes.Decimal logicalType = (LogicalTypes.Decimal) readSchema.getLogicalType();
 		int scale = logicalType.getScale();
 		// Note: as the XML was validated before parsing, we're certain the precision is not too large.
@@ -356,19 +356,6 @@ public class XmlAsAvroParser {
 	/**
 	 * Parse the given source into records.
 	 *
-	 * @param source a source of XML data
-	 * @param <T>    the record type
-	 * @return the parsed record
-	 * @throws IOException  when the XML cannot be read
-	 * @throws SAXException when the XML cannot be parsed
-	 */
-	public <T> T parse(InputSource source) throws IOException, SAXException {
-		return parse(source, false);
-	}
-
-	/**
-	 * Parse the given source into records.
-	 *
 	 * @param source     a source of XML data
 	 * @param enforceXsd if {@code true}, parsing will fail if the XML is not valid (this includes a missing namespace)
 	 * @param <T>        the record type
@@ -383,7 +370,7 @@ public class XmlAsAvroParser {
 	}
 
 	/**
-	 * Parse the given source into records.
+	 * Parse the given source into records. Does not enforce the XSD.
 	 *
 	 * @param url a location to read XML data from
 	 * @param <T> the record type
@@ -394,7 +381,7 @@ public class XmlAsAvroParser {
 	public <T> T parse(URL url) throws IOException, SAXException {
 		InputSource inputSource = new InputSource();
 		inputSource.setSystemId(url.toExternalForm());
-		return parse(inputSource);
+		return parse(inputSource, false);
 	}
 
 	private record Rule(BiPredicate<Schema, Type> testReadAndWriteTypes, ResolverFactory resolverFactory)

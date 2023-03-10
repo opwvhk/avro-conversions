@@ -30,7 +30,7 @@ import static org.apache.ws.commons.schema.constants.Constants.*;
  * XSD analyzer; can build an Avro schema corresponding to an XML schema, or a SAX {@link DefaultHandler} to parse it into an Avro record.
  */
 public class XsdAnalyzer {
-	public static final Set<QName> USER_RECOGNIZED_TYPES = Set.of(XSD_BOOLEAN, XSD_FLOAT, XSD_DOUBLE, XSD_DATE, XSD_DATETIME, XSD_TIME, XSD_INT, XSD_LONG,
+	private static final Set<QName> USER_RECOGNIZED_TYPES = Set.of(XSD_BOOLEAN, XSD_FLOAT, XSD_DOUBLE, XSD_DATE, XSD_DATETIME, XSD_TIME, XSD_INT, XSD_LONG,
 			XSD_DECIMAL, XSD_STRING, XSD_ANYURI, XSD_HEXBIN, XSD_BASE64);
 
 	private final XmlSchema schema;
@@ -121,11 +121,7 @@ public class XsdAnalyzer {
 	 * @return a descriptor describing the XML schema for use as an Object
 	 */
 	Type typeOf(QName rootElement) {
-		return walkSchema(rootElement, new TypeStructureBuilder());
-	}
-
-	protected Type walkSchema(QName rootElement, TypeStructureBuilder structureBuilder) {
-		TypeBuildingVisitor visitor = new TypeBuildingVisitor(structureBuilder, namespaces::get, Integer.MAX_VALUE);
+		TypeBuildingVisitor visitor = new TypeBuildingVisitor(new TypeStructureBuilder(), namespaces::get, Integer.MAX_VALUE);
 		walkSchema(rootElement, visitor);
 		Type result = visitor.result();
 		if (result == null) {
@@ -147,7 +143,7 @@ public class XsdAnalyzer {
 		schemaWalker.walk(element);
 	}
 
-	XmlSchemaElement findRootElement(QName rootElement) {
+	private XmlSchemaElement findRootElement(QName rootElement) {
 		XmlSchemaElement element = this.schema.getElementByName(rootElement);
 		if (element == null) {
 			throw new IllegalArgumentException("There is no root element " + rootElement + " defined in the XSD");

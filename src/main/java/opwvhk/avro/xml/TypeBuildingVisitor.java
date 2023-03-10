@@ -75,13 +75,13 @@ class TypeBuildingVisitor implements XmlSchemaVisitor {
 	private final IdentityHashMap<XmlSchemaType, String> generatedClassNames;
 	private Type result;
 
-	public TypeBuildingVisitor(TypeStructureBuilder structureBuilder, Function<String, String> xmlToTypeNamespace,
+	TypeBuildingVisitor(TypeStructureBuilder structureBuilder, Function<String, String> xmlToTypeNamespace,
 	                           int maxDuplicateClasses) {
 		this.structureBuilder = structureBuilder;
 		this.xmlToTypeNamespace = xmlToTypeNamespace;
 		this.maxDuplicateClasses = maxDuplicateClasses;
 		cardinalityStack = new ArrayDeque<>();
-		cardinalityStack.push(Cardinality.defaultValue());
+		cardinalityStack.push(Cardinality.DEFAULT_VALUE);
 		contextStack = new ArrayDeque<>();
 		generatedClassNames = new IdentityHashMap<>();
 	}
@@ -116,8 +116,8 @@ class TypeBuildingVisitor implements XmlSchemaVisitor {
 		String defaultValue = scalarType == null ? null : element.getDefaultValue();
 		FieldData fieldData = new FieldData(element.getName(), extractDocumentation(element), elementCardinality, scalarType, defaultValue);
 
-		cardinalityStack.push(Cardinality.defaultValue());
-		contextStack.push(new VisitorContext(fieldData, typeData, null));
+		cardinalityStack.push(Cardinality.DEFAULT_VALUE);
+		contextStack.push(new VisitorContext(fieldData, typeData));
 	}
 
 	private TypeData typeData(XmlSchemaNamed element, XmlSchemaType schemaType) {
@@ -131,7 +131,7 @@ class TypeBuildingVisitor implements XmlSchemaVisitor {
 		return new TypeData(className, doc, schemaType.isMixed());
 	}
 
-	String className(XmlSchemaNamed element, XmlSchemaType schemaType) {
+	private String className(XmlSchemaNamed element, XmlSchemaType schemaType) {
 		QName name = schemaType.getQName();
 		boolean mustHaveSuffix;
 		if (name == null) {
@@ -364,17 +364,17 @@ class TypeBuildingVisitor implements XmlSchemaVisitor {
 		throw new IllegalArgumentException("'any' attributes are not supported");
 	}
 
-	static final class VisitorContext {
+	private static final class VisitorContext {
 		private final FieldData fieldData;
 		private final TypeData typeData;
 		private final List<FieldData> typeAttributes;
 		private TypeFields typeFields;
 
-		public VisitorContext(FieldData fieldData, TypeData typeData, TypeFields typeFields) {
+		private VisitorContext(FieldData fieldData, TypeData typeData) {
 			this.fieldData = fieldData;
 			this.typeData = typeData;
 			typeAttributes = new ArrayList<>();
-			this.typeFields = typeFields;
+			this.typeFields = null;
 		}
 
 		private void addAttribute(FieldData attributeField) {

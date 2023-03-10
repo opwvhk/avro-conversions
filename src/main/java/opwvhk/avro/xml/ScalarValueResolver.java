@@ -8,7 +8,7 @@ class ScalarValueResolver
 		extends ValueResolver {
 	private final Function<String, Object> converter;
 
-	public ScalarValueResolver(Function<String, Object> converter) {
+	ScalarValueResolver(Function<String, Object> converter) {
 		this.converter = converter;
 	}
 
