@@ -52,11 +52,11 @@ class TypeFields {
 		elementFields.add(createField(fieldCardinality, name, doc, type, defaultValue));
 	}
 
-	StructType.Field createField(Cardinality fieldCardinality, String name, String doc, Type type, Object defaultValue) {
+	private StructType.Field createField(Cardinality fieldCardinality, String name, String doc, Type type, Object defaultValue) {
 		return new StructType.Field(name, doc, fieldCardinality, type, defaultValue);
 	}
 
-	List<StructType.Field> fields() {
+	private List<StructType.Field> fields() {
 		Stream<StructType.Field> elementFieldStream;
 		if (shouldNotParseElements) {
 			elementFieldStream = Stream.of(

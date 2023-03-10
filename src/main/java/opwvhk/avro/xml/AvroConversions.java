@@ -98,7 +98,7 @@ public final class AvroConversions {
 			ZoneOffset zone = zoneFor(schema);
 			OffsetTime timeAtOffset = value.withOffsetSameInstant(zone);
 			LocalTime localTime = timeAtOffset.toLocalTime();
-			return (long) TimeUnit.NANOSECONDS.toMicros(localTime.toNanoOfDay());
+			return TimeUnit.NANOSECONDS.toMicros(localTime.toNanoOfDay());
 		}
 
 		private static ZoneOffset zoneFor(Schema schema) {

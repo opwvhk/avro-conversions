@@ -11,17 +11,31 @@ import java.util.Optional;
 import java.util.Set;
 
 import opwvhk.avro.util.Utils;
+import org.apache.avro.JsonProperties;
+import org.apache.avro.Schema;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
+import static java.util.Objects.requireNonNull;
 import static opwvhk.avro.util.Utils.nonRecursive;
+import static org.apache.avro.Schema.Field.NULL_DEFAULT_VALUE;
+import static org.apache.avro.Schema.Type.NULL;
 
+/**
+ * A structural type with named fields.
+ */
 public final class StructType implements Type {
 	private final String name;
 	private final String documentation;
 	private List<Field> fields;
 	private Map<String, Field> fieldsByName;
 
+	/**
+	 * Create a {@code StructType}.
+	 *
+	 * @param name          the (full) name of the type
+	 * @param documentation any documentation describing the type
+	 */
 	public StructType(String name, String documentation) {
 		this.name = name;
 		this.documentation = documentation;
@@ -29,23 +43,33 @@ public final class StructType implements Type {
 		fieldsByName = null;
 	}
 
-	public String name() {
-		return name;
-	}
-
-	public String documentation() {
-		return documentation;
-	}
-
+	/**
+	 * Returns the fields defined for this type.
+	 *
+	 * @return the list of fields, or {@code null} if they haven't been defined yet
+	 */
 	public List<Field> fields() {
 		return fields;
 	}
 
+	/**
+	 * Set the given fields on this structural type, and return it. Fields can be set only once.
+	 *
+	 * @param fields the fields to set on the structural type
+	 * @return this instance
+	 * @see #setFields(List) setFields(List&lt;Field&gt;)
+	 */
 	public StructType withFields(Field... fields) {
 		setFields(asList(fields));
 		return this;
 	}
 
+	/**
+	 * Set the given list of fields on this structural type. Fields can be set only once.
+	 *
+	 * @param fields the fields to set on the structural type
+	 * @see #withFields(Field...)
+	 */
 	public void setFields(List<Field> fields) {
 		if (this.fields != null) {
 			throw new IllegalStateException("Fields can be set only once");
@@ -68,8 +92,24 @@ public final class StructType implements Type {
 		this.fields = List.copyOf(fields);
 	}
 
-	Field getField(String name) {
-		return fieldsByName.get(name);
+	@Override
+	public Schema toSchema() {
+		List<Schema.Field> avroFields = this.fields.stream().map(f -> {
+			Schema fieldSchema = f.type().toSchema();
+			Object defaultValue = f.defaultValue();
+			if (f.cardinality() == Cardinality.MULTIPLE) {
+				fieldSchema = Schema.createArray(fieldSchema);
+			} else if (f.cardinality() == Cardinality.OPTIONAL) {
+				if (defaultValue != StructType.Field.NULL_VALUE && defaultValue != JsonProperties.NULL_VALUE && defaultValue != NULL_DEFAULT_VALUE) {
+					fieldSchema = Schema.createUnion(fieldSchema, Schema.create(NULL));
+				} else {
+					fieldSchema = Schema.createUnion(Schema.create(NULL), fieldSchema);
+				}
+			}
+			return new Schema.Field(f.name(), fieldSchema, f.documentation(),
+					defaultValue == StructType.Field.NULL_VALUE ? NULL_DEFAULT_VALUE : defaultValue);
+		}).toList();
+		return Schema.createRecord(name, documentation, null, false, avroFields);
 	}
 
 	@Override
@@ -81,6 +121,7 @@ public final class StructType implements Type {
 			return false;
 		}
 		StructType that = (StructType) o;
+		//noinspection NonFinalFieldReferenceInEquals
 		return nonRecursive("StructEquality", this, that, true,
 				() -> name.equals(that.name) && Objects.equals(documentation, that.documentation) && containSame(fields, that.fields));
 	}
@@ -122,7 +163,7 @@ public final class StructType implements Type {
 				       List<Field> sortedFields = new ArrayList<>(fields);
 				       sortedFields.sort(Comparator.comparing(Field::name));
 				       for (Field field : sortedFields) {
-					       buf.append("\n  ").append(indent).append(field.cardinality.formatName(field.name));
+					       buf.append("\n  ").append(indent).append(field.cardinality().formatName(field.name()));
 					       if (field.documentation() != null) {
 						       buf.append("\n    ").append(indent).append("Doc: ").append(field.documentation());
 					       }
@@ -137,7 +178,13 @@ public final class StructType implements Type {
 		       });
 	}
 
+	/**
+	 * A field in a structural type.
+	 */
 	public static final class Field {
+		/**
+		 * Constant to use to denote a {@code null} default value (as {@code null} means "no default value").
+		 */
 		public static final Object NULL_VALUE = new Object();
 		private StructType structType;
 		private final String name;
@@ -146,16 +193,21 @@ public final class StructType implements Type {
 		private final Type type;
 		private final Object defaultValue;
 
+		/**
+		 * Create a field.
+		 *
+		 * @param name          the name of the field
+		 * @param documentation documentation describing the field, if any
+		 * @param cardinality   the cardinality of the field
+		 * @param type          the field type
+		 * @param defaultValue  a default value to use, if any
+		 */
 		public Field(String name, String documentation, Cardinality cardinality, Type type, Object defaultValue) {
-			if (type == null) {
-				throw new NullPointerException("Cannot create field without a type.");
-			}
-
 			structType = null;
-			this.name = name;
+			this.name = requireNonNull(name, "Cannot create field without a name.");
 			this.documentation = documentation;
-			this.cardinality = cardinality;
-			this.type = type;
+			this.cardinality = requireNonNull(cardinality, "Cannot create field without cardinality.");
+			this.type = requireNonNull(type, "Cannot create field without a type.");
 			this.defaultValue = switch (cardinality) {
 				// Override default value for arrays: nulls cause problems, amd anything else doesn't make sense.
 				case MULTIPLE -> emptyList();
@@ -165,30 +217,45 @@ public final class StructType implements Type {
 			};
 		}
 
-		void setStructType(StructType structType) {
+		private void setStructType(StructType structType) {
 			if (this.structType != null) {
 				throw new IllegalStateException("Field %s is already part of a StructType".formatted(name()));
 			}
 			this.structType = structType;
 		}
 
+		/**
+		 * Return the name of the field.
+		 *
+		 * @return the field name
+		 */
 		public String name() {
 			return name;
 		}
 
-		public String documentation() {
+		private String documentation() {
 			return documentation;
 		}
 
+		/**
+		 * Return the field cardinality.
+		 *
+		 * @return the cardinality
+		 */
 		public Cardinality cardinality() {
 			return cardinality;
 		}
 
+		/**
+		 * Return the field type.
+		 *
+		 * @return the field type
+		 */
 		public Type type() {
 			return type;
 		}
 
-		public Object defaultValue() {
+		private Object defaultValue() {
 			return defaultValue;
 		}
 

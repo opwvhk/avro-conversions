@@ -18,7 +18,7 @@ class RecordResolver
 	private final Map<String, Integer> fieldPositionsByName;
 	private final Set<String> arrayFields;
 
-	public RecordResolver(GenericData model, Schema recordSchema) {
+	RecordResolver(GenericData model, Schema recordSchema) {
 		this.model = model;
 		this.recordSchema = recordSchema;
 		resolversByName = new HashMap<>();

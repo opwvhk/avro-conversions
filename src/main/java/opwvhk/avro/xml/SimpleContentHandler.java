@@ -26,19 +26,17 @@ interface SimpleContentHandler {
 	/**
 	 * Called at the beginning of a document. This is the first method to be invoked.
 	 *
-	 * @throws SAXException any SAX exception, possibly wrapping another exception
 	 * @see #endDocument
 	 */
-	void startDocument() throws SAXException;
+	void startDocument();
 
 	/**
 	 * Called at the end of a document, if parsing was successful. When this method returns, the caller will pass control to the application.
 	 *
-	 * @throws SAXException any SAX exception, possibly wrapping another exception
 	 * @apiNote if parsing is not successful, the parser may abort with a {@link SAXException} and this method will never be called.
 	 * @see #startDocument
 	 */
-	void endDocument() throws SAXException;
+	void endDocument();
 
 	/**
 	 * Called whenever a new element starts.
@@ -48,17 +46,16 @@ interface SimpleContentHandler {
 	 *
 	 * <p>The attribute list will not contain attributes used for namespace declarations (xmlns* attributes).</p>
 	 *
-	 * <p>Like {@link #characters characters()}, attribute values may have characters that need more than one <code>char</code> value.</p>
+	 * <p>Like {@link #characters characters()}, attribute values may have characters that need more than one {@code char} value.</p>
 	 *
 	 * @param uri       the namespace URI, or the empty string if the element has no namespace URI
 	 * @param localName the local name (without prefix)
 	 * @param qName     the qualified name (with prefix)
 	 * @param attrs     the attributes attached to the element; can be an empty object (note that the object may be reused)
 	 * @return {@code true} if the content of the element should be parsed, {@code false} if the content of the element should be passed as characters
-	 * @throws SAXException any SAX exception, possibly wrapping another exception
 	 * @see #endElement
 	 */
-	boolean startElement(String uri, String localName, String qName, Attributes attrs) throws SAXException;
+	boolean startElement(String uri, String localName, String qName, Attributes attrs);
 
 	/**
 	 * Called whenever a new element starts.
@@ -68,10 +65,9 @@ interface SimpleContentHandler {
 	 * @param uri       the namespace URI, or the empty string if the element has no namespace URI
 	 * @param localName the local name (without prefix)
 	 * @param qName     the qualified name (with prefix)
-	 * @throws SAXException any SAX exception, possibly wrapping another exception
 	 * @see #startElement
 	 */
-	void endElement(String uri, String localName, String qName) throws SAXException;
+	void endElement(String uri, String localName, String qName);
 
 	/**
 	 * Called whenever there is character data.
@@ -82,7 +78,6 @@ interface SimpleContentHandler {
 	 * interface) can you be certain all code points are complete.</p>
 	 *
 	 * @param chars the characters from the XML document
-	 * @throws SAXException any SAX exception, possibly wrapping another exception
 	 */
-	void characters(CharSequence chars) throws SAXException;
+	void characters(CharSequence chars);
 }

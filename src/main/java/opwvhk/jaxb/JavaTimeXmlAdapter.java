@@ -11,15 +11,17 @@ import static java.util.Objects.requireNonNull;
  * <p>{@code XmlAdapter} that maps strings to/from any JSR-310 {@code TemporalAccessor} using a provided
  * {@code DateTimeFormatter}. To use, create a subclass for your specific type.</p>
  */
-public abstract class JavaTimeXmlAdapter<T extends TemporalAccessor> extends XmlAdapter<String, T> {
+abstract class JavaTimeXmlAdapter<T extends TemporalAccessor> extends XmlAdapter<String, T> {
     private final TemporalQuery<? extends T> temporalQuery;
     private final DateTimeFormatter formatter;
 
     /**
+     * Create a JavaTimeXmlAdapter.
+     *
      * @param temporalQuery the temporal query used by the formatter to create an instance of the type to parse
      * @param formatter     the formatter for formatting and parsing the type
      */
-    public JavaTimeXmlAdapter(TemporalQuery<? extends T> temporalQuery, DateTimeFormatter formatter) {
+    protected JavaTimeXmlAdapter(TemporalQuery<? extends T> temporalQuery, DateTimeFormatter formatter) {
         this.temporalQuery = requireNonNull(temporalQuery, "temporalQuery must not be null");
         this.formatter = requireNonNull(formatter, "formatter must not be null");
     }

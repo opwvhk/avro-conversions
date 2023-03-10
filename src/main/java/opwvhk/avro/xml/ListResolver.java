@@ -6,7 +6,7 @@ import java.util.List;
 class ListResolver extends ValueResolver {
 	private final ValueResolver resolver;
 
-	public ListResolver(ValueResolver resolver) {
+	ListResolver(ValueResolver resolver) {
 		this.resolver = resolver;
 	}
 

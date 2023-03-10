@@ -12,7 +12,7 @@ class XmlRecordHandler implements SimpleContentHandler {
 	private final Deque<HandlerContext> contextStack;
 	private Object value;
 
-	public XmlRecordHandler(ValueResolver rootHandler) {
+	XmlRecordHandler(ValueResolver rootHandler) {
 		this.rootHandler = rootHandler;
 		contextStack = new ArrayDeque<>();
 		value = null;
@@ -79,32 +79,32 @@ class XmlRecordHandler implements SimpleContentHandler {
 		private final StringBuilder buffer;
 		private Object collector;
 
-		public HandlerContext(ValueResolver resolver) {
+		private HandlerContext(ValueResolver resolver) {
 			this.resolver = resolver;
 			buffer = new StringBuilder();
 			collector = resolver.createCollector();
 		}
 
-		public boolean shouldParseContent() {
+		private boolean shouldParseContent() {
 			return resolver.parseContent();
 		}
 
-		public HandlerContext resolve(String name) {
+		private HandlerContext resolve(String name) {
 			return new HandlerContext(resolver.resolve(name));
 		}
 
-		public Object resolveValue(String name, String value) {
+		private Object resolveValue(String name, String value) {
 			ValueResolver childResolver = resolver.resolve(name);
 			Object childCollector = childResolver.createCollector();
 			childCollector = childResolver.addContent(childCollector, value);
 			return childResolver.complete(childCollector);
 		}
 
-		public void addProperty(String name, Object value) {
+		private void addProperty(String name, Object value) {
 			collector = resolver.addProperty(collector, name, value);
 		}
 
-		public Object complete() {
+		private Object complete() {
 			String bufferContent = buffer.toString();
 			buffer.setLength(0);
 
@@ -119,7 +119,7 @@ class XmlRecordHandler implements SimpleContentHandler {
 			return collector;
 		}
 
-		public void appendChars(CharSequence chars) {
+		private void appendChars(CharSequence chars) {
 			buffer.append(chars);
 		}
 	}

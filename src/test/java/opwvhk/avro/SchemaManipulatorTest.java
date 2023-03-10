@@ -2,6 +2,7 @@ package opwvhk.avro;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.List;
 
 import org.apache.avro.Schema;
 import org.junit.Test;
@@ -11,13 +12,16 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class SchemaManipulatorTest {
 	@Test
 	public void testSortedDocumentationViaXsd() throws IOException {
+		StringBuilder markdown = new StringBuilder();
+
 		URL xsdLocation = getClass().getResource("xml/payload.xsd");
-		String markDownTable = SchemaManipulator
+		Schema envelopeSchema = SchemaManipulator
 				.startFromXsd(xsdLocation, "envelope")
 				.sortFields()
-				.asMarkdownTable();
+				.alsoDocumentAsMarkdownTable(markdown)
+				.finish();
 
-		assertThat(markDownTable).isEqualTo("""
+		assertThat(markdown).isEqualToNormalizingUnicode("""
 				| Field(path) | Type | Documentation |
 				|-------------|------|---------------|
 				|  | record |  |
@@ -27,6 +31,17 @@ public class SchemaManipulatorTest {
 				| source | string |  |
 				| target | string |  |
 				""");
+		assertThat(envelopeSchema).isEqualTo(Schema.createRecord("ns.envelope", null, null, false, List.of(
+				new Schema.Field("payload",
+						Schema.createRecord("ns.payload", "The payload is either XML, UTF-8 text or base64 encoded binary data.", null, false, List.of(
+								new Schema.Field("type", Schema.createUnion(Schema.createEnum("ns.type", null, null, List.of("xml","text","binary")),
+										Schema.create(Schema.Type.NULL)), null, "xml"),
+								new Schema.Field("value", Schema.createUnion(Schema.create(Schema.Type.NULL), Schema.create(Schema.Type.STRING)),
+										"The entire element content, unparsed.", Schema.Field.NULL_DEFAULT_VALUE)
+						)), "The payload is either XML, UTF-8 text or base64 encoded binary data.", null),
+				new Schema.Field("source", Schema.create(Schema.Type.STRING)),
+				new Schema.Field("target", Schema.create(Schema.Type.STRING))
+		)));
 	}
 
 	@Test

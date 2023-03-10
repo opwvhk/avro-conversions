@@ -2,7 +2,20 @@ package opwvhk.avro.xml.datamodel;
 
 import java.util.List;
 
+import org.apache.avro.Schema;
+
+/**
+ * An enumeration.
+ *
+ * @param name          the (full) name fo the enumeration
+ * @param documentation any documentation describing the enumeration
+ * @param enumSymbols   the allowed symbols
+ * @param defaultSymbol the symbol to use if an invalid symbol is parsed
+ */
 public record EnumType(String name, String documentation, List<String> enumSymbols, String defaultSymbol) implements ScalarType {
+	/**
+	 * Create an {@code EnumType}.
+	 */
 	public EnumType {
 		if (defaultSymbol != null && !enumSymbols.contains(defaultSymbol)) {
 			throw new IllegalArgumentException(
@@ -18,6 +31,11 @@ public record EnumType(String name, String documentation, List<String> enumSymbo
 			return defaultSymbol;
 		}
 		throw new IllegalArgumentException("Unknown enum symbol for %s: %s".formatted(name(), text));
+	}
+
+	@Override
+	public Schema toSchema() {
+		return Schema.createEnum(name, documentation, null, enumSymbols);
 	}
 
 	@Override

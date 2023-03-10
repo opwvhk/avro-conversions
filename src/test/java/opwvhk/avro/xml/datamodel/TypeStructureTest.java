@@ -148,9 +148,10 @@ public class TypeStructureTest {
 
 	@Test
 	public void testStructuralEdgeCases() {
-		StructType type = struct("name", null);
+		StructType type = struct("name", "Testing");
 		assertThat(type.toString()).isEqualTo("""
 				StructType(name) {
+				  Doc: Testing
 				  (no fields yet)
 				}""");
 
@@ -159,19 +160,19 @@ public class TypeStructureTest {
 		type.setFields(List.of(field1, required("field2", FixedType.STRING)));
 		assertThat(type.toString()).isEqualTo("""
 				StructType(name) {
+				  Doc: Testing
 				  field1
 				    string
 				  field2
 				    string
 				}""");
-		assertThat(type.getField("field1")).isEqualTo(field1);
+		assertThat(type.fields()).hasSize(2).contains(field1);
 
 		assertThatThrownBy(() -> type.setFields(type.fields().subList(0, 1))).isInstanceOf(IllegalStateException.class);
 
 		StructType otherType = new StructType("otherType", null);
 		assertThatThrownBy(() -> otherType.setFields(type.fields())).isInstanceOf(IllegalStateException.class);
 
-		//noinspection DataFlowIssue
 		assertThatThrownBy(() -> new StructType.Field("typeIsRequired", null, Cardinality.REQUIRED, null, null)).isInstanceOf(NullPointerException.class);
 
 		StructType type1 = struct("name1");
