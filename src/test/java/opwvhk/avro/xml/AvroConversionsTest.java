@@ -1,7 +1,6 @@
 package opwvhk.avro.xml;
 
 import java.time.Instant;
-import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.OffsetTime;
 import java.time.ZoneId;
@@ -17,7 +16,6 @@ import org.apache.avro.data.TimeConversions;
 import org.junit.Test;
 
 import static java.time.ZoneOffset.UTC;
-import static org.junit.Assert.*;
 import static org.assertj.core.api.Assertions.*;
 
 public class AvroConversionsTest {
