@@ -7,10 +7,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import opwvhk.avro.ResolvingFailure;
-import opwvhk.avro.xml.datamodel.Cardinality;
 import opwvhk.avro.xml.datamodel.DecimalType;
 import opwvhk.avro.xml.datamodel.FixedType;
-import opwvhk.avro.xml.datamodel.StructType;
 import opwvhk.avro.xml.datamodel.Type;
 import org.apache.avro.LogicalTypes;
 import org.apache.avro.Schema;
@@ -25,7 +23,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
-import org.xml.sax.SAXParseException;
 
 import static java.util.Objects.requireNonNull;
 import static opwvhk.avro.xml.datamodel.TestStructures.array;
