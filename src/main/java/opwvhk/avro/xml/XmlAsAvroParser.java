@@ -11,10 +11,8 @@ import java.math.RoundingMode;
 import java.net.URL;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.OffsetTime;
-import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
@@ -51,6 +49,7 @@ import org.apache.avro.generic.GenericData;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+import static java.time.ZoneOffset.UTC;
 import static java.util.Objects.requireNonNull;
 
 /**
@@ -81,7 +80,6 @@ public class XmlAsAvroParser {
 	 */
 	private static final DateTimeFormatter TIME_FORMAT = new DateTimeFormatterBuilder()
 			.parseCaseInsensitive()
-			.parseLenient()
 			.appendValue(ChronoField.HOUR_OF_DAY, 2)
 			.appendLiteral(":")
 			.appendValue(ChronoField.MINUTE_OF_HOUR, 2)
@@ -91,16 +89,23 @@ public class XmlAsAvroParser {
 			.optionalStart()
 			.appendZoneOrOffsetId()
 			.optionalEnd()
-			.toFormatter(Locale.ROOT);
+			.toFormatter(Locale.ROOT)
+			.withZone(UTC);
 	/**
 	 * DateTime format as specified for XML, but limited to nanoseconds (XML specified no limit to the precision).
 	 */
 	private static final DateTimeFormatter DATE_TIME_FORMAT = new DateTimeFormatterBuilder()
 			.parseCaseInsensitive()
 			.append(DATE_FORMAT)
+			.optionalStart()
 			.appendLiteral("T")
+			.optionalEnd()
+			.optionalStart()
+			.appendLiteral(" ")
+			.optionalEnd()
 			.append(TIME_FORMAT)
-			.toFormatter(Locale.ROOT);
+			.toFormatter(Locale.ROOT)
+			.withZone(UTC);
 	private static final List<Rule> SCALAR_RESOLVE_RULES = List.of(
 			// Simple scalar types
 			new Rule(rawType(Schema.Type.BOOLEAN), t -> t == FixedType.BOOLEAN, (r, w, m) -> new ScalarValueResolver(Boolean::valueOf)),
@@ -120,21 +125,15 @@ public class XmlAsAvroParser {
 			new Rule(logicalType(LogicalTypes.Date.class), t -> t == FixedType.DATE,
 					(r, w, m) -> new ScalarValueResolver(str -> convert(m, r, LocalDate.parse(str, DATE_FORMAT)))),
 			new Rule(logicalType(LogicalTypes.TimeMillis.class), t -> t == FixedType.TIME,
-					(r, w, m) -> new ScalarValueResolver(str -> convert(m, r,
-							parseJavaTime(str, TIME_FORMAT, OffsetTime::from, LocalTime::from, l -> l.atOffset(ZoneOffset.UTC))
-									.truncatedTo(ChronoUnit.MILLIS)))),
+					(r, w, m) -> new ScalarValueResolver(str -> convert(m, r, OffsetTime.parse(str, TIME_FORMAT).truncatedTo(ChronoUnit.MILLIS)))),
 			new Rule(logicalType(LogicalTypes.TimeMicros.class), t -> t == FixedType.TIME,
-					(r, w, m) -> new ScalarValueResolver(str -> convert(m, r,
-							parseJavaTime(str, TIME_FORMAT, OffsetTime::from, LocalTime::from, l -> l.atOffset(ZoneOffset.UTC))
-									.truncatedTo(ChronoUnit.MICROS)))),
+					(r, w, m) -> new ScalarValueResolver(str -> convert(m, r, OffsetTime.parse(str, TIME_FORMAT).truncatedTo(ChronoUnit.MICROS)))),
 			new Rule(logicalType(LogicalTypes.TimestampMillis.class), t -> t == FixedType.DATETIME,
-					(r, w, m) -> new ScalarValueResolver(str -> convert(m, r,
-							parseJavaTime(str, DATE_TIME_FORMAT, ZonedDateTime::from, LocalDateTime::from, l -> l.atZone(ZoneOffset.UTC))
-									.toInstant().truncatedTo(ChronoUnit.MILLIS)))),
+					(r, w, m) -> new ScalarValueResolver(str -> convert(m, r, ZonedDateTime.parse(str, DATE_TIME_FORMAT).toInstant()
+							.truncatedTo(ChronoUnit.MILLIS)))),
 			new Rule(logicalType(LogicalTypes.TimestampMicros.class), t -> t == FixedType.DATETIME,
-					(r, w, m) -> new ScalarValueResolver(str -> convert(m, r,
-							parseJavaTime(str, DATE_TIME_FORMAT, ZonedDateTime::from, LocalDateTime::from, l -> l.atZone(ZoneOffset.UTC))
-									.toInstant().truncatedTo(ChronoUnit.MICROS)))),
+					(r, w, m) -> new ScalarValueResolver(str -> convert(m, r, ZonedDateTime.parse(str, DATE_TIME_FORMAT).toInstant()
+									.truncatedTo(ChronoUnit.MICROS)))),
 			// Binary types: the XML decides how to parse them (hex or base64)
 			new Rule(rawType(Schema.Type.BYTES), t -> t == FixedType.BINARY_HEX, (r, w, m) -> new ScalarValueResolver(FixedType.BINARY_HEX::parse)),
 			new Rule(rawType(Schema.Type.BYTES), t -> t == FixedType.BINARY_BASE64, (r, w, m) -> new ScalarValueResolver(FixedType.BINARY_BASE64::parse))

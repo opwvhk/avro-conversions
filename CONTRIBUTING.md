@@ -21,7 +21,7 @@ To ensure the main functionality of parsing data into Avro records, these are th
 * For structural types, this means that objects and arrays are defined to cover all possibilities (where `xs:choice`, `oneOf` and the like generate optional properties).
 * For JSON, the following scalar types are supported:
   * All basics: `enum`/`const`, and types `string`, `integer`, `number`, `boolean`, with `string` also allowing some `format` options
-  * Enums are supported for string values only, and `oneOf`/`allOf` extensions adjust the symbol set.
+  * Enums are supported for string values only
   * Non-integer numbers are interpreted according to configuration. Options are to use fixed point or floating point numbers. The default is to use floating point numbers; fixed point numbers can be used only for numbers with limits (`minimum`, `exclusiveMinimum`, `maximum` and `exclusiveMaximum`). Floating point numbers result in an Avro `float`, unless the limits are larger than &plusmn;2<sup>60</sup> or smaller than &plusmn;2<sup>-60</sup> (these values fairly arbitrary, but ensure parsed values fit comfortably).
   * Strings are treated as string unless a supported format property is present. The formats `date`, `date-time` and `time` are parsed according to ISO 8601.
 * For XML, the following scalar types are supported:
