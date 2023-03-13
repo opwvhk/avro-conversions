@@ -17,7 +17,14 @@ To ensure the main functionality of parsing data into Avro records, these are th
 * All data must be compatible with Avro, Parquet and easily understood data structures (this also means compatibility with plain objects)
 * When reading data, an equivalent of Avro schema resolution must be applied
 * For XML, wrapped arrays should be parsable as plain arrays as well
-* Any data that can be supported should be supported. For JSON, this means parsing strings into more complex data types like dates and timestamps. For XML, this means the following:
+* Any data that can be supported should be supported.
+* For structural types, this means that objects and arrays are defined to cover all possibilities (where `xs:choice`, `oneOf` and the like generate optional properties).
+* For JSON, the following scalar types are supported:
+  * All basics: `enum`/`const`, and types `string`, `integer`, `number`, `boolean`, with `string` also allowing some `format` options
+  * Enums are supported for string values only, and `oneOf`/`allOf` extensions adjust the symbol set.
+  * Non-integer numbers are interpreted according to configuration. Options are to use fixed point or floating point numbers. The default is to use floating point numbers; fixed point numbers can be used only for numbers with limits (`minimum`, `exclusiveMinimum`, `maximum` and `exclusiveMaximum`). Floating point numbers result in an Avro `float`, unless the limits are larger than &plusmn;2<sup>60</sup> or smaller than &plusmn;2<sup>-60</sup> (these values fairly arbitrary, but ensure parsed values fit comfortably).
+  * Strings are treated as string unless a supported format property is present. The formats `date`, `date-time` and `time` are parsed according to ISO 8601.
+* For XML, the following scalar types are supported:
   * Supported are:
     `anyURI`, `base64Binary`, `boolean`, `byte`, `date`, `dateTime`, `decimal`, `double`, `ENTITY`, `float`, `hexBinary`, `ID`, `IDREF`, `int`,
     `integer`, `language`, `long`, `Name`, `NCName`, `negativeInteger`, `NMTOKEN`, `nonNegativeInteger`, `nonPositiveInteger`, `normalizedString`,
@@ -27,6 +34,9 @@ To ensure the main functionality of parsing data into Avro records, these are th
     `gYear`, `gYearMonth`, `gDay`, `gMonth`, `gMonthDay` (because they don't have a standard representation in Avro),
     `NOTATION`, `QName` (because they're complex structures with two fields), and
     `ENTITIES`, `IDREFS`, `NMTOKENS` (because they're lists)
+* For all formats:
+  * Limitless integer numbers are coerced to Avro `long`, to maximise use of primitive types (in Avro, decimal types are logical types on a byte array).
+  * Formats with a time component are tricky: Avro does not support a timezone in the data itself. Therefore, times are stored in UTC. Also, times are parsed with optional timezone, defaulting to UTC during parsing.
 
 
 Code Layout
@@ -37,12 +47,16 @@ The information here is very succinct, in the hope it won't become outdated quic
 
 Initially, you'll find these packages:
 * `opwvhk.avro`
-* `opwvhk.avro.util`
+* `opwvhk.avro.json`
 * `opwvhk.avro.xml`
 * `opwvhk.avro.xml.datamodel`
+* `opwvhk.avro.util`
 
 The package `opwvhk.avro` it the entry point. The subpackage `util` contains various utilities and is not very useful by itself.
+
 The subpackage `xml` contains all code related to XSD and XML parsing, with a further subpackage `datamodel`.
+
+The subpackage `json` contains all code related to JSON Schema and JSON parsing.
 
 
 XSD Data Model
