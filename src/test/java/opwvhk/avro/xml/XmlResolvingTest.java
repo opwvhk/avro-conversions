@@ -89,7 +89,7 @@ public class XmlResolvingTest {
 						"hexBytes" : { "bytes" : "Hello World!\\n" },
 						"s" : { "string" : "text" },
 						"t" : { "int" : 49501123 },
-						"tu" : { "long" : 49501123456 },
+						"tu" : { "long" : 45901123456 },
 						"numberHuge" : "\\u0001\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000",
 						"numberInt" : 93658723,
 						"numberLong" : 2147483648,
