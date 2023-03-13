@@ -83,7 +83,7 @@ public class XmlResolvingTest {
 						"b64Bytes" : { "bytes" : "Hello World!\\n" },
 						"d" : { "int" : 19432 },
 						"dt" : { "long" : 1678974301123 },
-						"dtu" : { "long" : 1678974301123456 },
+						"dtu" : { "long" : 1678970701123456 },
 						"fd" : { "double" : 123456.789012 },
 						"fs" : { "float" : 123.456 },
 						"hexBytes" : { "bytes" : "Hello World!\\n" },
