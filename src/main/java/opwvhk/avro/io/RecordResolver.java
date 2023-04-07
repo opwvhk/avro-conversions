@@ -1,4 +1,4 @@
-package opwvhk.avro.xml;
+package opwvhk.avro.io;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -10,7 +10,10 @@ import java.util.Set;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericData;
 
-class RecordResolver
+/**
+ * Create a record resolver for Avro records.
+ */
+public class RecordResolver
 		extends ValueResolver {
 	private final GenericData model;
 	private final Schema recordSchema;
@@ -18,7 +21,13 @@ class RecordResolver
 	private final Map<String, Integer> fieldPositionsByName;
 	private final Set<String> arrayFields;
 
-	RecordResolver(GenericData model, Schema recordSchema) {
+	/**
+	 * Create a records resolver for the given model and schema.
+	 *
+	 * @param model a model to generate records with
+	 * @param recordSchema the record schema
+	 */
+	public RecordResolver(GenericData model, Schema recordSchema) {
 		this.model = model;
 		this.recordSchema = recordSchema;
 		resolversByName = new HashMap<>();
@@ -26,11 +35,25 @@ class RecordResolver
 		arrayFields = new HashSet<>();
 	}
 
+	/**
+	 * Add a resolver for an array field using the resolver for the array items.
+	 *
+	 * @param name the name of the array property to resolve
+	 * @param position the position of the array field in the schema
+	 * @param resolver the resolver for the array items
+	 */
 	public void addArrayResolver(String name, int position, ValueResolver resolver) {
 		addResolver(name, position, resolver);
 		arrayFields.add(name);
 	}
 
+	/**
+	 * Add a resolver for a field.
+	 *
+	 * @param name the name of the property to resolve
+	 * @param position the position of the field in the schema
+	 * @param resolver the resolver for the field value
+	 */
 	public void addResolver(String name, int position, ValueResolver resolver) {
 		resolversByName.put(name, resolver);
 		fieldPositionsByName.put(name, position);

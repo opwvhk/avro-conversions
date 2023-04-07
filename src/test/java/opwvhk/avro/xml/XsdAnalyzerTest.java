@@ -718,18 +718,18 @@ public class XsdAnalyzerTest {
 		private final String baseIndent;
 		private String currentIndent;
 
-		public Indent(String indent) {
+		private Indent(String indent) {
 			baseIndent = indent;
 			currentIndent = "";
 		}
 
-		public String inc() {
+		private String inc() {
 			String oldIndent = currentIndent;
 			currentIndent += baseIndent;
 			return oldIndent;
 		}
 
-		public String dec() {
+		private String dec() {
 			currentIndent = currentIndent.substring(2);
 			return currentIndent;
 		}
