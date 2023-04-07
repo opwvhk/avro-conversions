@@ -1,13 +1,17 @@
-package opwvhk.avro.xml;
+package opwvhk.avro.io;
 
 /**
  * Class to resolve records with. Assumes records are and/or consist of properties and content.
  *
- * <p>Resolver implementations should be created with some callback mechanism to their caller. After parsing of a record, the method {@link #complete(Object)}
- * is called, allowing results to be communicated back to the caller.</p>
+ * <p>Resolver instances are intended to be stateless/immutable, and are constructed before parsing any data. This includes reusing instances in recursive
+ * (and thus theoretically infinite) definitions, so the resolvers cannot cache records while resolving them. Instead, they create "collectors" to collect the
+ * data in while resolving records, and complete the records into a final result to be communicated back to the caller.</p>
  */
-abstract class ValueResolver {
-	private static final ValueResolver NOOP = new ValueResolver() {
+public abstract class ValueResolver {
+	/**
+	 * Dummy resolver that accepts anything but yields no results.
+	 */
+	public static final ValueResolver NOOP = new ValueResolver() {
 		@Override
 		public Object addContent(Object collector, String content) {
 			return null;
@@ -16,6 +20,10 @@ abstract class ValueResolver {
 
 	private boolean parseContent = true;
 
+	/**
+	 * Mark that this resolver is for source data that should not be parsed, even though it can be. This is a feature that is useful for data that contains
+	 * other data of an unknown structure, like a message envelope.
+	 */
 	public void doNotParseContent() {
 		parseContent = false;
 	}
@@ -84,6 +92,11 @@ abstract class ValueResolver {
 		return collector;
 	}
 
+	/**
+	 * Whether the content for this resolver should be parsed.
+	 *
+	 * @return whether this resolver expects structured content ({@code true}), or not ({@code false})
+	 */
 	public boolean parseContent() {
 		return parseContent;
 	}

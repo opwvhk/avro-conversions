@@ -38,8 +38,7 @@ public class AvroConversionsTest {
 		Conversion<OffsetTime> offsetTimeConversion  = new AvroConversions.OffsetTimeMillisConversion();
 
 		Schema schema = localTimeConversion.getRecommendedSchema();
-		ZoneId timezone = ZoneId.of("Europe/Amsterdam");
-		ZoneOffset offset = timezone.getRules().getOffset(Instant.now());
+		ZoneOffset offset = ZoneOffset.of("+01:00");
 		schema.addProp(AvroConversions.OffsetTimeMillisConversion.TIMEZONE_PROP, offset.getId());
 
 		OffsetTime source = OffsetTime.of(13, 24, 56, 123_456_789, UTC);
@@ -76,8 +75,7 @@ public class AvroConversionsTest {
 		assertThat(offsetTimeConversion.getLogicalTypeName()).isEqualTo(localTimeConversion.getLogicalTypeName());
 
 		Schema schema = localTimeConversion.getRecommendedSchema();
-		ZoneId timezone = ZoneId.of("Europe/Amsterdam");
-		ZoneOffset offset = timezone.getRules().getOffset(Instant.now());
+		ZoneOffset offset = ZoneOffset.of("+01:00");
 		schema.addProp(AvroConversions.OffsetTimeMicrosConversion.TIMEZONE_PROP, offset.getId());
 
 		OffsetTime source = OffsetTime.of(13, 24, 56, 123_456_789, UTC);

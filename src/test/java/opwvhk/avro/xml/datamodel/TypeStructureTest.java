@@ -122,8 +122,10 @@ public class TypeStructureTest {
 
 		EnumType withoutDefault = new EnumType("name", "Description", List.of("one", "two"), null);
 		assertThat(withoutDefault.defaultSymbol()).isNull();
+		assertThat(withoutDefault.documentation()).isEqualTo("Description");
 		EnumType withDefault = new EnumType("name", "Description", List.of("one", "two"), "one");
 		assertThat(withDefault.defaultSymbol()).isEqualTo("one");
+		assertThat(withDefault.documentation()).isEqualTo("Description");
 
 		assertThat(withoutDefault.debugString("")).isEqualTo("enum(name: one, two)");
 		assertThat(withDefault.debugString("")).isEqualTo("enum(name: one, two; one)");
@@ -184,6 +186,7 @@ public class TypeStructureTest {
 		StructType type4 = struct("name1").withFields(required("field", null, FixedType.STRING, null));
 		StructType type5 = struct("name1").withFields(required("field", null, FixedType.STRING, null));
 
+		//noinspection EqualsWithItself
 		assertThat(type1).isEqualTo(type1);
 		assertThat(type4).isEqualTo(type5);
 		assertThat(type1).isNotEqualTo(null);

@@ -1,12 +1,20 @@
-package opwvhk.avro.xml;
+package opwvhk.avro.io;
 
 import java.util.ArrayList;
 import java.util.List;
 
-class ListResolver extends ValueResolver {
+/**
+ * A resolver for list values.
+ */
+public class ListResolver extends ValueResolver {
 	private final ValueResolver resolver;
 
-	ListResolver(ValueResolver resolver) {
+	/**
+	 * Create a list resolver using the resolver for items.
+	 *
+	 * @param resolver the resolver to use for list items
+	 */
+	public ListResolver(ValueResolver resolver) {
 		this.resolver = resolver;
 	}
 
