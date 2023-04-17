@@ -18,25 +18,6 @@ To ensure the main functionality of parsing data into Avro records, these are th
 * When reading data, an equivalent of Avro schema resolution must be applied
 * For XML, wrapped arrays should be parsable as plain arrays as well
 * Any data that can be supported should be supported.
-* For structural types, this means that objects and arrays are defined to cover all possibilities (where `xs:choice`, `oneOf` and the like generate optional properties).
-* For JSON, the following scalar types are supported:
-  * All basics: `enum`/`const`, and types `string`, `integer`, `number`, `boolean`, with `string` also allowing some `format` options
-  * Enums are supported for string values only
-  * Non-integer numbers are interpreted according to configuration. Options are to use fixed point or floating point numbers. The default is to use floating point numbers; fixed point numbers can be used only for numbers with limits (`minimum`, `exclusiveMinimum`, `maximum` and `exclusiveMaximum`). Floating point numbers result in an Avro `float`, unless the limits are larger than &plusmn;2<sup>60</sup> or smaller than &plusmn;2<sup>-60</sup> (these values fairly arbitrary, but ensure parsed values fit comfortably).
-  * Strings are treated as string unless a supported format property is present. The formats `date`, `date-time` and `time` are parsed according to ISO 8601.
-* For XML, the following scalar types are supported:
-  * Supported are:
-    `anyURI`, `base64Binary`, `boolean`, `byte`, `date`, `dateTime`, `decimal`, `double`, `ENTITY`, `float`, `hexBinary`, `ID`, `IDREF`, `int`,
-    `integer`, `language`, `long`, `Name`, `NCName`, `negativeInteger`, `NMTOKEN`, `nonNegativeInteger`, `nonPositiveInteger`, `normalizedString`,
-    `positiveInteger`, `short`, `string`, `time`, `token`, `unsignedByte`, `unsignedInt`, `unsignedLong`, `unsignedShort`
-  * Not supported are:
-    `duration` (because it mixes properties of JVM `java.time.Duration` and `java.time.Period`),
-    `gYear`, `gYearMonth`, `gDay`, `gMonth`, `gMonthDay` (because they don't have a standard representation in Avro),
-    `NOTATION`, `QName` (because they're complex structures with two fields), and
-    `ENTITIES`, `IDREFS`, `NMTOKENS` (because they're lists)
-* For all formats:
-  * Limitless integer numbers are coerced to Avro `long`, to maximise use of primitive types (in Avro, decimal types are logical types on a byte array).
-  * Formats with a time component are tricky: Avro does not support a timezone in the data itself. Therefore, times are stored in UTC. Also, times are parsed with optional timezone, defaulting to UTC during parsing.
 
 
 Code Layout
@@ -71,3 +52,58 @@ Avro data, not the XML.
 
 To provide a data structure for this lookahead, the package `opwvhk.avro.xml.datamodel` contains type descriptions that describe XML schemas as objects with
 properties.
+
+
+
+Architectural Decisions:
+------------------------
+
+***ADR 1***
+
+Although the Kafka Connect API does support a generic Struct type and Schema, this is quite limited: it only supports primitive types, and a *fixed*,
+*incomplete* set of logical types (using the outdated class `java.util.Date`).
+
+The Avro conversions (a separate dependency) do not propagate all properties to Avro schemata (only those prefixed with `avro` as-is), and hence cannot be used
+to handle logical types via their raw counterparts.
+
+As a result, the choice is to parse directly into Avro records.
+
+On a side note: message transformations can (in theory) handle any message type. The only benefit of going via the Connect API Struct/Schema is the existence
+of predefined transformations.
+
+***ADR 2***
+
+To make interpretation of data easier, choices in schemas (like `xs:choice` in XSD, or `oneOf` in JSON Schema) do not yield alternative object types, but a
+single object type with optional fields to cover all possibilities.
+
+***ADR 3***
+
+For XML, these scalar types will be supported:
+`anyURI`, `base64Binary`, `boolean`, `byte`, `date`, `dateTime`, `decimal`, `double`, `ENTITY`, `float`, `hexBinary`, `ID`, `IDREF`, `int`,
+`integer`, `language`, `long`, `Name`, `NCName`, `negativeInteger`, `NMTOKEN`, `nonNegativeInteger`, `nonPositiveInteger`, `normalizedString`,
+`positiveInteger`, `short`, `string`, `time`, `token`, `unsignedByte`, `unsignedInt`, `unsignedLong`, `unsignedShort`
+
+This means these types will not be supported:
+* `duration` (because it mixes properties of JVM `java.time.Duration` and `java.time.Period`),
+* `gYear`, `gYearMonth`, `gDay`, `gMonth`, `gMonthDay` (because they don't have a standard representation in Avro),
+* `NOTATION`, `QName` (because they're complex structures with two fields), and
+* `ENTITIES`, `IDREFS`, `NMTOKENS` (because they're lists)
+
+***ADR 4***
+
+Limitless integer numbers will be coerced to Avro `long` to encourage the use of primitive types  (in Avro, decimal types are logical types on a byte array).
+Reason is that larger numbers are extremely uncommon.
+
+***ADR 5***
+
+Formats with a time component are tricky: Avro does not support a timezone in the data itself.
+Therefore, times are stored in UTC. Also, times are parsed with optional timezone, defaulting to UTC during parsing.
+This means times & timestamps without timezone are parsed as UTC.
+
+***ADR 6***
+
+For JSON, the following scalar types are supported:
+* All basics: `enum`/`const`, and types `string`, `integer`, `number`, `boolean`, with `string` also allowing some `format` options
+* Enums are supported for string values only
+* Non-integer numbers are interpreted according to configuration. Options are to use fixed point or floating point numbers. The default is to use floating point numbers; fixed point numbers can be used only for numbers with limits (`minimum`, `exclusiveMinimum`, `maximum` and `exclusiveMaximum`). Floating point numbers result in an Avro `float`, unless the limits are larger than &plusmn;2<sup>60</sup> or smaller than &plusmn;2<sup>-60</sup> (these values fairly arbitrary, but ensure parsed values fit comfortably).
+* Strings are treated as string unless a supported format property is present. The formats `date`, `date-time` and `time` are parsed according to ISO 8601.

@@ -3,6 +3,7 @@ package opwvhk.avro.util;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Objects;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import static java.math.RoundingMode.DOWN;
@@ -155,24 +156,22 @@ public record DecimalRange(BigDecimal lowerBound, boolean lowerBoundInclusive, B
      * @return {@code true} if the bounds of this range are whole numbers, with an optional zero fraction if allowed
      */
     public boolean isIntegerRange(boolean allowDecimalPlaces) {
-        if (allowDecimalPlaces) {
-            return Stream.of(lowerBound, upperBound).filter(Objects::nonNull).allMatch(bd -> bd.compareTo(bd.setScale(0, DOWN)) == 0);
-        } else {
-            return Stream.of(lowerBound, upperBound).filter(Objects::nonNull).allMatch(bd -> bd.scale() <= 0);
-        }
+        Predicate<BigDecimal> test = allowDecimalPlaces ? bd -> bd.compareTo(bd.setScale(0, DOWN)) == 0 : bd -> bd.scale() <= 0;
+        return Stream.of(lowerBound, upperBound).filter(Objects::nonNull).allMatch(test);
     }
 
     /**
      * Calculate the number of bits needed to represent numbers in this range. Assumes the range is a closed range.
      *
-     * @return the number of bits needed to represent numbers in this range
+     * @return the number of bits needed to represent numbers in this range, or 0 if unknown
      */
     public int integerBitSize() {
         return Stream.of(lowerBound, upperBound).filter(Objects::nonNull)
-                .map(bd -> bd.setScale(0, DOWN))
-                .map(BigDecimal::toBigInteger)
-                .mapToInt(BigInteger::bitLength)
-                .max().orElse(0);
+                       .map(bd -> bd.setScale(0, DOWN))
+                       .map(BigDecimal::toBigInteger)
+                       .mapToInt(BigInteger::bitLength)
+                       .max()
+                       .orElse(-1) + 1;
     }
 
     /**
@@ -197,6 +196,12 @@ public record DecimalRange(BigDecimal lowerBound, boolean lowerBoundInclusive, B
         return Stream.of(lowerBound, upperBound).filter(Objects::nonNull)
                 .mapToInt(BigDecimal::scale)
                 .max().orElse(0);
+    }
+
+    @Override
+    public String toString() {
+        return (lowerBoundInclusive ? "[" : "(") + (lowerBound == null ? "-inf" : lowerBound) + ", " +
+               (upperBound == null ? "inf" : upperBound) + (upperBoundInclusive ? "]" : ")");
     }
 
     private static int compare(BigDecimal bd1, BigDecimal bd2, NullHandling nullHandling) {

@@ -22,6 +22,6 @@ public class ScalarValueResolver
 
 	@Override
 	public Object addContent(Object collector, String content) {
-		return converter.apply(requireNonNull(content));
+		return content == null ? null : converter.apply(content);
 	}
 }

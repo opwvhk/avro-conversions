@@ -1,0 +1,99 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "TestCase",
+    "description": "Test schema for the JSON schema analyser.",
+    "$ref": "#/$defs/TestCase",
+    "$defs": {
+        "positiveInteger": {
+            "type": "integer",
+            "exclusiveMinimum": 0
+        },
+        "int": {
+            "$ref": "#/$defs/positiveInteger",
+            "exclusiveMaximum": 2147483648
+        },
+        "TestCase": {
+            "$comments": [
+                "Missed code paths:",
+                "* recursive schema",
+                "* merging enum into plain string (anyOf)",
+                "* merging enum into enum (anyOf)",
+                "(nothing else, yet)"
+            ],
+            "type": "object",
+            "properties": {
+                "mixedBag": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "prefixItems": [
+                        {
+                            "type": "number"
+                        }
+                    ],
+                    "contains": {
+                        "type": "boolean"
+                    },
+                    "unevaluatedItems": {
+                        "type": "null"
+                    }
+                },
+                "list": {
+                    "anyOf": [
+                        {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }, {
+                            "type": "array",
+                            "items": {
+                                "enum": ["a", "b"]
+                            }
+                        }, {
+                            "type": "array",
+                            "items": {
+                                "enum": ["c", "d"]
+                            }
+                        }
+                    ]
+                },
+                "smallNumber": {
+                    "$ref": "#/$defs/int"
+                },
+                "multipleChoice": {
+                    "anyOf": [
+                        {
+                            "enum": ["x", "y"]
+                        }, {
+                            "const": ["z"]
+                        }
+                    ]
+                },
+                "stillAnEnum": {
+                    "allOf": [
+                        {
+                            "enum": ["x", "y"]
+                        }, {
+                            "type": "string"
+                        }
+                    ]
+                },
+                "droste": {
+                    "$ref": "#/$defs/Droste"
+                }
+            }
+        },
+        "Droste": {
+            "properties": {
+                "coffeeFlavour": {
+                    "type": "string"
+                },
+                "droste": {
+                    "$ref": "#/$defs/Droste"
+                }
+            }
+        }
+    }
+}
