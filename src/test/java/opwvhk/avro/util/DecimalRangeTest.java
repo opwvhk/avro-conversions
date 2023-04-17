@@ -14,7 +14,7 @@ public class DecimalRangeTest {
     private static final BigDecimal TWO = new BigDecimal("2.0");
 
     @Test
-    public void validateRangeConstructionChecks() {
+    public void testRangeConstruction() {
         DecimalRange decimalRange = new DecimalRange(bd(1), null, bd(2), null);
         assertThat(decimalRange.lowerBound()).isEqualTo(ONE);
         assertThat(decimalRange.lowerBoundInclusive()).isTrue();
@@ -40,7 +40,7 @@ public class DecimalRangeTest {
     }
 
     @Test
-    public void verifyRangeInspection() {
+    public void testRangeInspection() {
         assertThat(new DecimalRange(ZERO, true, ONE_AND_A_HALF, true).isIntegerRange(false)).isFalse();
         assertThat(new DecimalRange(ZERO, true, TWO, true).isIntegerRange(false)).isFalse();
         assertThat(new DecimalRange(ZERO, true, ONE, true).isIntegerRange(false)).isTrue();
@@ -57,9 +57,19 @@ public class DecimalRangeTest {
         assertThat(rightOpen.requiredPrecision()).isEqualTo(2);
         assertThat(rightOpen.requiredScale()).isEqualTo(1);
 
-        assertThat(closedOpen(ONE, new BigDecimal("31.00")).integerBitSize()).isEqualTo(5);
-        assertThat(closedOpen(ONE, null).integerBitSize()).isEqualTo(1);
-        assertThat(openClosed(null, ONE).integerBitSize()).isEqualTo(1);
+        // Required bits include a sign bit
+        assertThat(closedOpen(ONE, new BigDecimal("31.00")).integerBitSize()).isEqualTo(6);
+        assertThat(closedOpen(ONE, null).integerBitSize()).isEqualTo(2);
+        assertThat(openClosed(null, ONE).integerBitSize()).isEqualTo(2);
+        assertThat(openOpen(null, null).integerBitSize()).isEqualTo(0);
+    }
+
+    @Test
+    public void testRangesAsStrings () {
+        assertThat(openOpen(null, null).toString()).isEqualTo("(-inf, inf)");
+        assertThat(closedOpen(bd(1), bd(2, 10)).toString()).isEqualTo("[1, 2.10)");
+        assertThat(openClosed(null, bd(2, 10)).toString()).isEqualTo("(-inf, 2.10]");
+        assertThat(closedClosed(bd(-5,3), bd(2, 10)).toString()).isEqualTo("[-5.3, 2.10]");
     }
 
     @Test

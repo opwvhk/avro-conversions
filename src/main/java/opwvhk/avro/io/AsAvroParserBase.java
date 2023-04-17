@@ -2,12 +2,14 @@ package opwvhk.avro.io;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.OffsetTime;
 import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
@@ -16,8 +18,8 @@ import java.util.Locale;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+import opwvhk.avro.util.AvroConversions;
 import opwvhk.avro.util.AvroSchemaUtils;
-import opwvhk.avro.xml.AvroConversions;
 import org.apache.avro.Conversion;
 import org.apache.avro.Conversions;
 import org.apache.avro.LogicalType;
@@ -34,7 +36,7 @@ import static java.util.Objects.requireNonNull;
  *
  * <p>Subclasses should implement a </p>
  */
-public class AsAvroParserBase {
+public abstract class AsAvroParserBase {
     /**
      * Date format as specified by ISO8601.
      */
@@ -102,8 +104,8 @@ public class AsAvroParserBase {
     protected static final ScalarValueResolver LOCAL_DATE_TIME_RESOLVER = new ScalarValueResolver(LocalDateTime::parse);
     private final GenericData model;
     /**
-     * Resolver for ISO8601 times (format {@code HH:mm:ss[,SSS][V]}). When a timezone is not specified, the default timezone will be used.
-     * Also, times are parsed up to nanosecond level, even though many parsed formats allow any precision.
+     * Resolver for ISO8601 times (format {@code HH:mm:ss[,SSS][V]}). When a timezone is not specified, the default timezone will be used. Also, times are
+     * parsed up to nanosecond level, even though many parsed formats allow any precision.
      */
     protected final ScalarValueResolver offsetTimeResolver;
     /**
@@ -123,15 +125,18 @@ public class AsAvroParserBase {
     }
 
     /**
-     * Create an {@code AsAvroParserBase}, using the specified model and default time zone. The time zone will be used when parsing times and timestamps, if the
-     * parsed string does not contain a timestamp.
+     * <p>Create an {@code AsAvroParserBase}, using the specified model and default time zone.</p>
+     *
+     * <p>The time zone will be used when parsing times and timestamps, if the parsed string does not contain a timestamp.</p>
+     *
+     * <p>NOTE: if the timezone is not an offset, times will be parsed using the offset for today (the day this instance is created).</p>
      *
      * @param model           the model to create records and enum symbols with
      * @param defaultTimezone the default time zone to use when parsing times and timestamps
      */
     protected AsAvroParserBase(GenericData model, ZoneId defaultTimezone) {
         this.model = model;
-        DateTimeFormatter timeFormat = ZONE_LESS_TIME_FORMATTER.withZone(requireNonNull(defaultTimezone));
+        DateTimeFormatter timeFormat = ZONE_LESS_TIME_FORMATTER.withZone(requireNonNull(asOffset(defaultTimezone)));
         offsetTimeResolver = new ScalarValueResolver(text -> OffsetTime.parse(text, timeFormat));
         DateTimeFormatter dateTimeFormat = ZONE_LESS_DATE_TIME_FORMATTER.withZone(defaultTimezone);
         instantResolver = new ScalarValueResolver(text -> ZonedDateTime.parse(text, dateTimeFormat).toInstant());
@@ -147,6 +152,18 @@ public class AsAvroParserBase {
         ensureConversionFor(LogicalTypes.timeMillis(), OffsetTime.class, AvroConversions.OffsetTimeMillisConversion::new);
         ensureConversionFor(LogicalTypes.timeMicros(), LocalTime.class, TimeConversions.TimeMicrosConversion::new);
         ensureConversionFor(LogicalTypes.timeMicros(), OffsetTime.class, AvroConversions.OffsetTimeMicrosConversion::new);
+    }
+
+    private static ZoneOffset asOffset(ZoneId timezone) {
+        return asOffset(timezone, Clock.systemDefaultZone());
+    }
+
+    static ZoneOffset asOffset(ZoneId timezone, Clock clock) {
+        if (timezone instanceof ZoneOffset offset) {
+            return offset;
+        } else {
+            return timezone.getRules().getOffset(clock.instant());
+        }
     }
 
     private void ensureConversionFor(LogicalType logicalType, Class<?> valueClass, Supplier<Conversion<?>> conversionSupplier) {
@@ -181,7 +198,7 @@ public class AsAvroParserBase {
 
         LogicalType logicalType = nonNullSchema.getLogicalType();
         if (logicalType instanceof LogicalTypes.Decimal) {
-            return createDecimalResolver(readSchema);
+            return createDecimalResolver(nonNullSchema);
         } else if (logicalType instanceof LogicalTypes.Date) {
             return LOCAL_DATE_RESOLVER;
         } else if (logicalType instanceof LogicalTypes.TimeMillis || logicalType instanceof LogicalTypes.TimeMicros) {
@@ -201,7 +218,7 @@ public class AsAvroParserBase {
             case INT -> INTEGER_RESOLVER;
             case LONG -> LONG_RESOLVER;
             case STRING -> STRING_RESOLVER;
-            case RECORD -> createRecordResolver(readSchema);
+            case RECORD -> createRecordResolver(nonNullSchema);
             case ENUM -> createEnumResolver(nonNullSchema);
             case ARRAY -> new ListResolver(createResolver(nonNullSchema.getElementType()));
             default -> throw new IllegalArgumentException("Unsupported Avro type: " + nonNullSchema.getType());

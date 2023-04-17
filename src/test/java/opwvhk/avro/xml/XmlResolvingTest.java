@@ -8,7 +8,6 @@ import java.util.List;
 
 import opwvhk.avro.ResolvingFailure;
 import opwvhk.avro.io.ValueResolver;
-import opwvhk.avro.xml.BasicXmlParsingTest.PayloadDebugHandler;
 import opwvhk.avro.xml.datamodel.DecimalType;
 import opwvhk.avro.xml.datamodel.FixedType;
 import opwvhk.avro.xml.datamodel.Type;
@@ -391,12 +390,6 @@ public class XmlResolvingTest {
                         array("cardinalityMismatch", FixedType.STRING)
                 )))
         );
-    }
-
-    @Test
-    public void coverMethodThatCannotBeCalled() {
-        // There is no code path that actively causes this failure (that would mean a bug in building resolvers).
-        assertThatThrownBy(() -> new ValueResolver() {}.addContent(null, null)).isInstanceOf(IllegalStateException.class);
     }
 
     private void assertThatSchemasFailToResolve(Type readType, Type writeType) {

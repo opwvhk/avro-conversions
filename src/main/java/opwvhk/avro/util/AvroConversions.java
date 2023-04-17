@@ -1,4 +1,4 @@
-package opwvhk.avro.xml;
+package opwvhk.avro.util;
 
 import java.time.LocalTime;
 import java.time.OffsetTime;

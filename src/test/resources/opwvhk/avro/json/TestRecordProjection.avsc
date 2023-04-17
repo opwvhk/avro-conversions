@@ -1,0 +1,24 @@
+{
+    "type": "record",
+    "name": "TestCase",
+    "doc": "Test schema for parsing records.",
+    "fields": [
+        { "name": "bool", "type": "boolean" },
+        { "name": "shortInt", "type": ["null", "int"], "default": null },
+        { "name": "longInt", "type": ["null", "long"], "default": null },
+        { "name": "hugeInt", "type": ["null", { "type": "bytes", "logicalType": "decimal", "precision": 21, "scale": 0 }], "default": null },
+        { "name": "defaultInt", "type": ["long", "null"], "default": 42 },
+        { "name": "singleFloat", "type": ["null", "float"], "default": null },
+        { "name": "doubleFloat", "type": ["null", "double"], "default": null },
+        { "name": "fixedPoint", "type": ["null", { "type": "bytes", "logicalType": "decimal", "precision": 17, "scale": 6 }], "default": null },
+        { "name": "choice", "type": { "type":  "enum", "name": "choice", "symbols":  ["yes", "no", "maybe"] } },
+        { "name": "date", "type": ["null", { "type": "int", "logicalType": "date" }], "default": null },
+        { "name": "time", "type": ["null", { "type": "int", "logicalType": "time-millis" }], "default": null },
+        { "name": "timestamp", "type": ["null", { "type": "long", "logicalType": "timestamp-millis" }] , "default": null},
+        { "name": "texts", "type": { "type": "array", "items": "string" }},
+        { "name": "weirdStuff", "type": ["null", { "type": "record", "name": "weirdStuff", "fields": [
+            { "name": "explanation", "type": ["string", "null"], "default": "Please explain why" },
+            { "name": "fancy", "type": ["null", "string"], "default": null }
+        ] }], "default": null }
+    ]
+}

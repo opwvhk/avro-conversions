@@ -62,13 +62,11 @@
 			<artifactId>reload4j</artifactId>
 			<version>1.2.24</version>
 		</dependency>
-		<!--
 		<dependency>
 			<groupId>org.apache.parquet</groupId>
 			<artifactId>parquet-avro</artifactId>
 			<version>1.12.3</version>
 		</dependency>
-		-->
 
 		<!-- Kafka Connect API (schemas!) -->
 		<!--
@@ -93,17 +91,25 @@
 
 		<!-- JSON Schema related -->
 		<dependency>
-			<groupId>com.networknt</groupId>
-			<artifactId>json-schema-validator</artifactId>
-			<version>1.0.77</version>
-			<!--
+			<groupId>net.jimblackler.jsonschemafriend</groupId>
+			<artifactId>core</artifactId>
+			<version>0.11.4</version>
 			<exclusions>
 				<exclusion>
-					<groupId>org.apache.commons</groupId>
-					<artifactId>commons-lang3</artifactId>
+					<groupId>commons-collections</groupId>
+					<artifactId>commons-collections</artifactId>
 				</exclusion>
 			</exclusions>
-			-->
+		</dependency>
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-collections4</artifactId>
+			<version>4.4</version>
+		</dependency>
+		<dependency>
+			<groupId>org.jsoup</groupId>
+			<artifactId>jsoup</artifactId>
+			<version>1.15.3</version>
 		</dependency>
 
 		<!-- Kafka Connect -->
@@ -217,4 +223,10 @@
 			</plugin>
 		</plugins>
 	</build>
+	<repositories>
+		<repository>
+			<id>jitpack.io</id>
+			<url>https://jitpack.io</url>
+		</repository>
+	</repositories>
 </project>

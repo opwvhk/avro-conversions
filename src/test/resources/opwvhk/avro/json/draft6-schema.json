@@ -1,0 +1,68 @@
+{
+    "$schema": "http://json-schema.org/draft-06/schema#",
+    "title": "Test Schema",
+    "description": "Test schema for the JSON schema analyser.",
+    "$ref": "#/definitions/TestCase",
+    "definitions": {
+        "TestCase": {
+            "type": "object",
+            "allOf": [
+                {
+                    "required": ["number", "choice"],
+                    "properties": {
+                        "number": {
+                            "type": "number",
+                            "minimum": 0,
+                            "exclusiveMaximum": 123.0
+                        },
+                        "choice": {
+                            "type": "string",
+                            "const": "yes"
+                        }
+                    }
+                }, {
+                    "required": ["text", "choice"],
+                    "properties": {
+                        "text": {
+                            "type": ["null", "string"],
+                            "$comment": "The following property should be ignored",
+                            "contentEncoding": "7bit",
+                            "default": "abc"
+                        },
+                        "choice": {
+                            "enum": ["yes", "no"]
+                        },
+                        "names": {
+                            "type": "array",
+                            "items": {
+                                "type": "null"
+                            },
+                            "additionalItems": {
+                                "$comment": "Ignored because 'items' is a single schema",
+                                "type": "number"
+                            },
+                            "unevaluatedItems": {
+                                "$comment": "Ignored because it's not supported yet (new in draft 2019-09)",
+                                "type": "null"
+                            },
+                            "contains": {
+                                "type": "boolean"
+                            }
+                        }
+                    }
+                }
+            ],
+            "$comment": "The following properties should be ignored",
+            "if": {
+                "type": "object"
+            },
+            "then": {
+                "properties": {
+                    "foo": {
+                        "type": "string"
+                    }
+                }
+            }
+        }
+    }
+}

@@ -1,9 +1,7 @@
-package opwvhk.avro.xml;
+package opwvhk.avro.util;
 
-import java.time.Instant;
 import java.time.LocalTime;
 import java.time.OffsetTime;
-import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 
