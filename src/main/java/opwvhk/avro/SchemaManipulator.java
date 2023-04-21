@@ -2,6 +2,7 @@ package opwvhk.avro;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -10,6 +11,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
+import net.jimblackler.jsonschemafriend.GenerationException;
+import opwvhk.avro.json.SchemaAnalyzer;
 import opwvhk.avro.util.AvroSchemaUtils;
 import opwvhk.avro.xml.XsdAnalyzer;
 import org.apache.avro.Schema;
@@ -77,6 +80,18 @@ public class SchemaManipulator {
 	public static SchemaManipulator startFromXsd(URL schemaLocation, String rootElementName) throws IOException {
 		XsdAnalyzer analyzer = new XsdAnalyzer(schemaLocation);
 		Schema schema = analyzer.schemaOf(rootElementName);
+		return new SchemaManipulator(schema);
+	}
+
+	/**
+	 * Create a schema manipulator from a JSON Schema Definition.
+	 *
+	 * @param schemaLocation the location of the JSON schema (it may reference other JSON schemas)
+	 * @return a {@code SchemaManipulator}
+	 */
+	public static SchemaManipulator startFromJsonSchema(URL schemaLocation) throws URISyntaxException, GenerationException {
+		SchemaAnalyzer analyzer = new SchemaAnalyzer();
+		Schema schema = analyzer.parseJsonSchema(schemaLocation.toURI());
 		return new SchemaManipulator(schema);
 	}
 
