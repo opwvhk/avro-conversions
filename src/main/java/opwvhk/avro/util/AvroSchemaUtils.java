@@ -1,6 +1,7 @@
 package opwvhk.avro.util;
 
 import java.util.Collections;
+import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
@@ -24,8 +25,12 @@ import static java.util.stream.Stream.concat;
 public final class AvroSchemaUtils {
 
     /**
-     * Lists all names in the Avro schema as rows in a Markdown table, as path from the schema root, combined its documentation (if any). Each entry in the
-     * result is a concatenation of 1 or more names, separated by dots.
+     * <p>Lists all names in the Avro schema as rows in a Markdown table, as path from the schema root, combined its documentation (if any).</p>
+     *
+     * <p>Each entry in the result is a concatenation of 1 or more names, separated by dots.</p>
+     *
+     * <p>Note that the implementation is safe for recursive schemata, but recursive types are not marked. You won't recognize them unless they have unique
+     * documentation.</p>
      *
      * @param schema an Avro schema
      * @return all name paths in the schema
@@ -49,26 +54,30 @@ public final class AvroSchemaUtils {
     }
 
     private static Stream<Entry> describeSchema(Schema schema) {
-        return describeSchema("", null, schema);
+        IdentityHashMap<Schema, Schema> seen = new IdentityHashMap<>();
+        return describeSchema("", null, schema, seen);
     }
 
-    private static Stream<Entry> describeSchema(String path, String fieldDoc, Schema schema) {
+    private static Stream<Entry> describeSchema(String path, String fieldDoc, Schema schema, IdentityHashMap<Schema, Schema> seen) {
+        if (seen.put(schema, schema) != null) {
+            return Stream.of(entryForSchema(path, fieldDoc, schema));
+        }
         return switch (schema.getType()) {
             case RECORD -> {
                 String pathPrefix = path.isEmpty() ? "" : path + ".";
                 yield concat(
                         Stream.of(entryForSchema(path, fieldDoc, schema)),
                         schema.getFields().stream()
-                                .flatMap(field -> describeSchema(pathPrefix + field.name(), field.doc(), field.schema())));
+                                .flatMap(field -> describeSchema(pathPrefix + field.name(), field.doc(), field.schema(), seen)));
             }
             case UNION -> {
                 String newPath = schema.isNullable() ? path + "?" : path;
                 yield schema.getTypes().stream()
                         .filter(s -> s.getType() != Schema.Type.NULL)
-                        .flatMap(s -> describeSchema(newPath, fieldDoc, s));
+                        .flatMap(s -> describeSchema(newPath, fieldDoc, s, seen));
             }
-            case ARRAY -> describeSchema(path + "[]", fieldDoc, schema.getElementType());
-            case MAP -> describeSchema(path + "()", fieldDoc, schema.getValueType());
+            case ARRAY -> describeSchema(path + "[]", fieldDoc, schema.getElementType(), seen);
+            case MAP -> describeSchema(path + "()", fieldDoc, schema.getValueType(), seen);
             default -> Stream.of(entryForSchema(path, fieldDoc, schema));
         };
     }

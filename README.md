@@ -1,12 +1,14 @@
 Avro Tools
 ==========
 
-These Avro tools provide means to manipulate and/or describe schemas, including converting XML Schema definitions (XSD) into Avro schemas. Additionally, it provides a way to parse non-Avro data into Avro data structures.
+These Avro tools provide means to manipulate and/or describe schemas, including converting JSON and XML Schema definitions (XSD) into Avro schemas.
+Additionally, it provides a way to parse non-Avro data into Avro data structures.
 
 Usage
 -----
 
-The class below describes how to use all functionality. As such, it is a contrived example, as (for example) describing a schema in Markdown format and parsing data are not usually combined...
+The class below describes how to use all functionality for XML. It is a contrived example, as (for example) describing a schema in Markdown format and parsing
+data are not usually combined...
 
 ```java
 import opwvhk.avro.SchemaManipulator;
