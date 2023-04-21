@@ -7,7 +7,7 @@
         { "name": "shortInt", "type": ["null", "int"], "default": null },
         { "name": "longInt", "type": ["null", "long"], "default": null },
         { "name": "hugeInt", "type": ["null", { "type": "bytes", "logicalType": "decimal", "precision": 21, "scale": 0 }], "default": null },
-        { "name": "defaultInt", "type": ["long", "null"], "default": 42 },
+        { "name": "defaultInt", "type": "long", "default": 42, "$comment": "the default differs from the JSON schema" },
         { "name": "singleFloat", "type": ["null", "float"], "default": null },
         { "name": "doubleFloat", "type": ["null", "double"], "default": null },
         { "name": "fixedPoint", "type": ["null", { "type": "bytes", "logicalType": "decimal", "precision": 17, "scale": 6 }], "default": null },
@@ -20,7 +20,8 @@
         { "name": "texts", "type": { "type": "array", "items": "string" }},
         { "name": "weirdStuff", "type": ["null", { "type": "record", "name": "weirdStuff", "fields": [
             { "name": "explanation", "type": ["string", "null"], "default": "Please explain why" },
-            { "name": "fancy", "type": ["null", "string"], "default": null }
+            { "name": "fancy", "type": ["null", "string"], "default": null },
+            { "name" : "rabbitHole", "type" : ["null", "weirdStuff"], "default" : null }
         ] }], "default": null }
     ]
 }

@@ -1,0 +1,11 @@
+{
+    "type": "record",
+    "name": "TestCase",
+    "doc": "Test schema for parsing records.",
+    "fields": [
+        {
+            "name": "shortInt", "type": "int", "default": 42,
+            "doc": "The field has a default, but that's not used when the field is explicitly set to null (which is also possible)"
+        }
+    ]
+}

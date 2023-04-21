@@ -131,7 +131,7 @@ public class XsdAnalyzer {
 	}
 
 	// For testing
-	void walkSchemaInTargetNamespace(@SuppressWarnings("SameParameterValue") String rootElement, XmlSchemaVisitor visitor) {
+	void walkSchemaInTargetNamespace(String rootElement, XmlSchemaVisitor visitor) {
 		walkSchema(new QName(schema.getLogicalTargetNamespace(), rootElement), visitor);
 	}
 

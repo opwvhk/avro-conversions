@@ -8,12 +8,9 @@ import javax.xml.validation.SchemaFactory;
 import java.io.IOException;
 import java.net.URL;
 import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.BiPredicate;
 import java.util.function.Predicate;
 
 import opwvhk.avro.ResolvingFailure;
@@ -30,14 +27,11 @@ import opwvhk.avro.xml.datamodel.FixedType;
 import opwvhk.avro.xml.datamodel.StructType;
 import opwvhk.avro.xml.datamodel.Type;
 import opwvhk.avro.xml.datamodel.TypeWithUnparsedContent;
-import org.apache.avro.LogicalType;
 import org.apache.avro.LogicalTypes;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericData;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
-
-import static java.util.Objects.requireNonNull;
 
 /**
  * <p>XML parser to read Avro records.</p>
@@ -50,43 +44,10 @@ import static java.util.Objects.requireNonNull;
  * precision).
  * </p>
  */
-public class XmlAsAvroParser extends AsAvroParserBase {
+public class XmlAsAvroParser extends AsAvroParserBase<Type> {
     private static final EnumSet<FixedType> FLOATING_POINT_TYPES = EnumSet.of(FixedType.FLOAT, FixedType.DOUBLE);
-    private final List<Rule> SCALAR_RESOLVE_RULES = List.of(
-            // Simple scalar types
-            new Rule(rawType(Schema.Type.BOOLEAN), t -> t == FixedType.BOOLEAN, (r, w) -> BOOLEAN_RESOLVER),
-            new Rule(rawType(Schema.Type.FLOAT), t -> t == FixedType.FLOAT, (r, w) -> FLOAT_RESOLVER),
-            new Rule(rawType(Schema.Type.FLOAT), DecimalType.class::isInstance, (r, w) -> FLOAT_RESOLVER),
-            new Rule(rawType(Schema.Type.DOUBLE), FLOATING_POINT_TYPES::contains, (r, w) -> DOUBLE_RESOLVER),
-            new Rule(rawType(Schema.Type.DOUBLE), DecimalType.class::isInstance, (r, w) -> DOUBLE_RESOLVER),
-            new Rule(rawType(Schema.Type.STRING), t -> t == FixedType.STRING, (r, w) -> STRING_RESOLVER),
-            // Enums (also as string)
-            new Rule(XmlAsAvroParser::isValidEnum, (r, w) -> createEnumResolver(r)),
-            new Rule(rawType(Schema.Type.STRING), EnumType.class::isInstance, (r, w) -> STRING_RESOLVER),
-            // Fixed-point number types
-            new Rule(rawType(Schema.Type.INT), decimal(32), (r, w) -> INTEGER_RESOLVER),
-            new Rule(rawType(Schema.Type.LONG), decimal(64), (r, w) -> LONG_RESOLVER),
-            new Rule(XmlAsAvroParser::isValidDecimal, (r, w) -> createDecimalResolver(r)),
-            // Date & time types: the read schema decides the precision (milliseconds or microseconds)
-            new Rule(logicalType(LogicalTypes.Date.class), t -> t == FixedType.DATE, (r, w) -> LOCAL_DATE_RESOLVER),
-            new Rule(logicalType(LogicalTypes.TimeMillis.class), t -> t == FixedType.TIME, (r, w) -> offsetTimeResolver),
-            new Rule(logicalType(LogicalTypes.TimeMicros.class), t -> t == FixedType.TIME, (r, w) -> offsetTimeResolver),
-            new Rule(logicalType(LogicalTypes.TimestampMillis.class), t -> t == FixedType.DATETIME, (r, w) -> instantResolver),
-            new Rule(logicalType(LogicalTypes.TimestampMicros.class), t -> t == FixedType.DATETIME, (r, w) -> instantResolver),
-            // Binary types: the XML decides how to parse them (hex or base64)
-            new Rule(rawType(Schema.Type.BYTES), t -> t == FixedType.BINARY_HEX, (r, w) -> new ScalarValueResolver(FixedType.BINARY_HEX::parse)),
-            new Rule(rawType(Schema.Type.BYTES), t -> t == FixedType.BINARY_BASE64, (r, w) -> new ScalarValueResolver(FixedType.BINARY_BASE64::parse))
-    );
 
-    private static Predicate<Schema> rawType(Schema.Type type) {
-        return s -> s.getLogicalType() == null && s.getType() == type;
-    }
-
-    private static Predicate<Schema> logicalType(Class<? extends LogicalType> logicalTypeClass) {
-        return s -> s.getLogicalType() != null && logicalTypeClass.isInstance(s.getLogicalType());
-    }
-
-    private static boolean isValidEnum(Schema readSchema, Type writeType) {
+    private static boolean isValidEnum(Type writeType, Schema readSchema) {
         // Not an issue: enums are generally not that large
         //noinspection SlowListContainsAll
         return writeType instanceof EnumType writeEnum && readSchema.getType() == Schema.Type.ENUM &&
@@ -98,9 +59,8 @@ public class XmlAsAvroParser extends AsAvroParserBase {
                     dt.bitSize() <= maxBitSize;
     }
 
-    private static boolean isValidDecimal(Schema readSchema, Type writeType) {
-        return readSchema.getLogicalType() instanceof LogicalTypes.Decimal readDecimal
-               &&
+    private static boolean isValidDecimal(Type writeType, Schema readSchema) {
+        return readSchema.getLogicalType() instanceof LogicalTypes.Decimal readDecimal &&
                writeType instanceof DecimalType writeDecimal &&
                readDecimal.getPrecision() >= writeDecimal.precision() &&
                readDecimal.getScale() >= writeDecimal.scale();
@@ -129,47 +89,66 @@ public class XmlAsAvroParser extends AsAvroParserBase {
     XmlAsAvroParser(GenericData model, URL xsdLocation, String rootElement, Schema readSchema, ValueResolver resolver) throws IOException {
         super(model);
         parser = createParser(xsdLocation.toExternalForm());
-        this.resolver = resolver != null ? resolver : createResolver(xsdLocation, rootElement, readSchema, model);
+        this.resolver = resolver != null ? resolver : createResolver(xsdLocation, rootElement, readSchema);
     }
 
-    private ValueResolver createResolver(URL xsdLocation, String rootElement, Schema readSchema, GenericData model) throws IOException {
+    @Override
+    protected List<ResolveRule<Type>> createResolveRules() {
+        return List.of(
+                // Record types (arrays and unions are only supported in fields, and handled there)
+                new ResolveRule<>(StructType.class::isInstance, rawType(Schema.Type.RECORD), (w, r) -> createResolverForRecord((StructType) w, r, model)),
+                // Simple scalar types
+                new ResolveRule<>(t -> t == FixedType.BOOLEAN, rawType(Schema.Type.BOOLEAN), (w, r) -> BOOLEAN_RESOLVER),
+                new ResolveRule<>(t -> t == FixedType.FLOAT, rawType(Schema.Type.FLOAT), (w, r) -> FLOAT_RESOLVER),
+                new ResolveRule<>(DecimalType.class::isInstance, rawType(Schema.Type.FLOAT), (w, r) -> FLOAT_RESOLVER),
+                new ResolveRule<>(FLOATING_POINT_TYPES::contains, rawType(Schema.Type.DOUBLE), (w, r) -> DOUBLE_RESOLVER),
+                new ResolveRule<>(DecimalType.class::isInstance, rawType(Schema.Type.DOUBLE), (w, r) -> DOUBLE_RESOLVER),
+                new ResolveRule<>(t -> t == FixedType.STRING, rawType(Schema.Type.STRING), (w, r) -> STRING_RESOLVER),
+                // Enums (also as string)
+                new ResolveRule<>(XmlAsAvroParser::isValidEnum, (w, r) -> createEnumResolver(r)),
+                new ResolveRule<>(EnumType.class::isInstance, rawType(Schema.Type.STRING), (w, r) -> STRING_RESOLVER),
+                // Fixed-point number types
+                new ResolveRule<>(decimal(32), rawType(Schema.Type.INT), (w, r) -> INTEGER_RESOLVER),
+                new ResolveRule<>(decimal(64), rawType(Schema.Type.LONG), (w, r) -> LONG_RESOLVER),
+                new ResolveRule<>(XmlAsAvroParser::isValidDecimal, (w, r) -> createDecimalResolver(r)),
+                // Date & time types: the read schema decides the precision (milliseconds or microseconds)
+                new ResolveRule<>(t -> t == FixedType.DATE, logicalType(LogicalTypes.Date.class), (w, r) -> LOCAL_DATE_RESOLVER),
+                new ResolveRule<>(t -> t == FixedType.TIME, logicalType(LogicalTypes.TimeMillis.class), (w, r) -> offsetTimeResolver),
+                new ResolveRule<>(t -> t == FixedType.TIME, logicalType(LogicalTypes.TimeMicros.class), (w, r) -> offsetTimeResolver),
+                new ResolveRule<>(t -> t == FixedType.DATETIME, logicalType(LogicalTypes.TimestampMillis.class), (w, r) -> instantResolver),
+                new ResolveRule<>(t -> t == FixedType.DATETIME, logicalType(LogicalTypes.TimestampMicros.class), (w, r) -> instantResolver),
+                // Binary types: the XML decides how to parse them (hex or base64)
+                new ResolveRule<>(t -> t == FixedType.BINARY_HEX, rawType(Schema.Type.BYTES), (w, r) -> new ScalarValueResolver(FixedType.BINARY_HEX::parse)),
+                new ResolveRule<>(t -> t == FixedType.BINARY_BASE64, rawType(Schema.Type.BYTES),
+                        (w, r) -> new ScalarValueResolver(FixedType.BINARY_BASE64::parse))
+
+        );
+    }
+
+    private ValueResolver createResolver(URL xsdLocation, String rootElement, Schema readSchema) throws IOException {
         XsdAnalyzer xsdAnalyzer = new XsdAnalyzer(xsdLocation);
         Type writeType = xsdAnalyzer.typeOf(rootElement);
-        return resolve(writeType, readSchema, model);
+        return createResolver(writeType, readSchema);
     }
 
-    ValueResolver resolve(Type writeType, Schema readSchema, GenericData model) {
+    protected ValueResolver createResolver(Type writeType, Schema readSchema) {
         boolean hasUnparsedContent = writeType instanceof TypeWithUnparsedContent;
         // with unparsed content, writeType is either a FixedType.STRING, or a StructType with a field named "value" that has that type
         Type structOrScalarWriteType = hasUnparsedContent ? ((TypeWithUnparsedContent) writeType).actualType() : writeType;
 
         Schema nonNullableReadSchema = AvroSchemaUtils.nonNullableSchemaOf(readSchema);
 
-        ValueResolver resolver;
-        if (!(structOrScalarWriteType instanceof StructType structWriteType)) {
-            resolver = resolveScalar(nonNullableReadSchema, structOrScalarWriteType);
-        } else if (nonNullableReadSchema.getType() == Schema.Type.RECORD) {
-            resolver = resolveRecord(structWriteType, nonNullableReadSchema, model);
-        } else {
-            throw new ResolvingFailure("Cannot convert data written as %s into %s".formatted(structOrScalarWriteType, nonNullableReadSchema));
-        }
+        ValueResolver resolver = super.createResolver(structOrScalarWriteType, nonNullableReadSchema);
+
         if (hasUnparsedContent) {
             resolver.doNotParseContent();
         }
         return resolver;
     }
 
-    private ValueResolver resolveRecord(StructType writeType, Schema readSchema, GenericData model) {
-        List<Schema.Field> readFields = readSchema.getFields();
-        Map<String, Schema.Field> readFieldsByName = new HashMap<>();
-        Set<Schema.Field> unhandledButRequiredFields = new HashSet<>();
-        for (Schema.Field readField : readFields) {
-            if (!readField.hasDefaultValue()) {
-                unhandledButRequiredFields.add((readField));
-            }
-            readFieldsByName.put(readField.name(), readField);
-            readField.aliases().forEach(alias -> readFieldsByName.put(alias, readField));
-        }
+    private ValueResolver createResolverForRecord(StructType writeType, Schema readSchema, GenericData model) {
+        Map<String, Schema.Field> readFieldsByName = collectFieldsByNameAndAliases(readSchema);
+        Set<Schema.Field> unhandledButRequiredFields = determineRequiredFields(readSchema);
 
         RecordResolver resolver = new RecordResolver(model, readSchema);
         for (StructType.Field writeField : writeType.fields()) {
@@ -180,11 +159,11 @@ public class XmlAsAvroParser extends AsAvroParserBase {
 
             unhandledButRequiredFields.remove(readField);
 
-            ValueResolver fieldResolver = resolveField(writeField, readField, model);
+            ValueResolver fieldResolver = createResolverForField(writeField, readField);
             if (readField.schema().getType() == Schema.Type.ARRAY && !(fieldResolver instanceof ListResolver)) {
-                resolver.addArrayResolver(writeField.name(), readField.pos(), fieldResolver);
+                resolver.addArrayResolver(writeField.name(), readField, fieldResolver);
             } else {
-                resolver.addResolver(writeField.name(), readField.pos(), fieldResolver);
+                resolver.addResolver(writeField.name(), readField, fieldResolver);
             }
         }
         if (unhandledButRequiredFields.isEmpty()) {
@@ -193,14 +172,14 @@ public class XmlAsAvroParser extends AsAvroParserBase {
         throw new ResolvingFailure("Cannot convert data written as %s into %s".formatted(writeType, readSchema));
     }
 
-    private ValueResolver resolveField(StructType.Field writeField, Schema.Field readField, GenericData model) {
+    private ValueResolver createResolverForField(StructType.Field writeField, Schema.Field readField) {
         boolean readFieldIsArray = readField.schema().getType() == Schema.Type.ARRAY;
         Cardinality writeCardinality = writeField.cardinality();
         if (writeCardinality == Cardinality.MULTIPLE) {
             if (!readFieldIsArray) {
                 throw new ResolvingFailure("Field must be an array: cannot convert data written as %s into %s".formatted(writeField, readField));
             }
-            return resolve(writeField.type(), getFieldElementSchema(readField), model);
+            return createResolver(writeField.type(), getFieldElementSchema(readField));
         } else {
             if (readFieldIsArray) {
                 Schema elementSchema = getFieldElementSchema(readField);
@@ -208,17 +187,17 @@ public class XmlAsAvroParser extends AsAvroParserBase {
                     (elementSchema.getType() != Schema.Type.RECORD || elementSchema.getFields().size() != 1)) {
                     // Special case: handle wrapped arrays in XML. The recursive call enforces that the wrapped field must be an array.
                     writeField = writeStructType.fields().get(0);
-                    ValueResolver nestedResolver = resolve(writeField.type(), elementSchema, model);
+                    ValueResolver nestedResolver = createResolver(writeField.type(), elementSchema);
                     return new ListResolver(nestedResolver);
                 }
-                return resolve(writeField.type(), elementSchema, model);
+                return createResolver(writeField.type(), elementSchema);
             }
             if (writeCardinality == Cardinality.OPTIONAL && !readField.hasDefaultValue()) {
                 throw new ResolvingFailure(
                         "Field may be absent, but there is no default: cannot convert data written as %s into %s".formatted(writeField, readField));
             }
             Schema readFieldSchema = AvroSchemaUtils.nonNullableSchemaOf(readField.schema());
-            return resolve(writeField.type(), readFieldSchema, model);
+            return createResolver(writeField.type(), readFieldSchema);
         }
     }
 
@@ -228,15 +207,6 @@ public class XmlAsAvroParser extends AsAvroParserBase {
             throw new ResolvingFailure("Nested arrays are not supported.");
         }
         return elementSchema;
-    }
-
-    private ValueResolver resolveScalar(Schema readSchema, Type writeType) {
-        for (Rule rule : SCALAR_RESOLVE_RULES) {
-            if (rule.test(readSchema, writeType)) {
-                return requireNonNull(rule.createResolver(readSchema, writeType));
-            }
-        }
-        throw new ResolvingFailure("Cannot convert data written as %s into %s".formatted(writeType, readSchema));
     }
 
     private SAXParser createParser(String xsdLocation) {
@@ -283,26 +253,5 @@ public class XmlAsAvroParser extends AsAvroParserBase {
         InputSource inputSource = new InputSource();
         inputSource.setSystemId(url.toExternalForm());
         return parse(inputSource, false);
-    }
-
-    private record Rule(BiPredicate<Schema, Type> testReadAndWriteTypes, ResolverFactory resolverFactory)
-            implements ResolverFactory, BiPredicate<Schema, Type> {
-        private Rule(Predicate<Schema> testReadType, Predicate<Type> testWriteType, ResolverFactory resolverFactory) {
-            this((r, w) -> testReadType.test(r) && testWriteType.test(w), resolverFactory);
-        }
-
-        @Override
-        public boolean test(Schema readType, Type writeType) {
-            return testReadAndWriteTypes().test(readType, writeType);
-        }
-
-        @Override
-        public ValueResolver createResolver(Schema readSchema, Type writeType) {
-            return resolverFactory().createResolver(readSchema, writeType);
-        }
-    }
-
-    private interface ResolverFactory {
-        ValueResolver createResolver(Schema readSchema, Type writeType);
     }
 }

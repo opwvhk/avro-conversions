@@ -4,9 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Collections;
 import java.util.EnumSet;
-import java.util.Map;
 
 import net.jimblackler.jsonschemafriend.GenerationException;
 import org.apache.avro.Schema;
@@ -141,20 +139,9 @@ public class SchemaAnalyzerTest {
         Schema avroSchema = parseSchemaResourceAsAvro("TestRecord.schema.json");
 
         Schema expectedSchema;
-        try (InputStream expectedSchemaStream = getClass().getResourceAsStream("TestRecord.avsc")) {
+        try (InputStream expectedSchemaStream = getClass().getResourceAsStream("TestRecordAll.avsc")) {
             expectedSchema = new Schema.Parser().parse(expectedSchemaStream);
         }
         assertThat(avroSchema.toString(true)).isEqualTo(expectedSchema.toString(true));
-    }
-
-    @Test
-    public void validateUtilityMethods() {
-        SchemaAnalyzer.require(true, "Good");
-        //noinspection DataFlowIssue
-        assertThatThrownBy(() -> SchemaAnalyzer.require(false, "foo")).isInstanceOf(IllegalArgumentException.class);
-
-        SchemaAnalyzer.requireNonEmpty(Map.of("key", "value"), "Good");
-        assertThatThrownBy(() -> SchemaAnalyzer.requireNonEmpty(null, "foo")).isInstanceOf(IllegalArgumentException.class);
-        assertThatThrownBy(() -> SchemaAnalyzer.requireNonEmpty(Collections.emptyMap(), "foo")).isInstanceOf(IllegalArgumentException.class);
     }
 }

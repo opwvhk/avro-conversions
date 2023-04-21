@@ -6,6 +6,7 @@ import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.List;
 
+import opwvhk.avro.ResolvingFailure;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericData;
 import org.junit.Test;
@@ -51,7 +52,7 @@ public class AsAvroParserBaseTest {
                     {"name": "choice", "type": ["null", {"type": "enum", "name": "Answer", "symbols": ["maybe", "yes", "no"], "default": "maybe"}], "default": null}
                 ]}
                 """);
-        ValueResolver resolver = new AsAvroParserBase(GenericData.get(), ZoneOffset.ofHours(0)) {}.createResolver(schema);
+        ValueResolver resolver = new AsAvroParserBase<>(GenericData.get(), ZoneOffset.ofHours(0)) {}.createResolver(schema);
         Object object = resolver.createCollector();
         object = resolveScalar(resolver, object, "bool", "true");
         object = resolveScalar(resolver, object, "shortInt", "42");
@@ -115,14 +116,14 @@ public class AsAvroParserBaseTest {
     @Test
     public void testFailuresForUnmatchedBinaryData() {
         Schema bytesSchema = Schema.create(Schema.Type.BYTES);
-        AsAvroParserBase parserBase = new AsAvroParserBase(GenericData.get()) {};
+        AsAvroParserBase<Object> parserBase = new AsAvroParserBase<>(GenericData.get()) {};
 
-        assertThatThrownBy(() -> parserBase.createResolver(bytesSchema)).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> parserBase.createResolver(bytesSchema)).isInstanceOf(ResolvingFailure.class);
     }
 
     @Test
     public void testParsingInvalidEnum() {
-        AsAvroParserBase parserBase = new AsAvroParserBase(GenericData.get()) {};
+        AsAvroParserBase<?> parserBase = new AsAvroParserBase<>(GenericData.get()) {};
 
         Schema enumWithDefault = Schema.createEnum("choice", null, null, List.of("maybe", "yes", "no"), "maybe");
         ValueResolver res1 = parserBase.createResolver(enumWithDefault);
@@ -144,11 +145,9 @@ public class AsAvroParserBaseTest {
     @Test
     public void testRecordImplicitArrayFields() {
         ValueResolver sr = new ScalarValueResolver(s -> s);
-        RecordResolver rr = new RecordResolver(GenericData.get(), Schema.createRecord("Record", null, null, false, List.of(
-                new Schema.Field("texts", Schema.createArray(Schema.create(Schema.Type.STRING)))
-        )));
-
-        rr.addArrayResolver("texts", 0, sr);
+        Schema.Field f = new Schema.Field("texts", Schema.createArray(Schema.create(Schema.Type.STRING)));
+        RecordResolver rr = new RecordResolver(GenericData.get(), Schema.createRecord("Record", null, null, false, List.of(f)));
+        rr.addArrayResolver("texts", f, sr);
 
         Object result = rr.createCollector();
         result = resolveScalar(rr, result, "texts", "Hello");
@@ -160,10 +159,10 @@ public class AsAvroParserBaseTest {
     @Test
     public void testRecordFieldDefaultValues() {
         ValueResolver sr = new ScalarValueResolver(s -> s);
-        RecordResolver rr = new RecordResolver(GenericData.get(), Schema.createRecord("Record", null, null, false, List.of(
-                new Schema.Field("value", Schema.create(Schema.Type.STRING), null, "missing")
-        )));
-        rr.addResolver("value", 0, sr);
+        Schema optionalString = Schema.createUnion(Schema.create(Schema.Type.STRING), Schema.create(Schema.Type.NULL));
+        Schema.Field f = new Schema.Field("value", optionalString, null, "missing");
+        RecordResolver rr = new RecordResolver(GenericData.get(), Schema.createRecord("Record", null, null, false, List.of(f)));
+        rr.addResolver("value", f, sr);
 
         Object result1 = rr.complete(rr.createCollector());
         assertThat(result1.toString()).isEqualTo("{\"value\": \"missing\"}");
@@ -172,16 +171,16 @@ public class AsAvroParserBaseTest {
         ValueResolver vr = rr.resolve("value");
         result2 = rr.addProperty(result2, "value", vr.complete(vr.addContent(vr.createCollector(), null)));
         result2 = rr.complete(result2);
-        assertThat(result2).isEqualTo(result1);
+        assertThat(result2.toString()).isEqualTo("{\"value\": null}");
+        assertThat(result2).isNotEqualTo(result1);
     }
 
     @Test
     public void testRecordContentField() {
         ValueResolver sr = new ScalarValueResolver(s -> s);
-        RecordResolver rr = new RecordResolver(GenericData.get(), Schema.createRecord("Record", null, null, false, List.of(
-                new Schema.Field("value", Schema.create(Schema.Type.STRING), null, "missing")
-        )));
-        rr.addResolver("value", 0, sr);
+        Schema.Field f = new Schema.Field("value", Schema.create(Schema.Type.STRING), null, "missing");
+        RecordResolver rr = new RecordResolver(GenericData.get(), Schema.createRecord("Record", null, null, false, List.of(f)));
+        rr.addResolver("value", f, sr);
 
         Object result = rr.createCollector();
         result = rr.addContent(result, "present");

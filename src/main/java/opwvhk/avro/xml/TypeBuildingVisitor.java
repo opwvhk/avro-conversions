@@ -172,11 +172,11 @@ class TypeBuildingVisitor implements XmlSchemaVisitor {
 	}
 
 	private ScalarType mapScalarType(TypeData typeData, XmlSchemaTypeInfo typeInfo) {
-		//noinspection EnhancedSwitchMigration -- reason: branch coverage measurement is incomplete
 		switch (typeInfo.getType()) {
-			case COMPLEX:
+			case COMPLEX -> {
 				return null;
-			case ATOMIC:
+			}
+			case ATOMIC -> {
 				QName recognizedType = typeInfo.getUserRecognizedType();
 				if (XSD_BOOLEAN.equals(recognizedType)) {
 					return FixedType.BOOLEAN;
@@ -245,9 +245,11 @@ class TypeBuildingVisitor implements XmlSchemaVisitor {
 				} else {
 					throw new IllegalArgumentException("Unsupported simple type: " + typeInfo);
 				}
-			default:
+			}
+			default -> {
 				String typeInfoTypeName = typeInfo.getType().name().toLowerCase(Locale.ROOT);
 				throw new IllegalArgumentException(format("xs:simpleType with xs:%s is not supported", typeInfoTypeName));
+			}
 		}
 	}
 
