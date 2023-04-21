@@ -15,10 +15,13 @@
         { "name": "date", "type": ["null", { "type": "int", "logicalType": "date" }], "default": null },
         { "name": "time", "type": ["null", { "type": "int", "logicalType": "time-millis" }], "default": null },
         { "name": "timestamp", "type": ["null", { "type": "long", "logicalType": "timestamp-millis" }] , "default": null},
+        { "name": "binary", "type": ["null", "bytes"], "default": null },
+        { "name": "hexBytes", "type": ["null", "bytes"], "default": null },
         { "name": "texts", "type": { "type": "array", "items": "string" }},
         { "name": "weirdStuff", "type": ["null", { "type": "record", "name": "weirdStuff", "fields": [
             { "name": "explanation", "type": ["string", "null"], "default": "Please explain why" },
             { "name": "fancy", "type": ["null", "string"], "default": null },
+            { "name": "hatseflats", "type": ["null", "string"], "default": null },
             { "name" : "rabbitHole", "type" : ["null", "weirdStuff"], "default" : null }
         ] }], "default": null }
     ]

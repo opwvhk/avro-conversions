@@ -1,0 +1,8 @@
+{
+    "type": "record",
+    "name": "TestCase",
+    "doc": "Test schema for parsing records.",
+    "fields": [
+        { "name": "hugeInt", "type": ["null", "int"], "default": null }
+    ]
+}

@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -25,6 +26,7 @@ import opwvhk.avro.io.AsAvroParserBase;
 import opwvhk.avro.io.ValueResolver;
 import opwvhk.avro.util.AvroSchemaUtils;
 import opwvhk.avro.util.DecimalRange;
+import opwvhk.avro.util.Utils;
 import org.apache.avro.LogicalTypes;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericData;
@@ -32,6 +34,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static java.util.Objects.requireNonNull;
+import static opwvhk.avro.util.Utils.first;
+import static opwvhk.avro.util.Utils.require;
 
 /**
  * Class to analyze JSON schemata for parsing JSON into structured records.
@@ -72,10 +76,15 @@ public class SchemaAnalyzer {
      */
     public Schema parseJsonSchema(URI jsonSchemaLocation) throws GenerationException {
         SchemaProperties schemaProperties = parseJsonProperties(jsonSchemaLocation);
-        return asAvroSchema(schemaProperties);
+        IdentityHashMap<SchemaProperties, Schema> seenResults = new IdentityHashMap<>();
+        return asAvroSchema(schemaProperties, seenResults);
     }
 
-    private Schema asAvroSchema(SchemaProperties schemaProperties) {
+    private Schema asAvroSchema(SchemaProperties schemaProperties, IdentityHashMap<SchemaProperties, Schema> seenResults) {
+        Schema previousResult = seenResults.get(schemaProperties);
+        if (previousResult != null) {
+            return previousResult;
+        }
         schemaProperties.isNullable(); // Ensure the type set is not null.
         EnumSet<SchemaType> types = schemaProperties.types();
         if (schemaProperties.properties().isEmpty()) {
@@ -97,12 +106,14 @@ public class SchemaAnalyzer {
                 String name = requireNonNull(schemaProperties.title(), "Object types require a name");
                 String doc = schemaProperties.description();
                 Set<String> requiredProperties = schemaProperties.requiredProperties();
+                Schema recordSchema = Schema.createRecord(name, doc, null, false);
+                seenResults.put(schemaProperties, recordSchema);
                 List<Schema.Field> fields = new ArrayList<>();
-                for (Map.Entry<String, SchemaProperties> entry : requireNonEmpty(schemaProperties.properties(),
+                for (Map.Entry<String, SchemaProperties> entry : Utils.requireNonEmpty(schemaProperties.properties(),
                         "Object types require properties").entrySet()) {
                     String fieldName = entry.getKey();
                     SchemaProperties fieldProperties = entry.getValue();
-                    Schema fieldSchema = asAvroSchema(fieldProperties);
+                    Schema fieldSchema = asAvroSchema(fieldProperties, seenResults);
                     String fieldDoc = fieldProperties.description();
                     String defaultValue = fieldProperties.defaultValue();
                     Object parsedDefault;
@@ -112,7 +123,7 @@ public class SchemaAnalyzer {
                         parsedDefault = optionalField ? Schema.Field.NULL_DEFAULT_VALUE : null;
                     } else {
                         // Assume a scalar value
-                        ValueResolver resolver = new AsAvroParserBase(GenericData.get()) {
+                        ValueResolver resolver = new AsAvroParserBase<>(GenericData.get()) {
                             @Override
                             public ValueResolver createResolver(Schema readSchema) {
                                 return super.createResolver(readSchema);
@@ -129,9 +140,11 @@ public class SchemaAnalyzer {
                     }
                     fields.add(new Schema.Field(fieldName, fieldSchema, fieldDoc, parsedDefault));
                 }
-                yield Schema.createRecord(name, doc, null, false, fields);
+                recordSchema.setFields(fields);
+                yield recordSchema;
             }
-            case ARRAY -> Schema.createArray(asAvroSchema(requireNonNull(schemaProperties.itemSchemaProperties(), "Array types require an item schema")));
+            case ARRAY -> Schema.createArray(
+                    asAvroSchema(requireNonNull(schemaProperties.itemSchemaProperties(), "Array types require an item schema"), seenResults));
             case STRING -> {
                 Set<String> enumValues = schemaProperties.enumValues();
                 String format = schemaProperties.format();
@@ -158,8 +171,8 @@ public class SchemaAnalyzer {
                 }
             }
             case INTEGER -> {
-                require(schemaProperties.isIntegerNumberRange(), "Integer numbers require an integer number range");
-                DecimalRange range = schemaProperties.numberRange();
+                DecimalRange range = require(schemaProperties, SchemaProperties::isIntegerNumberRange,
+                        "Integer numbers require an integer number range").numberRange();
                 int bitSize = range.integerBitSize(); // 0 if not specified
                 if (bitSize == 0) {
                     yield Schema.create(Schema.Type.LONG);
@@ -446,10 +459,6 @@ public class SchemaAnalyzer {
         return number == null ? null : new BigDecimal(number.toString());
     }
 
-    private static String first(String s1, String s2) {
-        return s1 == null ? s2 : s1;
-    }
-
     private static <T> void add(List<T> list, Collection<T> newItems) {
         Stream.ofNullable(newItems).flatMap(Collection::stream).forEach(list::add);
     }
@@ -489,16 +498,5 @@ public class SchemaAnalyzer {
 
     private enum CombineType {
         INTERSECT, UNION
-    }
-
-    static <T extends Map<?,?>> T requireNonEmpty(T col, String message) {
-        require(col != null && !col.isEmpty(), message);
-        return col;
-    }
-
-    static void require(boolean assertion, String message) {
-        if (!assertion) {
-            throw new IllegalArgumentException(message);
-        }
     }
 }

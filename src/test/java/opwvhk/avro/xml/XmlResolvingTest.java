@@ -170,7 +170,7 @@ public class XmlResolvingTest {
     }
 
     @Test
-    public void testFailuresForFoo() throws IOException {
+    public void testFailuresForNamespaceRelatedErrors() throws IOException {
         URL xsdLocation = requireNonNull(getClass().getResource("resolvingTest.xsd"));
         Schema readSchema = new Schema.Parser().parse(getClass().getResourceAsStream("resolvingTest.avsc"));
         XmlAsAvroParser parser = new XmlAsAvroParser(xsdLocation, "outer", readSchema, MODEL);
@@ -399,7 +399,7 @@ public class XmlResolvingTest {
     private void assertThatSchemasFailToResolve(Schema readSchema, Type writeType) {
         URL xsdLocation = requireNonNull(getClass().getResource("resolvingTest.xsd"));
         assertThatThrownBy(
-                () -> new XmlAsAvroParser(GenericData.get(), xsdLocation, null, null, ValueResolver.NOOP).resolve(writeType, readSchema, GenericData.get())
+                () -> new XmlAsAvroParser(GenericData.get(), xsdLocation, null, null, ValueResolver.NOOP).createResolver(writeType, readSchema)
         ).isInstanceOf(ResolvingFailure.class);
     }
 
