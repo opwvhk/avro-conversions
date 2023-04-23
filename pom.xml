@@ -13,7 +13,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
 		<avro.version>1.11.1</avro.version>
-		<org.slf4j.version>2.0.5</org.slf4j.version>
+		<org.slf4j.version>2.0.7</org.slf4j.version>
 	</properties>
 	<dependencies>
 		<!-- Basics -->
