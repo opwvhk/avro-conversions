@@ -17,8 +17,8 @@ import org.apache.ws.commons.schema.XmlSchema;
 import org.apache.ws.commons.schema.XmlSchemaCollection;
 import org.apache.ws.commons.schema.XmlSchemaElement;
 import org.apache.ws.commons.schema.utils.NamespacePrefixList;
+import org.apache.ws.commons.schema.walker.FixedXmlSchemaWalker;
 import org.apache.ws.commons.schema.walker.XmlSchemaVisitor;
-import org.apache.ws.commons.schema.walker.XmlSchemaWalker;
 import org.xml.sax.helpers.DefaultHandler;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -138,7 +138,8 @@ public class XsdAnalyzer {
 	private void walkSchema(QName rootElement, XmlSchemaVisitor visitor) {
 		XmlSchemaElement element = findRootElement(rootElement);
 
-		XmlSchemaWalker schemaWalker = new XmlSchemaWalker(schema.getParent(), visitor);
+		// TODO: Replace with the original XmlSchemaWalker, after a fix for XMLSCHEMA-64 is released.
+		FixedXmlSchemaWalker schemaWalker = new FixedXmlSchemaWalker(schema.getParent(), visitor);
 		schemaWalker.setUserRecognizedTypes(XsdAnalyzer.USER_RECOGNIZED_TYPES);
 		schemaWalker.walk(element);
 	}
