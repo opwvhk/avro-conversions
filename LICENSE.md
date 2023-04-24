@@ -1,6 +1,3 @@
-Copyright © 2020 Oscar Westra van Holthe - Kind
-===============================================
-
                                  Apache License
                            Version 2.0, January 2004
                         http://www.apache.org/licenses/
@@ -37,7 +34,7 @@ TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
 
    "Work" shall mean the work of authorship, whether in Source or
    Object form, made available under the License, as indicated by a
-   copyright NOTICE.md that is included in or attached to the work.
+   copyright notice that is included in or attached to the work.
 
    "Derivative Works" shall mean any work, whether in Source or Object
    form, that is based on (or derived from) the Work and for which the

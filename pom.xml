@@ -1,5 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/maven-v4_0_0.xsd">
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<packaging>jar</packaging>
 
@@ -7,15 +8,48 @@
 	<artifactId>avro-conversions</artifactId>
 	<version>1.0</version>
 
-	<properties>
-		<!-- Build configurations -->
-		<project.build.jdkVersion>17</project.build.jdkVersion>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	<inceptionYear>2023</inceptionYear>
+	<organization>
+		<!-- Not a real organization, but the owner of the copyrights. -->
+		<name>Oscar Westra van Holthe - Kind</name>
+		<url>https://github.com/opwvhk/</url>
+	</organization>
+	<licenses>
+		<license>
+			<name>Apache 2</name>
+			<url>https://www.apache.org/licenses/LICENSE-2.0</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
 
+	<scm>
+		<connection>scm:git:git@github.com:opwvhk/avro-conversions.git</connection>
+		<developerConnection>scm:git:git@github.com:opwvhk/avro-conversions.git</developerConnection>
+		<url>https://github.com/opwvhk/avro-conversions</url>
+	</scm>
+	<distributionManagement>
+		<snapshotRepository>
+			<id>ossrh</id>
+			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
+			<!--<url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>-->
+		</snapshotRepository>
+	</distributionManagement>
+
+	<properties>
 		<avro.version>1.11.1</avro.version>
 		<org.slf4j.version>2.0.7</org.slf4j.version>
+		<license-maven-plugin.version>4.2</license-maven-plugin.version>
+		<!-- Build configurations -->
+		<maven.compiler.release>17</maven.compiler.release>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 	<dependencies>
+		<dependency>
+			<groupId>com.mycila</groupId>
+			<artifactId>license-maven-plugin</artifactId>
+			<version>${license-maven-plugin.version}</version>
+			<scope>provided</scope>
+		</dependency>
 		<!-- Basics -->
 		<dependency>
 			<groupId>org.projectlombok</groupId>
@@ -124,53 +158,89 @@
 			<version>5.3.1</version>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>org.jetbrains</groupId>
+			<artifactId>annotations</artifactId>
+			<version>23.1.0</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter</artifactId>
+			<version>5.9.1</version>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 	<build>
 		<pluginManagement>
 			<plugins>
 				<plugin>
-					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-compiler-plugin</artifactId>
-					<version>3.11.0</version>
-					<configuration>
-						<source>${project.build.jdkVersion}</source>
-						<target>${project.build.jdkVersion}</target>
-						<testSource>${project.build.jdkVersion}</testSource>
-						<testTarget>${project.build.jdkVersion}</testTarget>
-					</configuration>
-				</plugin>
-				<plugin>
 					<groupId>org.codehaus.mojo</groupId>
 					<artifactId>versions-maven-plugin</artifactId>
 					<version>2.15.0</version>
 				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-compiler-plugin</artifactId>
+					<version>3.11.0</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-source-plugin</artifactId>
+					<version>3.2.1</version>
+					<executions>
+						<execution>
+							<id>attach-sources</id>
+							<goals>
+								<goal>jar-no-fork</goal>
+							</goals>
+						</execution>
+					</executions>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-javadoc-plugin</artifactId>
+					<version>3.5.0</version>
+					<executions>
+						<execution>
+							<id>attach-javadocs</id>
+							<goals>
+								<goal>jar</goal>
+							</goals>
+						</execution>
+					</executions>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-gpg-plugin</artifactId>
+					<version>3.0.1</version>
+					<executions>
+						<execution>
+							<id>sign-artifacts</id>
+							<phase>install</phase>
+							<goals>
+								<goal>sign</goal>
+							</goals>
+							<configuration>
+								<passphraseServerId>gpg.passphrase</passphraseServerId>
+							</configuration>
+						</execution>
+					</executions>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-install-plugin</artifactId>
+					<version>3.1.1</version>
+				</plugin>
+				<plugin>
+					<groupId>org.sonatype.plugins</groupId>
+					<artifactId>nexus-staging-maven-plugin</artifactId>
+					<version>1.6.13</version>
+					<extensions>true</extensions>
+				</plugin>
 			</plugins>
 		</pluginManagement>
 		<plugins>
-			<!--
-			<plugin>
-				<groupId>org.apache.avro</groupId>
-				<artifactId>avro-maven-plugin</artifactId>
-				<version>${avro.version}</version>
-				<executions>
-					<execution>
-						<id>schemas</id>
-						<phase>process-resources</phase>
-						<goals>
-							&lt;!&ndash; These goals process production AND test sources &ndash;&gt;
-							<goal>schema</goal>
-							<goal>protocol</goal>
-							<goal>idl-protocol</goal>
-						</goals>
-						<configuration>
-							<stringType>String</stringType>
-							<fieldVisibility>private</fieldVisibility>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-			-->
-			<!-- https://mvnrepository.com/artifact/org.jacoco/jacoco-maven-plugin -->
 			<plugin>
 				<groupId>org.jacoco</groupId>
 				<artifactId>jacoco-maven-plugin</artifactId>
@@ -195,19 +265,148 @@
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-source-plugin</artifactId>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
-				<version>3.5.0</version>
-				<executions>
-					<execution>
-						<goals>
-							<goal>javadoc</goal>
-						</goals>
-					</execution>
-				</executions>
 				<configuration>
 					<doclint>all,-missing</doclint>
 				</configuration>
 			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-gpg-plugin</artifactId>
+				<configuration>
+					<passphraseServerId>gpg.passphrase</passphraseServerId>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-install-plugin</artifactId>
+				<executions>
+					<!--
+					Ensure the gpg plugin runs first, by recreating the default execution (which always executes first) after the gpg plugin.
+					This ensures the new execution runs after the gpg plugin execution.
+
+					Can be verified using: mvn fr.jcgay.maven.plugins:buildplan-maven-plugin:list
+					-->
+					<execution>
+						<id>default-install</id>
+						<phase>none</phase>
+					</execution>
+					<execution>
+						<id>signed-install</id>
+						<goals>
+							<goal>install</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.sonatype.plugins</groupId>
+				<artifactId>nexus-staging-maven-plugin</artifactId>
+				<configuration>
+					<serverId>ossrh</serverId>
+					<nexusUrl>https://oss.sonatype.org/</nexusUrl>
+					<!--<nexusUrl>https://s01.oss.sonatype.org/</nexusUrl>-->
+					<!--
+					The next property should be set to true (for fully automated releases) or false (so you can manually inspect the release).
+					If set to false, you can log in to the nexusUrl above, inspect the release, and then use 'mvn nexus-staging:release' or
+					'mvn nexus-staging:drop' afterward to proceed with or cancel the release.
+					-->
+					<autoReleaseAfterClose>true</autoReleaseAfterClose>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-enforcer-plugin</artifactId>
+				<version>3.3.0</version>
+				<executions>
+					<execution>
+						<id>enforce-no-snapshots</id>
+						<goals>
+							<goal>enforce</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<rules>
+						<requireProperty>
+							<property>project.groupId</property>
+							<message>A project must have a group id of 'net.sf.opk'</message>
+							<regex>net\.sf\.opk</regex>
+						</requireProperty>
+						<requireProperty>
+							<property>project.artifactId</property>
+							<message>A project must have an artifact id</message>
+						</requireProperty>
+						<requireProperty>
+							<property>project.version</property>
+							<message>A project must have a version</message>
+						</requireProperty>
+						<requireProperty>
+							<property>project.organization.name</property>
+							<message>A project must have an organisation name (the holder of the copyrights)</message>
+						</requireProperty>
+						<requireProperty>
+							<property>project.inceptionYear</property>
+							<message>A project must have an inception year (the first year for the copyrights)</message>
+						</requireProperty>
+						<requireProperty>
+							<property>project.licenses[0].name</property>
+							<message>A project must have at least one licence</message>
+						</requireProperty>
+						<requireProperty>
+							<property>project.licenses[0].url</property>
+							<message>A project must link to its license text</message>
+						</requireProperty>
+						<requireProperty>
+							<property>project.scm.developerConnection</property>
+							<message>A project must locate its sources with a writable link</message>
+						</requireProperty>
+						<requireProperty>
+							<property>project.distributionManagement.snapshotRepository.url</property>
+							<message>A project must describe where snapshots are published</message>
+							<regex>https://(s01\.)?oss\.sonatype\.org/content/repositories/snapshots</regex>
+						</requireProperty>
+						<requireMavenVersion>
+							<version>[3.0.0,)</version>
+						</requireMavenVersion>
+						<requireJavaVersion>
+							<version>11</version>
+						</requireJavaVersion>
+						<requireReleaseDeps>
+							<message>Release versions must be No Snapshots Allowed!</message>
+							<onlyWhenRelease>true</onlyWhenRelease>
+						</requireReleaseDeps>
+					</rules>
+					<fail>true</fail>
+				</configuration>
+			</plugin>
+			<!--
+			<plugin>
+				<groupId>org.apache.avro</groupId>
+				<artifactId>avro-maven-plugin</artifactId>
+				<version>${avro.version}</version>
+				<executions>
+					<execution>
+						<id>schemas</id>
+						<phase>process-resources</phase>
+						<goals>
+							&lt;!&ndash; These goals process production AND test sources &ndash;&gt;
+							<goal>schema</goal>
+							<goal>protocol</goal>
+							<goal>idl-protocol</goal>
+						</goals>
+						<configuration>
+							<stringType>String</stringType>
+							<fieldVisibility>private</fieldVisibility>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			-->
 		</plugins>
 	</build>
 	<repositories>
