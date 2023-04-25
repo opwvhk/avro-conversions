@@ -31,7 +31,7 @@ import org.apache.ws.commons.schema.XmlSchemaType;
  *
  * <p>This class is a slightly stripped down copy of {@link XmlSchemaWalker XmlSchemaWalker}, with a fix for
  * <a href="https://github.com/apache/ws-xmlschema/pull/3">XMLSCHEMA-64</a> applied. When this fix is included in the dependency
- * {@code xmlschema-walker}, this class should be removed (it's a drop-in replacement for its usage).</p>
+ * {@code xmlschema-walker}, this class should be removed (it's a near drop-in replacement for its usage).</p>
  *
  * <p>Walks an {@link XmlSchema} from a starting {@link XmlSchemaElement}, notifying attached visitors as it descends.</p>
  */
