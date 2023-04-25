@@ -8,7 +8,16 @@
 	<artifactId>avro-conversions</artifactId>
 	<version>1.0</version>
 
+	<name>Avro Conversions</name>
+	<description>Schema based conversions for Avro for JSON, XML</description>
+	<url>${project.organization.url}${artifactId}</url>
 	<inceptionYear>2023</inceptionYear>
+	<developers>
+		<!-- List all developers:
+		git shortlog -s | grep -v "\[bot\]" | sed -E -e 's/[[:space:]]*[[:digit:]]*[[:space:]]*(.*)$/\t\t<developer><name>\1<\/name><\/developer>/'
+		-->
+		<developer><name>Oscar Westra van Holthe - Kind</name></developer>
+	</developers>
 	<organization>
 		<!-- Not a real organization, but the owner of the copyrights. -->
 		<name>Oscar Westra van Holthe - Kind</name>
@@ -23,9 +32,8 @@
 	</licenses>
 
 	<scm>
-		<connection>scm:git:git@github.com:opwvhk/avro-conversions.git</connection>
 		<developerConnection>scm:git:git@github.com:opwvhk/avro-conversions.git</developerConnection>
-		<url>https://github.com/opwvhk/avro-conversions</url>
+		<url>${project.url}</url>
 	</scm>
 	<distributionManagement>
 		<snapshotRepository>
@@ -44,12 +52,6 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 	<dependencies>
-		<dependency>
-			<groupId>com.mycila</groupId>
-			<artifactId>license-maven-plugin</artifactId>
-			<version>${license-maven-plugin.version}</version>
-			<scope>provided</scope>
-		</dependency>
 		<!-- Basics -->
 		<dependency>
 			<groupId>org.projectlombok</groupId>
@@ -221,9 +223,6 @@
 							<goals>
 								<goal>sign</goal>
 							</goals>
-							<configuration>
-								<passphraseServerId>gpg.passphrase</passphraseServerId>
-							</configuration>
 						</execution>
 					</executions>
 				</plugin>
@@ -315,98 +314,9 @@
 					If set to false, you can log in to the nexusUrl above, inspect the release, and then use 'mvn nexus-staging:release' or
 					'mvn nexus-staging:drop' afterward to proceed with or cancel the release.
 					-->
-					<autoReleaseAfterClose>true</autoReleaseAfterClose>
+					<autoReleaseAfterClose>false</autoReleaseAfterClose>
 				</configuration>
 			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-enforcer-plugin</artifactId>
-				<version>3.3.0</version>
-				<executions>
-					<execution>
-						<id>enforce-no-snapshots</id>
-						<goals>
-							<goal>enforce</goal>
-						</goals>
-					</execution>
-				</executions>
-				<configuration>
-					<rules>
-						<requireProperty>
-							<property>project.groupId</property>
-							<message>A project must have a group id of 'net.sf.opk'</message>
-							<regex>net\.sf\.opk</regex>
-						</requireProperty>
-						<requireProperty>
-							<property>project.artifactId</property>
-							<message>A project must have an artifact id</message>
-						</requireProperty>
-						<requireProperty>
-							<property>project.version</property>
-							<message>A project must have a version</message>
-						</requireProperty>
-						<requireProperty>
-							<property>project.organization.name</property>
-							<message>A project must have an organisation name (the holder of the copyrights)</message>
-						</requireProperty>
-						<requireProperty>
-							<property>project.inceptionYear</property>
-							<message>A project must have an inception year (the first year for the copyrights)</message>
-						</requireProperty>
-						<requireProperty>
-							<property>project.licenses[0].name</property>
-							<message>A project must have at least one licence</message>
-						</requireProperty>
-						<requireProperty>
-							<property>project.licenses[0].url</property>
-							<message>A project must link to its license text</message>
-						</requireProperty>
-						<requireProperty>
-							<property>project.scm.developerConnection</property>
-							<message>A project must locate its sources with a writable link</message>
-						</requireProperty>
-						<requireProperty>
-							<property>project.distributionManagement.snapshotRepository.url</property>
-							<message>A project must describe where snapshots are published</message>
-							<regex>https://(s01\.)?oss\.sonatype\.org/content/repositories/snapshots</regex>
-						</requireProperty>
-						<requireMavenVersion>
-							<version>[3.0.0,)</version>
-						</requireMavenVersion>
-						<requireJavaVersion>
-							<version>11</version>
-						</requireJavaVersion>
-						<requireReleaseDeps>
-							<message>Release versions must be No Snapshots Allowed!</message>
-							<onlyWhenRelease>true</onlyWhenRelease>
-						</requireReleaseDeps>
-					</rules>
-					<fail>true</fail>
-				</configuration>
-			</plugin>
-			<!--
-			<plugin>
-				<groupId>org.apache.avro</groupId>
-				<artifactId>avro-maven-plugin</artifactId>
-				<version>${avro.version}</version>
-				<executions>
-					<execution>
-						<id>schemas</id>
-						<phase>process-resources</phase>
-						<goals>
-							&lt;!&ndash; These goals process production AND test sources &ndash;&gt;
-							<goal>schema</goal>
-							<goal>protocol</goal>
-							<goal>idl-protocol</goal>
-						</goals>
-						<configuration>
-							<stringType>String</stringType>
-							<fieldVisibility>private</fieldVisibility>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-			-->
 		</plugins>
 	</build>
 	<repositories>
