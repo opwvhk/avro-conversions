@@ -10,7 +10,7 @@
 
 	<name>Avro Conversions</name>
 	<description>Schema based conversions for Avro for JSON, XML</description>
-	<url>${project.organization.url}${artifactId}</url>
+	<url>${project.organization.url}${project.artifactId}</url>
 	<inceptionYear>2023</inceptionYear>
 	<developers>
 		<!-- List all developers:
