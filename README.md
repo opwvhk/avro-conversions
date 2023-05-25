@@ -55,17 +55,17 @@ class Example {
 }
 ```
 
-Contributors ✨
+Contributing ✨
 ---------------
-
-A special thank you to all who contributed! All contributions are sincerely appreciated.
 
 <!--
 TODO: uncomment when there are multiple committers
+A special thank you to all who contributed! All contributions are sincerely appreciated.
+
 [![Contributors](https://contrib.rocks/image?repo=opwvhk/avro-conversions)](https://github.com/opwvhk/avro-conversions/graphs/contributors)
 -->
 
-Are you interested in contributing as well? These links may be of interest:
+Are you interested in contributing? These links may be of interest:
 
 * [Contributing Guidelines](CONTRIBUTING.md)
 * [Good First Issues](https://github.com/opwvhk/avro-conversions/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22)
