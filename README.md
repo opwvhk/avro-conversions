@@ -2,8 +2,8 @@
 [![license](doc/license-APACHE-2.0-brightgreen.svg)](https://www.apache.org/licenses/LICENSE-2.0.html)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/net.sf.opk/avro-conversions/badge.svg)](https://maven-badges.herokuapp.com/maven-central/net.sf.opk/avro-conversions)
 
-Avro Tools
-==========
+Avro Conversions
+================
 
 These Avro tools provide means to manipulate and/or describe schemas, including converting JSON and
 XML Schema definitions (XSD) into Avro schemas. Additionally, it provides a way to parse non-Avro
