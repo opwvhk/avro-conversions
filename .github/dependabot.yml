@@ -8,8 +8,9 @@ updates:
     interval: "weekly"
     day: "sunday"
   open-pull-requests-limit: 50
-#- package-ecosystem: "github-actions"
-#  directory: "/"
-#  schedule:
-#    interval: "weekly"
-#    day: "sunday"
+- package-ecosystem: "github-actions"
+  directory: "/"
+  schedule:
+    interval: "weekly"
+    day: "sunday"
+  open-pull-requests-limit: 5
