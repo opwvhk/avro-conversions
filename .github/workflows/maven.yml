@@ -37,6 +37,13 @@ jobs:
       - name: Build with Maven and Run Tests
         run: mvn --batch-mode --update-snapshots verify
 
+      - name: Archive code coverage report
+        uses: actions/upload-artifact@v3
+        with:
+          name: code-coverage-report
+          path: target/site/jacoco/
+          retention-days: 2
+
       - name: Publish Test Coverage Results
         # noinspection SpellCheckingInspection
         uses: PavanMudigonda/jacoco-reporter@v4.9
