@@ -61,6 +61,31 @@ public class XmlResolvingTest {
         assertThat(actualSchema).isEqualTo(expectedSchema);
     }
 
+	@Test
+	public void testHappyFlowWithoutXsd() throws IOException, SAXException {
+		Schema readSchema = new Schema.Parser().parse(getClass().getResourceAsStream("resolvingTestNoBinary.avsc"));
+		XmlAsAvroParser parser = new XmlAsAvroParser(readSchema, MODEL);
+
+		GenericRecord resultMinimal = parser.parse(requireNonNull(getClass().getResource("resolvingTestMinimalWithoutNamespace.xml")));
+		assertThat(toJson(resultMinimal)).isEqualToNormalizingWhitespace("""
+                {
+                	"presentRequired" : "I'm here",
+                	"optionalField" : null,
+                	"textList" : [ "Hey, that's my line!" ],
+                	"inner" : null,
+                	"switch" : "broken",
+                	"approximation" : 123456.78,
+                	"moreAccurateApproximation" : null,
+                	"morePrecise" : null,
+                	"exceptionToUnwrappingRule" : { "opwvhk.resolvingTest.mustMatch" : {
+                		"number" : [ 1 ]
+                	} },
+                	"upgrade" : [ ],
+                	"category" : null
+                }
+                """);
+	}
+
     @SuppressWarnings("UnnecessaryUnicodeEscape")
     @Test
     public void testSuccessfulResolvingAndParsing() throws IOException, SAXException {

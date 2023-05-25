@@ -24,6 +24,12 @@ public class ListResolver extends ValueResolver {
 	}
 
 	@Override
+	public Object addContent(Object collector, String content) {
+		Object value = resolver.complete(resolver.addContent(resolver.createCollector(), content));
+		return addProperty(collector, "ignored", value);
+	}
+
+	@Override
 	public Object createCollector() {
 		return new ArrayList<>();
 	}
