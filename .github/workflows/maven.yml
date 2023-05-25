@@ -13,7 +13,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     permissions:
-      actions: write
+      checks: write
       contents: read
       packages: read
     # If uncommented, set the java version below to ${{ matrix.java }}
