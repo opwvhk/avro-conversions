@@ -196,9 +196,13 @@ class TypeBuildingVisitor implements XmlSchemaVisitor {
 				} else if (XSD_LONG.equals(recognizedType)) {
 					return DecimalType.LONG_TYPE;
 				} else if (XSD_DECIMAL.equals(recognizedType)) {
-					// XSD_INT and XSD_LONG would match this branch, but they're overridden.
-					final int fractionDigits = restriction(typeInfo, DIGITS_FRACTION, Integer::valueOf).orElseThrow(
-							() -> new IllegalArgumentException("xs:decimal without precision"));
+					// XSD_INT and XSD_LONG would match this branch if it weren't overridden via XsdAnalyzer.USER_RECOGNIZED_TYPES
+					Optional<Integer> fractionDigitsRestriction = restriction(typeInfo, DIGITS_FRACTION, Integer::valueOf);
+					if (fractionDigitsRestriction.isEmpty()) {
+						// xs:decimal without scale -> use a double instead
+						return FixedType.DOUBLE;
+					}
+					int fractionDigits = fractionDigitsRestriction.get();
 					Optional<Integer> totalDigits = restriction(typeInfo, DIGITS_TOTAL, Integer::valueOf);
 					UnaryOperator<BigDecimal> round = bd -> bd.setScale(fractionDigits, HALF_UP);
 					UnaryOperator<BigDecimal> incULP = bd -> new BigDecimal(bd.unscaledValue().add(ONE), fractionDigits);
@@ -210,8 +214,14 @@ class TypeBuildingVisitor implements XmlSchemaVisitor {
 					Optional<BigDecimal> maxDigits = totalDigits.map(BigDecimal.TEN::pow).map(decULP);
 					Optional<BigDecimal> minDigits = maxDigits.map(BigDecimal::negate);
 
-					int numberOfDigits = Stream.concat(totalDigits.stream(), Stream.of(minInclusive, minExclusive, maxInclusive, maxExclusive)
-							.flatMap(Optional::stream).map(BigDecimal::precision)).max(Integer::compareTo).orElse(Integer.MAX_VALUE);
+					Optional<Integer> calculatedNumberOfDigits = Stream.concat(totalDigits.stream(),
+									Stream.of(minInclusive, minExclusive, maxInclusive, maxExclusive).flatMap(Optional::stream).map(BigDecimal::precision))
+							.max(Integer::compareTo);
+					if (fractionDigits > 0 && calculatedNumberOfDigits.isEmpty()) {
+						// xs:decimal with scale, but without precision in any form -> use a double instead
+						return FixedType.DOUBLE;
+					}
+					int numberOfDigits = calculatedNumberOfDigits.orElse(Integer.MAX_VALUE);
 					if (fractionDigits > 0) {
 						return DecimalType.withFraction(numberOfDigits, fractionDigits);
 					} else {

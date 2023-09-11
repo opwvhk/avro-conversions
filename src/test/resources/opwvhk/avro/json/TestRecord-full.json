@@ -7,6 +7,7 @@
     "singleFloat": 123.456,
     "doubleFloat": 1234.56789,
     "fixedPoint": 12345678901.123456,
+	"defaultNumber": 98765.4321,
     "choice": "maybe",
     "date": "2023-04-17",
     "time": "17:08:34.567123",

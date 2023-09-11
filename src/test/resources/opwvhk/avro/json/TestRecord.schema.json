@@ -26,6 +26,7 @@
         },
         "defaultInt": {
             "type": "integer",
+	        "$comment": "no bounds, so the type defaults to LONG",
             "default": 42
         },
         "singleFloat": {
@@ -45,6 +46,11 @@
             "minimum": -9999999999.999999,
             "maximum": 99999999999.99999
         },
+	    "defaultNumber": {
+		    "type": "number",
+		    "$comment": "no bounds, so the type defaults to DOUBLE",
+		    "default": 4.2
+	    },
         "choice": {
             "enum": ["yes", "no", "maybe"]
         },

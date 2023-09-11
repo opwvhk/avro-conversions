@@ -69,6 +69,7 @@ public class SchemaManipulatorTest {
                 | singleFloat? | float |  |
                 | doubleFloat? | double |  |
                 | fixedPoint? | decimal(17,6) |  |
+                | defaultNumber? | double |  |
                 | choice | enum |  |
                 | date? | date |  |
                 | time? | time-millis |  |

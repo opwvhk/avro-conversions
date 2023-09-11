@@ -26,8 +26,8 @@ public class JsonAsAvroParserTest {
 
         assertThat(fullRecord.toString()).isEqualTo(
                 ("{'bool': true, 'shortInt': 42, 'longInt': 6789012345, 'hugeInt': 123456789012345678901, 'defaultInt': 4242, " +
-                 "'singleFloat': 123.456, 'doubleFloat': 1234.56789, 'fixedPoint': 12345678901.123456, 'choice': 'maybe', " +
-                 "'date': '2023-04-17', 'time': '17:08:34.567123Z', 'timestamp': '2023-04-17T17:08:34.567123Z', " +
+                 "'singleFloat': 123.456, 'doubleFloat': 1234.56789, 'fixedPoint': 12345678901.123456, 'defaultNumber': 98765.4321, " +
+                 "'choice': 'maybe', 'date': '2023-04-17', 'time': '17:08:34.567123Z', 'timestamp': '2023-04-17T17:08:34.567123Z', " +
                  "'binary': 'Hello World!', 'hexBytes': 'Hello World!', 'texts': ['Hello', 'World!'], 'weirdStuff': {" +
                  "'explanation': 'No reason. I just felt like it.', 'fancy': '\uD83D\uDE04! You are on Candid Camera! \uD83D\uDCF9\uD83C\uDF4C', " +
                  "'rabbitHole': null}}").replace('\'', '"'));
@@ -95,8 +95,8 @@ public class JsonAsAvroParserTest {
 
         assertThat(fullRecord.toString()).isEqualTo(
                 ("{'bool': true, 'shortInt': 42, 'longInt': 6789012345, 'hugeInt': 123456789012345678901, 'defaultInt': 4242, " +
-                 "'singleFloat': 123.456, 'doubleFloat': 1234.56789, 'fixedPoint': 12345678901.123456, 'choice': 'maybe', " +
-                 "'date': '2023-04-17', 'time': '17:08:34.567123Z', 'timestamp': '2023-04-17T17:08:34.567123Z', " +
+                 "'singleFloat': 123.456, 'doubleFloat': 1234.56789, 'fixedPoint': 12345678901.123456, 'defaultNumber': 98765.4321, " +
+                 "'choice': 'maybe', 'date': '2023-04-17', 'time': '17:08:34.567123Z', 'timestamp': '2023-04-17T17:08:34.567123Z', " +
                  "'texts': ['Hello', 'World!'], 'weirdStuff': {'explanation': 'No reason. I just felt like it.', " +
                  "'fancy': '\uD83D\uDE04! You are on Candid Camera! \uD83D\uDCF9\uD83C\uDF4C', 'rabbitHole': null}}").replace('\'', '"'));
     }
@@ -117,7 +117,7 @@ public class JsonAsAvroParserTest {
 
         assertThat(minimalRecord.toString()).isEqualTo(
                 ("{'bool': false, 'shortInt': null, 'longInt': null, 'hugeInt': null, 'defaultInt': 42, " +
-                 "'singleFloat': null, 'doubleFloat': null, 'fixedPoint': null, 'choice': 'no', " +
+                 "'singleFloat': null, 'doubleFloat': null, 'fixedPoint': null, 'defaultNumber': 4.2, 'choice': 'no', " +
                  "'date': null, 'time': null, 'timestamp': null, " +
                  "'texts': [], 'weirdStuff': {'explanation': 'Please explain why', " +
                  "'fancy': null, 'rabbitHole': null}}").replace('\'', '"'));

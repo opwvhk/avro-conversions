@@ -173,8 +173,9 @@ public class SchemaAnalyzer {
             case INTEGER -> {
                 DecimalRange range = require(schemaProperties, SchemaProperties::isIntegerNumberRange,
                         "Integer numbers require an integer number range").numberRange();
-                int bitSize = range.integerBitSize(); // 0 if not specified
+                int bitSize = range.integerBitSize();
                 if (bitSize == 0) {
+					// Not specified: use LONG instead of throwing an error
                     yield Schema.create(Schema.Type.LONG);
                 } else if (bitSize <= 32) {
                     yield Schema.create(Schema.Type.INT);
@@ -187,7 +188,10 @@ public class SchemaAnalyzer {
             case NUMBER -> {
                 DecimalRange range = schemaProperties.numberRange();
                 int precision = range.requiredPrecision();
-                if (precision < 7) {
+                if (precision == 0) {
+	                // Not specified: use DOUBLE instead of throwing an error
+                    yield Schema.create(Schema.Type.DOUBLE);
+                } else if (precision < 7) {
                     // Floats have a precision of ~7 digits
                     yield Schema.create(Schema.Type.FLOAT);
                 } else if (precision < 16) {

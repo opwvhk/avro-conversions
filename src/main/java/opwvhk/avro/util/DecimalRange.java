@@ -149,6 +149,15 @@ public record DecimalRange(BigDecimal lowerBound, boolean lowerBoundInclusive, B
         return new DecimalRange(lowerBound, includeLowerBound, upperBound, includeUpperBound);
     }
 
+	/**
+	 * Determine whether the range is bounded. A range is bounded if there is both a lower and upper bound.
+	 *
+	 * @return {@code true} if this range is bounded
+	 */
+	public boolean isBounded() {
+		return lowerBound != null && upperBound != null;
+	}
+
     /**
      * Determine whether the range can be an integer range.
      *
@@ -169,6 +178,7 @@ public record DecimalRange(BigDecimal lowerBound, boolean lowerBoundInclusive, B
         return Stream.of(lowerBound, upperBound).filter(Objects::nonNull)
                        .map(bd -> bd.setScale(0, DOWN))
                        .map(BigDecimal::toBigInteger)
+                       .map(BigInteger::abs)
                        .mapToInt(BigInteger::bitLength)
                        .max()
                        .orElse(-1) + 1;

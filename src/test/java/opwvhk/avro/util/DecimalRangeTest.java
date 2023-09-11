@@ -50,6 +50,9 @@ public class DecimalRangeTest {
         assertThat(new DecimalRange(ZERO, true, ONE, true).isIntegerRange(true)).isTrue();
 
         DecimalRange leftOpen = openClosed(null, ONE_AND_A_HALF);
+        assertThat(leftOpen.isBounded()).isFalse();
+        assertThat(leftOpen.isIntegerRange(false)).isFalse();
+        assertThat(leftOpen.isIntegerRange(true)).isFalse();
         assertThat(leftOpen.requiredPrecision()).isEqualTo(2);
         assertThat(leftOpen.requiredScale()).isEqualTo(1);
 
@@ -58,8 +61,18 @@ public class DecimalRangeTest {
         assertThat(rightOpen.requiredScale()).isEqualTo(1);
 
         // Required bits include a sign bit
-        assertThat(closedOpen(ONE, new BigDecimal("31.00")).integerBitSize()).isEqualTo(6);
-        assertThat(closedOpen(ONE, null).integerBitSize()).isEqualTo(2);
+	    DecimalRange range_1_31 = closedOpen(ONE, new BigDecimal("31.00"));
+	    assertThat(range_1_31.integerBitSize()).isEqualTo(6);
+        assertThat(range_1_31.isBounded()).isTrue();
+        assertThat(range_1_31.isIntegerRange(false)).isFalse();
+        assertThat(range_1_31.isIntegerRange(true)).isTrue();
+
+	    DecimalRange range_m1_null = closedOpen(ONE.negate(), null);
+	    assertThat(range_m1_null.integerBitSize()).isEqualTo(2);
+	    assertThat(range_m1_null.isBounded()).isFalse();
+	    assertThat(range_m1_null.isIntegerRange(false)).isTrue();
+	    assertThat(range_m1_null.isIntegerRange(true)).isTrue();
+
         assertThat(openClosed(null, ONE).integerBitSize()).isEqualTo(2);
         assertThat(openOpen(null, null).integerBitSize()).isEqualTo(0);
     }

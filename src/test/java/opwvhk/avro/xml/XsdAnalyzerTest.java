@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Objects;
 
 import opwvhk.avro.xml.datamodel.DecimalType;
+import opwvhk.avro.xml.datamodel.FixedType;
 import opwvhk.avro.xml.datamodel.StructType;
 import opwvhk.avro.xml.datamodel.Type;
 import org.apache.avro.Schema;
@@ -581,7 +582,10 @@ public class XsdAnalyzerTest {
 
 	@Test
 	public void unconstrainedDecimalAttributesAreNotAllowed() {
-		assertFailureCreatingStructTypeFor("unconstrainedDecimalAttribute");
+		Type type = analyzer.typeOf("unconstrainedDecimalAttribute");
+		assertThat(type).isEqualTo(struct("namespace.unconstrainedDecimalAttribute").withFields(
+				optional("value", DOUBLE)
+		));
 	}
 
 	@Test
@@ -593,14 +597,15 @@ public class XsdAnalyzerTest {
 	}
 
 	@Test
-	public void decimalsMustHaveConstraints() {
-		assertFailureCreatingStructTypeFor("unconstrainedDecimal");
+	public void unconstrainedDecimalsBecomeDouble() {
+		Type type = analyzer.typeOf("unconstrainedDecimal");
+		assertThat(type).isEqualTo(DOUBLE);
 	}
 
 	@Test
-	public void decimalsCanBeInfinite() {
+	public void infiniteDecimalsBecomeDouble() {
 		Type type = analyzer.typeOf("unboundedDecimal");
-		assertThat(type).is(decimalWithPrecisionAndScale(Integer.MAX_VALUE, 6));
+		assertThat(type).isEqualTo(DOUBLE);
 	}
 
 	@Test
