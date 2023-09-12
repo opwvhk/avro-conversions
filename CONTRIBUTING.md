@@ -114,8 +114,8 @@ This means these types will not be supported:
 
 ***ADR 4***
 
-Limitless integer numbers will be coerced to Avro `long` to encourage the use of primitive types  (
-in Avro, decimal types are logical types on a byte array). Reason is that larger numbers are
+Limitless integer numbers will be coerced to Avro `long` to encourage the use of primitive types
+(in Avro, decimal types are logical types on a byte array). Reason is that larger numbers are
 extremely uncommon.
 
 ***ADR 5***
@@ -139,3 +139,9 @@ For JSON, the following scalar types are supported:
   arbitrary, but ensure parsed values fit comfortably).
 * Strings are treated as string unless a supported format property is present. The
   formats `date`, `date-time` and `time` are parsed according to ISO 8601.
+
+***ADR 7***
+
+Limitless non-integer numbers will be coerced to Avro `double` to encourage the use of primitive
+types (in Avro, decimal types are logical types on a byte array). Reason is that larger numbers and
+extremely precise numbers are extremely uncommon.
