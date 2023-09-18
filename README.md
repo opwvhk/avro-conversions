@@ -12,8 +12,8 @@ data into Avro data structures.
 Usage
 -----
 
-The class below describes how to use all functionality for XML. It is a contrived example, as (for
-example) describing a schema in Markdown format and parsing data are not usually combined...
+The class below describes how to use all functionality. It is a contrived example, as (for example)
+describing a schema in Markdown format and parsing data are not usually combined…
 
 ```java
 import opwvhk.avro.SchemaManipulator;
