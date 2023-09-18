@@ -63,8 +63,8 @@
 	<!-- this enum is read as a string -->
 	<category>apple</category>
 	<!-- this (optional) non-repeated element is read into an array -->
-	<upgrade>
+	<upgrade value="value">
 		<key>single</key>
-		<value>value</value>
+		<!--<value>value</value>-->
 	</upgrade>
 </outer>

@@ -253,10 +253,10 @@
 					"name": "upgrade",
 					"fields": [
 						{
-							"name": "key",
+							"name": "value",
 							"type": "string"
 						}, {
-							"name": "value",
+							"name": "key",
 							"type": "string"
 						}
 					]
