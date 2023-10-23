@@ -472,27 +472,23 @@ public class SchemaAnalyzer {
     }
 
     private enum SchemaVersion {
-        DRAFT_3("http://json-schema.org/draft-03/schema#"),
-        DRAFT_4("http://json-schema.org/draft-04/schema#"),
-        DRAFT_6("http://json-schema.org/draft-06/schema#"),
-        DRAFT_7("http://json-schema.org/draft-07/schema#"),
-        DRAFT_2019_09("https://json-schema.org/draft/2019-09/schema"),
-        DRAFT_2020_12("https://json-schema.org/draft/2020-12/schema");
+        DRAFT_3, DRAFT_4, DRAFT_6, DRAFT_7, DRAFT_2019_09, DRAFT_2020_12;
+		private static final Map<URI, SchemaVersion> VERSIONS_BY_IDENTIFIERS = Map.of(
+				URI.create("http://json-schema.org/draft-03/schema#"), DRAFT_3,
+				URI.create("https://json-schema.org/draft-03/schema#"), DRAFT_3,
+				URI.create("http://json-schema.org/draft-04/schema#"), DRAFT_4,
+				URI.create("https://json-schema.org/draft-04/schema#"), DRAFT_4,
+				URI.create("http://json-schema.org/draft-06/schema#"), DRAFT_6,
+				URI.create("https://json-schema.org/draft-06/schema#"), DRAFT_6,
+				URI.create("http://json-schema.org/draft-07/schema#"), DRAFT_7,
+				URI.create("https://json-schema.org/draft-07/schema#"), DRAFT_7,
+				URI.create("https://json-schema.org/draft/2019-09/schema"), DRAFT_2019_09,
+				URI.create("https://json-schema.org/draft/2020-12/schema"), DRAFT_2020_12
+		);
 
         private static SchemaVersion valueOf(URI identifier) {
-            for (SchemaVersion schemaVersion : values()) {
-                if (schemaVersion.identifier.equals(identifier)) {
-                    return schemaVersion;
-                }
-            }
-            // Unknown schema: use a default
-            return DRAFT_7;
-        }
-
-        private final URI identifier;
-
-        SchemaVersion(String identifier) {
-            this.identifier = URI.create(identifier);
+	        // Return the identified schema, or draft 7 by default.
+	        return VERSIONS_BY_IDENTIFIERS.getOrDefault(identifier, DRAFT_7);
         }
 
         private boolean isAtLeast(SchemaVersion schemaVersion) {
