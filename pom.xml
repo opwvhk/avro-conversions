@@ -10,7 +10,7 @@
 
 	<artifactId>avro-conversions</artifactId>
 	<packaging>jar</packaging>
-	<version>1.1</version>
+	<version>1.2</version>
 
 	<name>Avro Conversions</name>
 	<description>Schema based conversions for Avro for JSON, XML</description>
