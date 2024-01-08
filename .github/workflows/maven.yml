@@ -16,7 +16,7 @@ jobs:
       checks: write
       contents: read
       packages: read
-    # If uncommented, set the java version below to ${{ matrix.java }}
+    # If uncommented, set the java version below to ${{matrix.java}}
     #strategy:
     #  matrix:
     #    java: [ '11', '17' ]
@@ -46,11 +46,11 @@ jobs:
 
       - name: Publish Test Coverage Results
         # noinspection SpellCheckingInspection
-        uses: PavanMudigonda/jacoco-reporter@v4.9
+        uses: PavanMudigonda/jacoco-reporter@v5.0
         with:
           coverage_results_path: 'target/site/jacoco/jacoco.xml'
           coverage_report_title: 'Test Coverage Results'
-          coverage_report_name: 'Test Coverage Results'
+          coverage_report_name: 'Test-Coverage-Results'
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
 # Option: use GitHub secrets to add deployment to Maven Central. See:
