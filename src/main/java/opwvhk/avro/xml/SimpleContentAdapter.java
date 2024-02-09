@@ -1,7 +1,5 @@
 package opwvhk.avro.xml;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
@@ -17,10 +15,6 @@ import static opwvhk.avro.xml.Constants.XML_SCHEMA_DEFINITION_NAMESPACES;
  * <p>Requires the parser to support namespaces (and return namespace attributes).</p>
  */
 class SimpleContentAdapter extends DefaultHandler {
-	/**
-	 * Logger for this class.
-	 */
-	private static final Logger LOGGER = LoggerFactory.getLogger(SimpleContentAdapter.class);
 	private static final int DEFAULT_BUFFER_CAPACITY = 1024;
 	private final SimpleContentHandler simpleContentHandler;
 	private final boolean enforceXsd;

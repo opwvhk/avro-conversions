@@ -209,7 +209,7 @@ public abstract class AsAvroParserBase<WriteSchema> {
     }
 
     /**
-     * Collect all fields in a record schema, mapped by their names (i.e. name and aliases).
+     * Collect all fields in a record schema, mapped by their names (i.e., name and aliases).
      *
      * @param recordSchema a record schema
      * @return all fields, mapped by all their names
@@ -445,7 +445,7 @@ public abstract class AsAvroParserBase<WriteSchema> {
     /**
      * Factory interface to create resolvers based on a read and write schema.
      */
-    protected interface ResolverFactory<WriteSchema> {
+    public interface ResolverFactory<WriteSchema> {
         /**
          * Create a resolver.
          *

@@ -2,8 +2,6 @@ package opwvhk.avro.util;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.Collection;
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Locale;
@@ -234,20 +232,20 @@ public final class Utils {
 	/**
 	 * Check if a map is not empty. Throws otherwise.
 	 *
-	 * @param map the map to check
+	 * @param map     the map to check
 	 * @param message the exception message to use when the map is null or empty
 	 * @return the map
 	 */
-	public static <T extends Map<?,?>> T requireNonEmpty(T map, String message) {
+	public static <T extends Map<?, ?>> T requireNonEmpty(T map, String message) {
 		return require(map, m -> m != null && !m.isEmpty(), message);
 	}
 
 	/**
 	 * Check if a requirement holds. Throws otherwise.
 	 *
-	 * @param object the object to check
+	 * @param object    the object to check
 	 * @param assertion the assertion on the object that must hold
-	 * @param message the exception message to use when the assertion fails
+	 * @param message   the exception message to use when the assertion fails
 	 * @return the object
 	 */
 	public static <T> T require(T object, Predicate<T> assertion, String message) {
@@ -261,23 +259,23 @@ public final class Utils {
 		// Utility class: no need to instantiate.
 	}
 
-    /**
+	/**
 	 * <p>Simple pair class with equality check (!) on its contents, useful to prevent infinite recursion.</p>
-     *
-     * <p>Suggested use is as keys of a {@link Map} or {@link Set}, where one would use an {@link java.util.IdentityHashMap IdentityHashMap} if there were
-     * only one value. One such usage is in the method {@link #nonRecursive(String, Object, Object, Object, Supplier)}, where the pairs of {@code caller} and
-     * {@code differentiator} are used to check if the method should allow recursion, or return a default value instead.</p>
+	 *
+	 * <p>Suggested use is as keys of a {@link Map} or {@link Set}, where one would use an {@link java.util.IdentityHashMap IdentityHashMap} if there were
+	 * only one value. One such usage is in the method {@link #nonRecursive(String, Object, Object, Object, Supplier)}, where the pairs of {@code caller} and
+	 * {@code differentiator} are used to check if the method should allow recursion, or return a default value instead.</p>
 	 */
 	public static class Seen {
 		private final Object left;
 		private final Object right;
 
-	    /**
-	     * Create a 'seen' pair.
-	     *
-	     * @param left one of the values to check against
-	     * @param right the other value to check against
-	     */
+		/**
+		 * Create a 'seen' pair.
+		 *
+		 * @param left  one of the values to check against
+		 * @param right the other value to check against
+		 */
 		public Seen(Object left, Object right) {
 			this.left = left;
 			this.right = right;

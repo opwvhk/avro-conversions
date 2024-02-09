@@ -3,7 +3,7 @@ package opwvhk.avro.xml.datamodel;
 import org.apache.avro.Schema;
 
 /**
- * A type with unparsed content. This means the type has a text field named "value", where the XML  parser can place the content of an XML element.
+ * A type with unparsed content. This means the type has a text field named "value", where the XML parser can place the content of an XML element.
  *
  * @param actualType the actual type (with a text field named "value")
  */

@@ -54,12 +54,6 @@
 	<dependencies>
 		<!-- Basics -->
 		<dependency>
-			<groupId>org.projectlombok</groupId>
-			<artifactId>lombok</artifactId>
-			<version>1.18.30</version>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
 			<version>${org.slf4j.version}</version>
@@ -95,16 +89,6 @@
 			<version>${avro.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>com.fasterxml.jackson.core</groupId>
-			<artifactId>jackson-core</artifactId>
-			<version>${jackson.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.fasterxml.jackson.core</groupId>
-			<artifactId>jackson-databind</artifactId>
-			<version>${jackson.version}</version>
-		</dependency>
-		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-text</artifactId>
 			<version>1.11.0</version>
@@ -129,7 +113,17 @@
 			<version>2.3.1</version>
 		</dependency>
 
-		<!-- JSON Schema related -->
+		<!-- JSON & JSON Schema related -->
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-core</artifactId>
+			<version>${jackson.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-databind</artifactId>
+			<version>${jackson.version}</version>
+		</dependency>
 		<dependency>
 			<!-- From JITPack https://jitpack.io/ -->
 			<groupId>net.jimblackler.jsonschemafriend</groupId>

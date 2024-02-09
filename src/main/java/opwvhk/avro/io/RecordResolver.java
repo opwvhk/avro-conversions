@@ -17,7 +17,7 @@ public class RecordResolver
         extends ValueResolver {
     private static final Object NOT_SET = new Object();
 
-    private final GenericData model;
+	private final GenericData model;
     private final Schema recordSchema;
     private final Map<String, ValueResolver> resolversByName;
     private final Map<String, Schema.Field> fieldsByName;

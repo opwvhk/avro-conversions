@@ -125,7 +125,7 @@ public class SchemaAnalyzer {
                         // Assume a scalar value
                         ValueResolver resolver = new AsAvroParserBase<>(GenericData.get()) {
                             @Override
-                            public ValueResolver createResolver(Schema readSchema) {
+                            protected ValueResolver createResolver(Schema readSchema) {
                                 return super.createResolver(readSchema);
                             }
                         }.createResolver(fieldSchema);

@@ -2,8 +2,6 @@ package opwvhk.avro.io;
 
 import java.util.function.Function;
 
-import static java.util.Objects.requireNonNull;
-
 /**
  * A resolver for scalar values. Supports content, but ignores any properties.
  */
