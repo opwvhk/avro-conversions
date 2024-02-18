@@ -4,15 +4,12 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
-import java.util.regex.MatchResult;
-import java.util.regex.Pattern;
 
 import static java.util.Objects.requireNonNull;
 
@@ -20,17 +17,8 @@ import static java.util.Objects.requireNonNull;
  * Container class with various utilities that didn't fit elsewhere.
  */
 public final class Utils {
-	private static final Pattern UNDERSCORES_PLUS_FOLLOWERS = Pattern.compile("(?U)_([^_])([^_]*)");
-	private static final Function<MatchResult, String> TWO_GROUPS_TO_UPPER_LOWER_CASE = m -> m.group(1).toUpperCase(Locale.ROOT) + m.group(2).toLowerCase(
-			Locale.ROOT);
-	private static final Pattern INITIAL_LETTER = Pattern.compile("(?U)^(\\p{L})");
-	private static final Function<MatchResult, String> FIRST_GROUP_TO_UPPER_CASE = m -> m.group(1).toUpperCase(Locale.ROOT);
-	// Initial capitals are all first capitals of a word, or capitalised abbreviation (followed by end-of-input, a capitalised word, or plural 's')
-	private static final Pattern INITIAL_CAPITALS = Pattern.compile("(?U)^(\\p{Lu}(?!\\p{Lu})|\\p{Lu}+(?=$|\\p{Lu}\\p{Ll}|s))");
-	private static final Function<MatchResult, String> FIRST_GROUP_TO_LOWER_CASE = m -> m.group(1).toLowerCase(Locale.ROOT);
-
 	/**
-	 * Create a message digest. Assumes that the given algorithm is validated, and throws an {@link IllegalArgumentException} if it doesn't exist.
+	 * Create a message digest. Assumes that the given algorithm is known, and throws an {@link IllegalArgumentException} if it doesn't exist.
 	 *
 	 * @param algorithm a message digest algorithm
 	 * @return a message digest for the specified algorithm
@@ -41,60 +29,6 @@ public final class Utils {
 		} catch (NoSuchAlgorithmException e) {
 			throw new IllegalArgumentException("Unknown algorithm", e);
 		}
-	}
-
-	/**
-	 * Convert a name from snake case to lower camel case.
-	 *
-	 * @param name a name in snake case
-	 * @return the same name in camel case, starting with a lower case letter
-	 */
-	public static String snakeToLowerCamelCase(String name) {
-		String camelCase;
-		if (name.contains("_")) {
-			camelCase = UNDERSCORES_PLUS_FOLLOWERS.matcher(name).replaceAll(TWO_GROUPS_TO_UPPER_LOWER_CASE);
-		} else {
-			// No _: assume already camel case
-			camelCase = name;
-		}
-		return noInitialCapital(camelCase);
-	}
-
-	/**
-	 * Convert a name from snake case to upper camel case.
-	 *
-	 * @param name a name in snake case
-	 * @return the same name in camel case, starting with a camel case letter
-	 */
-	public static String snakeToUpperCamelCase(String name) {
-		String camelCase;
-		if (name.contains("_")) {
-			camelCase = UNDERSCORES_PLUS_FOLLOWERS.matcher(name).replaceAll(TWO_GROUPS_TO_UPPER_LOWER_CASE);
-		} else {
-			// No _: assume already camel case
-			camelCase = name;
-		}
-		return initialCapital(camelCase);
-	}
-
-	/**
-	 * In the given name, convert the first character to upper case.
-	 *
-	 * @param name a name
-	 * @return the same name, but with the first character in upper case
-	 */
-	public static String initialCapital(String name) {
-		return INITIAL_LETTER.matcher(name).replaceAll(FIRST_GROUP_TO_UPPER_CASE);
-	}
-
-	/**
-	 * In the given name, convert the first character to lower case.
-	 *
-	 * @param name a name
-	 * @return the same name, but with the first character in lower case
-	 */
-	public static String noInitialCapital(String name) {
-		return INITIAL_CAPITALS.matcher(name).replaceAll(FIRST_GROUP_TO_LOWER_CASE);
 	}
 
 	/**
