@@ -1,5 +1,12 @@
 package opwvhk.avro;
 
+import net.jimblackler.jsonschemafriend.GenerationException;
+import opwvhk.avro.json.SchemaAnalyzer;
+import opwvhk.avro.util.AvroSchemaUtils;
+import opwvhk.avro.util.NamingConvention;
+import opwvhk.avro.xml.XsdAnalyzer;
+import org.apache.avro.Schema;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
@@ -10,12 +17,7 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-
-import net.jimblackler.jsonschemafriend.GenerationException;
-import opwvhk.avro.json.SchemaAnalyzer;
-import opwvhk.avro.util.AvroSchemaUtils;
-import opwvhk.avro.xml.XsdAnalyzer;
-import org.apache.avro.Schema;
+import java.util.stream.Stream;
 
 import static java.util.Objects.requireNonNull;
 
@@ -29,11 +31,18 @@ public class SchemaManipulator {
 	private boolean renameWithAliases;
 	private StringBuilder markdownBuffer;
 	private List<SchemaRenamer> schemaRenamerList;
+	private SchemaRenamer schemaNamingConvention;
 	private List<FieldRenamer> fieldRenamerList;
+	private FieldRenamer fieldNamingConvention;
 	private List<UnwrapTest> unwrapTests;
 
-	private SchemaManipulator(Schema initialSchema) {
-		reset(initialSchema);
+	/**
+	 * Create a schema manipulator for a given schema.
+	 *
+	 * @param schema the schema to manipulate
+	 */
+	public SchemaManipulator(Schema schema) {
+		reset(schema);
 	}
 
 	private void reset(Schema initialSchema) {
@@ -42,7 +51,9 @@ public class SchemaManipulator {
 		renameWithAliases = true;
 		markdownBuffer = null;
 		schemaRenamerList = new ArrayList<>();
+		schemaNamingConvention = (pathToField, fieldSchema) -> null;
 		fieldRenamerList = new ArrayList<>();
+		fieldNamingConvention = (pathToField, schemaWithField, field) -> null;
 		unwrapTests = new ArrayList<>();
 	}
 
@@ -71,7 +82,8 @@ public class SchemaManipulator {
 	}
 
 	/**
-	 * Create a schema manipulator from an XML Schema Definition (XSD). The location of the main {@code .xsd} file is provided, both to provide the XSD content,
+	 * Create a schema manipulator from an XML Schema Definition (XSD). The location of the main {@code .xsd} file is provided, both to provide the XSD
+     * content,
 	 * as to provide a way to locate imported/included {@code .xsd} files.
 	 *
 	 * @param schemaLocation the location of the main {@code .xsd} file (it may include/import other {@code .xsd} files)
@@ -210,7 +222,7 @@ public class SchemaManipulator {
 	}
 
 	private String newSchemaName(String path, Schema schema) {
-		return schemaRenamerList.stream()
+		return Stream.concat(schemaRenamerList.stream(), Stream.of(schemaNamingConvention))
 				.map(renamer -> renamer.newSchemaName(path, schema))
 				.filter(Objects::nonNull)
 				.findAny()
@@ -218,7 +230,7 @@ public class SchemaManipulator {
 	}
 
 	private String newFieldName(String path, Schema schemaWithField, Schema.Field field) {
-		return fieldRenamerList.stream()
+		return Stream.concat(fieldRenamerList.stream(), Stream.of(fieldNamingConvention))
 				.map(renamer -> renamer.newFieldName(path, schemaWithField, field))
 				.filter(Objects::nonNull)
 				.findAny()
@@ -298,6 +310,35 @@ public class SchemaManipulator {
 	}
 
 	/**
+	 * Use the specified naming convention for schemas. This naming convention applies for all schemas that have not been explicitly renamed using
+	 * {@link #renameSchema(String, String)} or {@link #renameSchemaAtPath(String, String...)}, and leaves the namespace name intact.
+	 *
+	 * @param schemaNamingConvention the naming convention to use
+	 * @return this {@code SchemaManipulator}
+	 */
+	public SchemaManipulator useSchemaNamingConvention(NamingConvention schemaNamingConvention) {
+		return useSchemaNamingConvention(NamingConvention.NULL, schemaNamingConvention);
+	}
+
+	/**
+	 * Use the specified naming conventions for schemas. These naming conventions apply for all schemas that have not been explicitly renamed using
+	 * {@link #renameSchema(String, String)} or {@link #renameSchemaAtPath(String, String...)}.
+	 *
+	 * @param namespaceNamingConvention the naming convention to use for the schema namespace
+	 * @param schemaNamingConvention    the naming convention to use for the schema (simple) name
+	 * @return this {@code SchemaManipulator}
+	 */
+	public SchemaManipulator useSchemaNamingConvention(NamingConvention namespaceNamingConvention, NamingConvention schemaNamingConvention) {
+		this.schemaNamingConvention = (path, schema) -> {
+			String namespace = schema.getNamespace();
+			String prefix = namespace == null ? "" : namespaceNamingConvention.convert(namespace) + ".";
+			String newFullName = prefix + schemaNamingConvention.convert(schema.getName());
+			return schema.getFullName().equals(newFullName) ? null : newFullName;
+		};
+		return this;
+	}
+
+	/**
 	 * Rename the specified field in the (named) schema.
 	 *
 	 * @param schemaName   the name of the schema with the field to rename
@@ -327,6 +368,22 @@ public class SchemaManipulator {
 		String pathToMatch = String.join(".", pathToFieldToRename);
 		fieldRenamerList.add((pathToField, schemaWithField, fieldSchema) ->
 				pathToMatch.equals(pathToField) ? newFieldName : null);
+		return this;
+	}
+
+	/**
+	 * Use the specified naming conventions for fields. This naming convention applies for all fields that have not been explicitly renamed using
+	 * * {@link #renameField(String, String, String)} or {@link #renameFieldAtPath(String, String...)}.
+	 *
+	 * @param namingConvention the naming convention to use for the schema (simple) name
+	 * @return this {@code SchemaManipulator}
+	 */
+	public SchemaManipulator useFieldNamingConvention(NamingConvention namingConvention) {
+		this.fieldNamingConvention = (pathToField, schemaWithField, field) -> {
+			String oldName = field.name();
+			String newName = namingConvention.convert(oldName);
+			return oldName.equals(newName) ? null : newName;
+		};
 		return this;
 	}
 
@@ -384,7 +441,8 @@ public class SchemaManipulator {
 	 * <p>Unwrap the array whose wrapping field is at the specified path.</p>
 	 *
 	 * <p>Wrapped arrays are an XML construct. They result in array fields without siblings in a record field (optionally in a union with null). In Avro,
-	 * Parquet, and in fact most/all other formats, they are both not needed and unwanted. This method unwraps them based on the path to the wrapping field.</p>
+	 * Parquet, and in fact most/all other formats, they are both not needed and unwanted. This method unwraps them based on the path to the wrapping field
+     * .</p>
 	 *
 	 * <p>When unwrapping, wrapped field will replace the wrapping field using the name of the wrapping field. As this is not a renaming action, no alias will
 	 * be added.</p>
