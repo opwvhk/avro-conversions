@@ -6,6 +6,10 @@ name: Maven Build
 on:
   push:
     branches: [ main ]
+    paths:
+      - .github/**.yml
+      - src/**
+      - pom.xml
   pull_request:
     branches: [ main ]
 
