@@ -128,7 +128,7 @@
 			<!-- From JITPack https://jitpack.io/ -->
 			<groupId>net.jimblackler.jsonschemafriend</groupId>
 			<artifactId>core</artifactId>
-			<version>0.12.3</version>
+			<version>0.12.4</version>
 			<exclusions>
 				<exclusion>
 					<groupId>commons-collections</groupId>
