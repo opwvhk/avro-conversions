@@ -36,7 +36,6 @@ like widening conversions (like int→long), lossy conversions (like decimal→f
 and parsing dates. With a write schema, binary conversions (from hexadecimal/base64 encoded text)
 are also supported.
 
-
 ### Source schema optional but encouraged
 
 The parsers support as much functionality as possible when the write (source) schema is omitted.
@@ -48,7 +47,6 @@ However, this is discouraged. The reason is that significant functionality is mi
   Without a schema, a parser cannot validate input. This can cause unpredictable failures later on.
 
 Summary: you should always use a write (source) schema whenever possible.
-
 
 ### Supported conversions
 
@@ -79,8 +77,6 @@ When parsing, these Avro types are supported:
 | Time (millis)           | ✅             | ✅    | ✅            | ✅   |
 | Time (micros)           | ✅             | ✅    | ✅            | ✅   |
 
-
-
 Schema manipulations
 --------------------
 
@@ -88,13 +84,24 @@ The class to convert schemas into Avro schemas and other manipulations is
 `opwvhk.avro.SchemaManipulator`.
 
 There are multiple starting points:
+
 * `startFromAvro(String)` to parse an Avro schema from a String
 * `startFromAvro(URL)` to read an Avro schema from a location
 * `startFromJsonSchema(URL)` to read a JSON schema and convert it into an Avro schema
 * `startFromXsd(URL)` to read an XML Schema Definition and convert it into an Avro schema
 
-Next, you can rename schemas and fields or unwrap arrays (especially useful for XML). See the
-various methods on the class for details.
+Next, you can rename schemas and fields, apply naming conventions, and/or unwrap arrays (especially
+useful for XML). See the various methods on the class for details:
+
+| Manipulation           | Method                                                                                                            |
+|------------------------|-------------------------------------------------------------------------------------------------------------------|
+| Rename single schema   | `renameSchema(String, String)`<br/>`renameSchemaAtPath(String, String...)`                                        |
+| Rename all schemas     | `useSchemaNamingConvention(NamingConvention, NamingConvention)`<br/>`useSchemaNamingConvention(NamingConvention)` |
+| Rename single field    | `renameField(String, String, String)`<br/>`renameFieldAtPath(String, String...)`                                  |
+| Rename all fields      | `useFieldNamingConvention(NamingConvention)`                                                                      |
+| Unwrap single array    | `unwrapArray(String, String)`<br/>`unwrapArray(String...)`                                                        |
+| Unwrap multiple arrays | `unwrapArrays(int)`                                                                                               |
+| Sort fields            | `sortFields()`                                                                                                    |
 
 Note that by default, any rename also adds the previous name as an alias. This allows you to use
 the same source schema (be it a JSON schema or XSD) as input for both the parser and schema
