@@ -9,19 +9,19 @@ import java.util.List;
 import opwvhk.avro.ResolvingFailure;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericData;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static java.time.ZoneOffset.UTC;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-public class AsAvroParserBaseTest {
+class AsAvroParserBaseTest {
     /*
     NOTE: This test class is terribly incomplete, as the resolvers it creates cannot be tested without parsing (which this test doesn't cover).
     */
 
     @Test
-    public void testTimeZoneOffsetDetermination() {
+    void testTimeZoneOffsetDetermination() {
         Clock fixedClock = Clock.fixed(Instant.ofEpochMilli(1681720200000L), UTC); // 2023-04-17T08:30:00.000000000Z
 
         assertThat(AsAvroParserBase.asOffset(UTC, fixedClock)).isEqualTo(ZoneOffset.ofHours(0));
@@ -30,7 +30,7 @@ public class AsAvroParserBaseTest {
     }
 
     @Test
-    public void testResolvingAllTypes() {
+    void testResolvingAllTypes() {
         Schema schema = new Schema.Parser().parse("""
                 {"type": "record", "name": "AllTypes", "fields": [
                     {"name": "optionalBoolean", "type": ["null", "boolean"], "aliases": ["bool"]},
@@ -114,7 +114,7 @@ public class AsAvroParserBaseTest {
     }
 
     @Test
-    public void testFailuresForUnmatchedBinaryData() {
+    void testFailuresForUnmatchedBinaryData() {
         Schema bytesSchema = Schema.create(Schema.Type.BYTES);
         AsAvroParserBase<Object> parserBase = new AsAvroParserBase<>(GenericData.get()) {};
 
@@ -122,7 +122,7 @@ public class AsAvroParserBaseTest {
     }
 
     @Test
-    public void testParsingInvalidEnum() {
+    void testParsingInvalidEnum() {
         AsAvroParserBase<?> parserBase = new AsAvroParserBase<>(GenericData.get()) {};
 
         Schema enumWithDefault = Schema.createEnum("choice", null, null, List.of("maybe", "yes", "no"), "maybe");
@@ -137,13 +137,13 @@ public class AsAvroParserBaseTest {
     }
 
     @Test
-    public void coverMethodThatCannotBeCalled() {
+    void coverMethodThatCannotBeCalled() {
         // There is no code path that actively causes this failure (that would mean a bug in building resolvers).
         assertThatThrownBy(() -> new ValueResolver() {}.addContent(null, null)).isInstanceOf(IllegalStateException.class);
     }
 
     @Test
-    public void testRecordImplicitArrayFields() {
+    void testRecordImplicitArrayFields() {
         ValueResolver sr = new ScalarValueResolver(s -> s);
         Schema.Field f = new Schema.Field("texts", Schema.createArray(Schema.create(Schema.Type.STRING)));
         RecordResolver rr = new RecordResolver(GenericData.get(), Schema.createRecord("Record", null, null, false, List.of(f)));
@@ -157,7 +157,7 @@ public class AsAvroParserBaseTest {
     }
 
     @Test
-    public void testRecordFieldDefaultValues() {
+    void testRecordFieldDefaultValues() {
         ValueResolver sr = new ScalarValueResolver(s -> s);
         Schema optionalString = Schema.createUnion(Schema.create(Schema.Type.STRING), Schema.create(Schema.Type.NULL));
         Schema.Field f = new Schema.Field("value", optionalString, null, "missing");
@@ -176,7 +176,7 @@ public class AsAvroParserBaseTest {
     }
 
     @Test
-    public void testRecordContentField() {
+    void testRecordContentField() {
         ValueResolver sr = new ScalarValueResolver(s -> s);
         Schema.Field f = new Schema.Field("value", Schema.create(Schema.Type.STRING), null, "missing");
         RecordResolver rr = new RecordResolver(GenericData.get(), Schema.createRecord("Record", null, null, false, List.of(f)));
@@ -189,7 +189,7 @@ public class AsAvroParserBaseTest {
     }
 
     @Test
-    public void testValueResolverContentParseFlag() {
+    void testValueResolverContentParseFlag() {
         ValueResolver resolver = new ValueResolver(){};
         assertThat(resolver.parseContent()).isTrue();
         resolver.doNotParseContent();

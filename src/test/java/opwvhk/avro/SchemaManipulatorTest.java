@@ -7,14 +7,14 @@ import java.util.List;
 
 import net.jimblackler.jsonschemafriend.GenerationException;
 import org.apache.avro.Schema;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static java.util.Objects.requireNonNull;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class SchemaManipulatorTest {
+class SchemaManipulatorTest {
     @Test
-    public void testSortedDocumentationViaXsd() throws IOException {
+    void testSortedDocumentationViaXsd() throws IOException {
         StringBuilder markdown = new StringBuilder();
 
         URL xsdLocation = getClass().getResource("xml/payload.xsd");
@@ -48,7 +48,7 @@ public class SchemaManipulatorTest {
     }
 
     @Test
-    public void testSortedDocumentationViaJsonSchema() throws GenerationException, URISyntaxException, IOException {
+    void testSortedDocumentationViaJsonSchema() throws GenerationException, URISyntaxException, IOException {
         StringBuilder markdown = new StringBuilder();
 
         URL schemaLocation = getClass().getResource("json/TestRecord.schema.json");
@@ -87,7 +87,7 @@ public class SchemaManipulatorTest {
     }
 
     @Test
-    public void testDocumentationViaAvro() throws IOException {
+    void testDocumentationViaAvro() throws IOException {
         URL avroLocation = getClass().getResource("xml/envelope.avsc");
         String markDownTable = SchemaManipulator.startFromAvro(avroLocation).asMarkdownTable();
 
@@ -104,7 +104,7 @@ public class SchemaManipulatorTest {
     }
 
     @Test
-    public void testManipulationsWithAliases() {
+    void testManipulationsWithAliases() {
         // Note: manipulating by schema (and field name) also matches on aliases
         Schema schema = SchemaManipulator.startFromAvro(SOURCE_SCHEMA)
                 .renameSchema("ns.envelope", "ns.satchel")
@@ -121,7 +121,7 @@ public class SchemaManipulatorTest {
     }
 
     @Test
-    public void testManipulationsWithoutAliasesByPath() {
+    void testManipulationsWithoutAliasesByPath() {
         // Note: manipulating by path cannot match on aliases
         Schema schema = SchemaManipulator.startFromAvro(SOURCE_SCHEMA)
                 .renameWithoutAliases()
@@ -138,7 +138,7 @@ public class SchemaManipulatorTest {
     }
 
     @Test
-    public void testUnwrappingArrays1() {
+    void testUnwrappingArrays1() {
         Schema schema = SchemaManipulator.startFromAvro(SOURCE_SCHEMA_WITH_ARRAYS)
                 .unwrapArrayAtPath("matchByPath")
                 .unwrapArrays(3)
@@ -149,7 +149,7 @@ public class SchemaManipulatorTest {
     }
 
     @Test
-    public void testUnwrappingArrays2() {
+    void testUnwrappingArrays2() {
         Schema schema = SchemaManipulator.startFromAvro(SOURCE_SCHEMA_WITH_ARRAYS)
                 .unwrapArray("ns.WithArrays", "matchByName")
                 .unwrapArrays(3)
@@ -160,7 +160,7 @@ public class SchemaManipulatorTest {
     }
 
     @Test
-    public void testManipulatingRecursiveSchemas() {
+    void testManipulatingRecursiveSchemas() {
         // Note: manipulating by schema (and field name) also matches on aliases
         Schema schema = SchemaManipulator.startFromAvro(SOURCE_RECURSIVE_SCHEMA)
                 .renameField("ns.recursive", "rabbitHole", "droste")

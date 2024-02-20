@@ -8,15 +8,15 @@ import java.util.EnumSet;
 
 import net.jimblackler.jsonschemafriend.GenerationException;
 import org.apache.avro.Schema;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static java.util.Objects.requireNonNull;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-public class SchemaAnalyzerTest {
+class SchemaAnalyzerTest {
     @Test
-    public void testSchemaVersionDraft4() throws URISyntaxException, GenerationException {
+    void testSchemaVersionDraft4() throws URISyntaxException, GenerationException {
         SchemaProperties schemaProperties = parseSchemaResource("draft4-schema.json");
         // * range of "number" is not an integer range: type "integer" is NOT inferred because bounds have a fraction
         // * number range has boolean properties for exclusive bounds
@@ -35,7 +35,7 @@ public class SchemaAnalyzerTest {
     }
 
     @Test
-    public void testSchemaVersionDraft6() throws GenerationException, URISyntaxException {
+    void testSchemaVersionDraft6() throws GenerationException, URISyntaxException {
         SchemaProperties schemaProperties = parseSchemaResource("draft6-schema.json");
         // * range of "number" is an integer range: type "integer" is inferred as no bounds have a non-zero fraction
         // * number range has separate number properties for exclusive bounds
@@ -53,7 +53,7 @@ public class SchemaAnalyzerTest {
     }
 
     @Test
-    public void testSchemaVersionDraft7() throws GenerationException, URISyntaxException {
+    void testSchemaVersionDraft7() throws GenerationException, URISyntaxException {
         SchemaProperties schemaProperties = parseSchemaResource("draft7-schema.json");
         // * 'contentEncoding', 'if', 'then', 'else' are now applied
         assertThat(schemaString(schemaProperties)).isEqualTo(
@@ -66,7 +66,7 @@ public class SchemaAnalyzerTest {
     }
 
     @Test
-    public void testUnknownSchemaVersion() throws GenerationException, URISyntaxException {
+    void testUnknownSchemaVersion() throws GenerationException, URISyntaxException {
         SchemaProperties schemaProperties = parseSchemaResource("unspecified-schema.json");
         // Unknown schema causes no references to be resolved by the underlying library
         assertThat(schemaString(schemaProperties)).isEqualTo(
@@ -75,7 +75,7 @@ public class SchemaAnalyzerTest {
     }
 
     @Test
-    public void testSchemaVersionDraft2020() throws GenerationException, URISyntaxException {
+    void testSchemaVersionDraft2020() throws GenerationException, URISyntaxException {
         SchemaProperties schemaProperties = parseSchemaResource("draft2020-12-schema.json");
         // * arrays are defined using 'prefixItems' (an array) & 'items'; 'contains' remains valid, also use 'unevaluatedItems'
         // * additional structures to test all code paths missed so far
@@ -109,7 +109,7 @@ public class SchemaAnalyzerTest {
     }
 
     @Test
-    public void verifyTypesFromSchemaProperties() {
+    void verifyTypesFromSchemaProperties() {
         SchemaProperties schemaProperties = new SchemaProperties(false);
         assertThat(schemaProperties)
                 .hasFieldOrPropertyWithValue("nullable", false)
@@ -133,7 +133,7 @@ public class SchemaAnalyzerTest {
     }
 
     @Test
-    public void testAvroSchemaConversion() throws URISyntaxException, GenerationException, IOException {
+    void testAvroSchemaConversion() throws URISyntaxException, GenerationException, IOException {
         assertThatThrownBy(() -> parseSchemaResourceAsAvro("null.schema.json")).isInstanceOf(IllegalArgumentException.class);
 
         Schema avroSchema = parseSchemaResourceAsAvro("TestRecord.schema.json");

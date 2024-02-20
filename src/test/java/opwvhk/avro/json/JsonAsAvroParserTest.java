@@ -11,14 +11,14 @@ import opwvhk.avro.ResolvingFailure;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.GenericRecord;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-public class JsonAsAvroParserTest {
+class JsonAsAvroParserTest {
     @Test
-    public void testMostTypesWithJsonSchema() throws IOException, GenerationException, URISyntaxException {
+    void testMostTypesWithJsonSchema() throws IOException, GenerationException, URISyntaxException {
         Schema readSchema = avroSchema("TestRecord.avsc");
 
         JsonAsAvroParser parser = new JsonAsAvroParser(resourceUri("TestRecord.schema.json"), readSchema, GenericData.get());
@@ -34,7 +34,7 @@ public class JsonAsAvroParserTest {
     }
 
     @Test
-    public void testParsingDatesAndTimesWithJsonSchema() throws IOException, URISyntaxException, GenerationException {
+    void testParsingDatesAndTimesWithJsonSchema() throws IOException, URISyntaxException, GenerationException {
         Schema readSchema = avroSchema("DatesAndTimes.avsc");
 
         JsonAsAvroParser parser = new JsonAsAvroParser(resourceUri("DatesAndTimes.schema.json"), readSchema, GenericData.get());
@@ -51,7 +51,7 @@ public class JsonAsAvroParserTest {
     }
 
     @Test
-    public void testParsingEnumDifferentlyThanJsonSchema() throws IOException, URISyntaxException, GenerationException {
+    void testParsingEnumDifferentlyThanJsonSchema() throws IOException, URISyntaxException, GenerationException {
         URI jsonSchema = resourceUri("TestRecord.schema.json");
         JsonAsAvroParser parser;
         GenericRecord record;
@@ -72,7 +72,7 @@ public class JsonAsAvroParserTest {
     }
 
     @Test
-    public void testResolveFailuresWithJsonSchema() throws URISyntaxException {
+    void testResolveFailuresWithJsonSchema() throws URISyntaxException {
         URI jsonSchema = resourceUri("TestRecord.schema.json");
         GenericData model = GenericData.get();
 
@@ -87,7 +87,7 @@ public class JsonAsAvroParserTest {
     }
 
     @Test
-    public void testMostTypesFromAvroSchema() throws IOException {
+    void testMostTypesFromAvroSchema() throws IOException {
         Schema readSchema = avroSchema("TestRecordProjection.avsc");
 
         JsonAsAvroParser parser = new JsonAsAvroParser(readSchema, GenericData.get());
@@ -102,7 +102,7 @@ public class JsonAsAvroParserTest {
     }
 
     @Test
-    public void testMinimalRecordFromAvroSchema() throws IOException {
+    void testMinimalRecordFromAvroSchema() throws IOException {
         Schema readSchema = avroSchema("TestRecordProjection.avsc");
 
         JsonAsAvroParser parser = new JsonAsAvroParser(readSchema, GenericData.get());
@@ -124,7 +124,7 @@ public class JsonAsAvroParserTest {
     }
 
     @Test
-    public void testParsingDatesAndTimesFromAvro() throws IOException {
+    void testParsingDatesAndTimesFromAvro() throws IOException {
         Schema readSchema = avroSchema("DatesAndTimes.avsc");
 
         JsonAsAvroParser parser = new JsonAsAvroParser(readSchema, GenericData.get());
@@ -141,7 +141,7 @@ public class JsonAsAvroParserTest {
     }
 
     @Test
-    public void testParsingObjectsAndArraysForScalarsFails() {
+    void testParsingObjectsAndArraysForScalarsFails() {
         Schema readSchema = new Schema.Parser().parse("""
                 {"type": "record", "name": "Oops", "fields": [
                   {"name": "text", "type": "string"}

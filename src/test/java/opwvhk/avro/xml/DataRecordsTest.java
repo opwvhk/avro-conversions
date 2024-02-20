@@ -1,6 +1,6 @@
 package opwvhk.avro.xml;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static opwvhk.avro.xml.datamodel.Cardinality.MULTIPLE;
 import static opwvhk.avro.xml.datamodel.Cardinality.OPTIONAL;
@@ -8,9 +8,9 @@ import static opwvhk.avro.xml.datamodel.Cardinality.REQUIRED;
 import static opwvhk.avro.xml.datamodel.FixedType.STRING;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class DataRecordsTest {
+class DataRecordsTest {
     @Test
-    public void validateFieldDataAsText() {
+    void validateFieldDataAsText() {
         assertThat(new FieldData("field", null, REQUIRED, null, "abc").toString())
                 .isEqualTo("field");
         assertThat(new FieldData("field", "documented", OPTIONAL, STRING, "abc").toString())
@@ -20,7 +20,7 @@ public class DataRecordsTest {
     }
 
     @Test
-    public void validateTypeDataAsText() {
+    void validateTypeDataAsText() {
         assertThat(new TypeData(null, null, false).toString()).isEqualTo("anonymous");
         assertThat(new TypeData("type", null, true).toString()).isEqualTo("type (mixed)");
         assertThat(new TypeData("type", "something", true).toString()).isEqualTo("type (mixed; something)");

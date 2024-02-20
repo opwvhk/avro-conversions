@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.Objects;
 
 import opwvhk.avro.xml.datamodel.DecimalType;
-import opwvhk.avro.xml.datamodel.FixedType;
 import opwvhk.avro.xml.datamodel.StructType;
 import opwvhk.avro.xml.datamodel.Type;
 import org.apache.avro.Schema;
@@ -24,8 +23,8 @@ import org.apache.ws.commons.schema.walker.XmlSchemaAttrInfo;
 import org.apache.ws.commons.schema.walker.XmlSchemaTypeInfo;
 import org.apache.ws.commons.schema.walker.XmlSchemaVisitor;
 import org.assertj.core.api.Condition;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static opwvhk.avro.xml.datamodel.FixedType.BINARY_BASE64;
 import static opwvhk.avro.xml.datamodel.FixedType.BINARY_HEX;
@@ -45,11 +44,11 @@ import static opwvhk.avro.xml.datamodel.TestStructures.unparsed;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-public class XsdAnalyzerTest {
+class XsdAnalyzerTest {
 	private static XsdAnalyzer analyzer;
 
-	@Before
-	public void setUp()
+	@BeforeEach
+    void setUp()
 			throws Exception {
 		URL StructTypeUrl = getClass().getResource("testCases.xsd");
 		analyzer = new XsdAnalyzer(Objects.requireNonNull(StructTypeUrl));
@@ -57,12 +56,12 @@ public class XsdAnalyzerTest {
 	}
 
 	@Test
-	public void checkTestNamespaces() {
+    void checkTestNamespaces() {
 		assertThat(analyzer.availableNamespaces()).containsExactly("https://www.schiphol.nl/avro-tools/tests");
 	}
 
 	@Test
-	public void checkXmlNamespaceIsCorrectlySpecified()
+    void checkXmlNamespaceIsCorrectlySpecified()
 			throws IOException {
 		assertThatThrownBy(() -> analyzer.typeOf(new QName("unknown", "unknown"))).isInstanceOf(IllegalArgumentException.class);
 
@@ -78,7 +77,7 @@ public class XsdAnalyzerTest {
 	 */
 
 	@Test
-	public void groupedStructuresAreHandledAndDocumentedCorrectly() {
+    void groupedStructuresAreHandledAndDocumentedCorrectly() {
 		Type type = analyzer.typeOf(new QName("https://www.schiphol.nl/avro-tools/tests", "GroupStructures"));
 		StructType keep = struct("namespace.Keep").withFields(
 				required("value", STRING)
@@ -96,7 +95,7 @@ public class XsdAnalyzerTest {
 	}
 
 	@Test
-	public void attributesAreSupported() {
+    void attributesAreSupported() {
 
 		// Test twice: once to ensure we can convert to schemas correctly.
 		// Other tests use the structural model because that is easier.
@@ -115,7 +114,7 @@ public class XsdAnalyzerTest {
 	}
 
 	@Test
-	public void attributesWithSimpleContentAreSupported() {
+    void attributesWithSimpleContentAreSupported() {
 		Type type = analyzer.typeOf("ExtensionInSimpleContent");
 
 		assertThat(type).isEqualTo(struct("namespace.ExtensionInSimpleContent").withFields(
@@ -125,7 +124,7 @@ public class XsdAnalyzerTest {
 	}
 
 	@Test
-	public void attributesWithComplexContentAreSupported() {
+    void attributesWithComplexContentAreSupported() {
 		Type type = analyzer.typeOf("ExtensionInMixedComplexContent");
 		assertThat(type).isEqualTo(struct("namespace.ExtensionInMixedComplexContent").withFields(
 				required("value", STRING),
@@ -134,7 +133,7 @@ public class XsdAnalyzerTest {
 	}
 
 	@Test
-	public void repeatedNestedValuesBecomeArrays() {
+    void repeatedNestedValuesBecomeArrays() {
 		Type type = analyzer.typeOf("RepeatedNestedRecordWithOptionalField");
 
 		StructType array = struct("namespace.array").withFields(
@@ -148,7 +147,7 @@ public class XsdAnalyzerTest {
 	}
 
 	@Test
-	public void repeatedSequencedElementsBecomeArrays() {
+    void repeatedSequencedElementsBecomeArrays() {
 		Type type = analyzer.typeOf("RepeatedSequence");
 
 		StructType namedStructType = struct("namespace.named").withFields(
@@ -162,7 +161,7 @@ public class XsdAnalyzerTest {
 	}
 
 	@Test
-	public void repeatedChoiceElementsBecomeArrays() {
+    void repeatedChoiceElementsBecomeArrays() {
 		Type type = analyzer.typeOf("RepeatedChoice");
 
 		assertThat(type).isEqualTo(struct("namespace.RepeatedChoice").withFields(
@@ -171,7 +170,7 @@ public class XsdAnalyzerTest {
 	}
 
 	@Test
-	public void optionalAllMakesElementsNullable() {
+    void optionalAllMakesElementsNullable() {
 		Type type = analyzer.typeOf("OptionalAll");
 
 		assertThat(type).isEqualTo(struct("namespace.OptionalAll").withFields(
@@ -181,20 +180,20 @@ public class XsdAnalyzerTest {
 	}
 
 	@Test
-	public void allowsRestrictionInSimpleContent() {
+    void allowsRestrictionInSimpleContent() {
 		Type type = analyzer.typeOf("RestrictionInSimpleContent");
 		assertThat(type).isEqualTo(STRING);
 	}
 
 	@Test
-	public void allowsRestrictionInComplexContent() {
+    void allowsRestrictionInComplexContent() {
 		Type type = analyzer.typeOf("RestrictionInComplexContent");
 		assertThat(type).isEqualTo(struct("namespace.RestrictionInComplexContent").withFields(
 				required("name", STRING)));
 	}
 
 	@Test
-	public void allowsExtensionWithElements() {
+    void allowsExtensionWithElements() {
 		Type type = analyzer.typeOf("ExtensionWithElements");
 		assertThat(type).isEqualTo(struct("namespace.ExtensionWithElements").withFields(
 				required("description", STRING),
@@ -204,7 +203,7 @@ public class XsdAnalyzerTest {
 	}
 
 	@Test
-	public void allowsExtensionOfComplexType() {
+    void allowsExtensionOfComplexType() {
 		Type type = analyzer.typeOf("ExtensionOfComplexType");
 		assertThat(type).isEqualTo(struct("namespace.ExtensionOfComplexType").withFields(
 				required("value", STRING),
@@ -213,7 +212,7 @@ public class XsdAnalyzerTest {
 	}
 
 	@Test
-	public void arbitraryXmlDataIsReadAsString() {
+    void arbitraryXmlDataIsReadAsString() {
 		Type expected = unparsed(struct("namespace.ArbitraryContent").withFields(
 				required("source", STRING),
 				optional("value", "The entire element content, unparsed.", STRING, null)
@@ -222,7 +221,7 @@ public class XsdAnalyzerTest {
 	}
 
 	@Test
-	public void mixedComplexTypesAreCoercedToString() {
+    void mixedComplexTypesAreCoercedToString() {
 		StructType expected = struct("namespace.MixedComplexType").withFields(
 				required("source", STRING),
 				required("Payload", STRING)
@@ -232,7 +231,7 @@ public class XsdAnalyzerTest {
 	}
 
 	@Test
-	public void mixedComplexContentTreatedAsNormal() {
+    void mixedComplexContentTreatedAsNormal() {
 		Type type = analyzer.typeOf("MixedExtensionWithElements");
 		assertThat(type).isEqualTo(
 				struct("namespace.MixedExtensionWithElements", "Note that the complexContent being mixed does not affect the outcome!").withFields(
@@ -243,7 +242,7 @@ public class XsdAnalyzerTest {
 	}
 
 	@Test
-	public void defaultValuesAreAddedIfPossible() {
+    void defaultValuesAreAddedIfPossible() {
 		// Note: because we have a default value, the field becomes required (as there's always a value).
 		// Reason: nil and absent values are treated equally, and mean "there's no value in the XML, so use the default"
 		StructType optional = struct("namespace.optional").withFields(
@@ -263,7 +262,7 @@ public class XsdAnalyzerTest {
 	}
 
 	@Test
-	public void recursionIsAllowed() {
+    void recursionIsAllowed() {
 		StringWriter buffer = new StringWriter();
 		analyzer.walkSchemaInTargetNamespace("Recursive", new XmlSchemaVisitor() {
 			private final PrintWriter output = new PrintWriter(buffer);
@@ -398,7 +397,7 @@ public class XsdAnalyzerTest {
 	}
 
 	@Test
-	public void recursionYieldsStructTypesAsWell() {
+    void recursionYieldsStructTypesAsWell() {
 		StructType recursiveComplexType = struct("namespace.RecursiveComplexType");
 		recursiveComplexType.setFields(List.of(
 				required("level", DecimalType.INTEGER_TYPE),
@@ -434,7 +433,7 @@ public class XsdAnalyzerTest {
 	 */
 
 	@Test
-	public void validateClassNameUniqueness() {
+    void validateClassNameUniqueness() {
 		StructType normal = struct("namespace.Normal").withFields(
 				required("field", STRING)
 		);
@@ -465,7 +464,7 @@ public class XsdAnalyzerTest {
 	}
 
 	@Test
-	public void checkMaximumNumberOfDuplicateNames() {
+    void checkMaximumNumberOfDuplicateNames() {
 		TypeBuildingVisitor visitor = new TypeBuildingVisitor(new TypeStructureBuilder(), s -> s, 2);
 		assertThatThrownBy(() -> analyzer.walkSchemaInTargetNamespace("Duplicates", visitor)).isInstanceOf(IllegalStateException.class);
 	}
@@ -476,32 +475,32 @@ public class XsdAnalyzerTest {
 	 */
 
 	@Test
-	public void failsIfElementNotFound() {
+    void failsIfElementNotFound() {
 		assertFailureCreatingStructTypeFor("DoesNotExist");
 	}
 
 	@Test
-	public void failsOnProhibitedAttribute() {
+    void failsOnProhibitedAttribute() {
 		assertFailureCreatingStructTypeFor("ProhibitedAttribute");
 	}
 
 	@Test
-	public void abstractElementsYieldNoStructType() {
+    void abstractElementsYieldNoStructType() {
 		assertFailureCreatingStructTypeFor("AbstractElement");
 	}
 
 	@Test
-	public void failsOnElementsThatCanBeSubstituted() {
+    void failsOnElementsThatCanBeSubstituted() {
 		assertFailureCreatingStructTypeFor("NameWithAlias");
 	}
 
 	@Test
-	public void butAcceptsElementsThatCanSubstituteAnother() {
+    void butAcceptsElementsThatCanSubstituteAnother() {
 		assertThat(analyzer.typeOf("Alias")).isEqualTo(STRING);
 	}
 
 	@Test
-	public void failsOnAnyAttribute() {
+    void failsOnAnyAttribute() {
 		assertFailureCreatingStructTypeFor("WithAnyAttribute");
 	}
 
@@ -510,78 +509,78 @@ public class XsdAnalyzerTest {
 	 */
 
 	@Test
-	public void simpleTypesMayNotBeAList() {
+    void simpleTypesMayNotBeAList() {
 		assertFailureCreatingStructTypeFor("list");
 	}
 
 	@Test
-	public void simpleTypesMayNotBeAUnion() {
+    void simpleTypesMayNotBeAUnion() {
 		assertFailureCreatingStructTypeFor("union");
 	}
 
 	@Test
-	public void simpleTypeRestrictionsMayContainASimpleType() {
+    void simpleTypeRestrictionsMayContainASimpleType() {
 		assertThat(analyzer.typeOf("nestedSimpleType")).isEqualTo(DecimalType.INTEGER_TYPE);
 	}
 
 	@Test
-	public void uriValuesAreAllowed() {
+    void uriValuesAreAllowed() {
 		assertThat(analyzer.typeOf("uri")).isEqualTo(STRING);
 	}
 
 	@Test
-	public void booleanValuesAreAllowed() {
+    void booleanValuesAreAllowed() {
 		assertThat(analyzer.typeOf("boolean")).isEqualTo(BOOLEAN);
 	}
 
 	@Test
-	public void intValuesAreAllowed() {
+    void intValuesAreAllowed() {
 		assertThat(analyzer.typeOf("int")).isEqualTo(DecimalType.INTEGER_TYPE);
 	}
 
 	@Test
-	public void longValuesAreAllowed() {
+    void longValuesAreAllowed() {
 		assertThat(analyzer.typeOf("long")).isEqualTo(DecimalType.LONG_TYPE);
 	}
 
 	@Test
-	public void floatValuesAreAllowed() {
+    void floatValuesAreAllowed() {
 		assertThat(analyzer.typeOf("float")).isEqualTo(FLOAT);
 	}
 
 	@Test
-	public void doubleValuesAreAllowed() {
+    void doubleValuesAreAllowed() {
 		assertThat(analyzer.typeOf("double")).isEqualTo(DOUBLE);
 	}
 
 	@Test
-	public void stringValuesAreAllowed() {
+    void stringValuesAreAllowed() {
 		assertThat(analyzer.typeOf("string")).isEqualTo(STRING);
 	}
 
 	@Test
-	public void timestampValuesAreAllowed() {
+    void timestampValuesAreAllowed() {
 		assertThat(analyzer.typeOf("timestamp")).isEqualTo(DATETIME);
 	}
 
 	@Test
-	public void dateValuesAreAllowed() {
+    void dateValuesAreAllowed() {
 		assertThat(analyzer.typeOf("date")).isEqualTo(DATE);
 	}
 
 	@Test
-	public void timeValuesAreAllowed() {
+    void timeValuesAreAllowed() {
 		assertThat(analyzer.typeOf("time")).isEqualTo(TIME);
 	}
 
 	@Test
-	public void unknownTypesAreNotAllowed() {
+    void unknownTypesAreNotAllowed() {
 		// Note: the element exists, but it uses an unsupported type
 		assertFailureCreatingStructTypeFor("unsupportedSimpleType");
 	}
 
 	@Test
-	public void unconstrainedDecimalAttributesAreNotAllowed() {
+    void unconstrainedDecimalAttributesAreNotAllowed() {
 		Type type = analyzer.typeOf("unconstrainedDecimalAttribute");
 		assertThat(type).isEqualTo(struct("namespace.unconstrainedDecimalAttribute").withFields(
 				optional("value", DOUBLE)
@@ -589,7 +588,7 @@ public class XsdAnalyzerTest {
 	}
 
 	@Test
-	public void unconstrainedIntegerAttributesAreCoercedToLong() {
+    void unconstrainedIntegerAttributesAreCoercedToLong() {
 		Type type = analyzer.typeOf("unconstrainedIntegerAttribute");
 		assertThat(type).isEqualTo(struct("namespace.unconstrainedIntegerAttribute").withFields(
 				optional("value", DecimalType.LONG_TYPE)
@@ -597,91 +596,91 @@ public class XsdAnalyzerTest {
 	}
 
 	@Test
-	public void unconstrainedDecimalsBecomeDouble() {
+    void unconstrainedDecimalsBecomeDouble() {
 		Type type = analyzer.typeOf("unconstrainedDecimal");
 		assertThat(type).isEqualTo(DOUBLE);
 	}
 
 	@Test
-	public void infiniteDecimalsBecomeDouble() {
+    void infiniteDecimalsBecomeDouble() {
 		Type type = analyzer.typeOf("unboundedDecimal");
 		assertThat(type).isEqualTo(DOUBLE);
 	}
 
 	@Test
-	public void decimalsCanHavePrecisionAndScale() {
+    void decimalsCanHavePrecisionAndScale() {
 		Type type = analyzer.typeOf("decimalBoundedByPrecision");
 		assertThat(type).is(decimalWithPrecisionAndScale(4, 2));
 	}
 
 	@Test
-	public void decimalsCanHaveBoundsAndScale() {
+    void decimalsCanHaveBoundsAndScale() {
 		Type type = analyzer.typeOf("decimalBoundedByLimits");
 		assertThat(type).is(decimalWithPrecisionAndScale(9, 2));
 	}
 
 	@Test
-	public void integersHaveNoFraction() {
+    void integersHaveNoFraction() {
 		assertFailureCreatingStructTypeFor("integerWithFractionMakesNoSense");
 	}
 
 	@Test
-	public void unconstrainedIntegersAreCoercedToLong() {
+    void unconstrainedIntegersAreCoercedToLong() {
 		Type type = analyzer.typeOf("coercedToLong");
 		assertThat(type).isEqualTo(DecimalType.LONG_TYPE);
 	}
 
 	@Test
-	public void integersWithFewDigitsAreCoercedToInteger() {
+    void integersWithFewDigitsAreCoercedToInteger() {
 		Type type = analyzer.typeOf("integerWithFewDigits");
 		assertThat(type).isEqualTo(DecimalType.INTEGER_TYPE);
 	}
 
 	@Test
-	public void integersWithSmallExclusiveBoundsAreCoercedToInteger() {
+    void integersWithSmallExclusiveBoundsAreCoercedToInteger() {
 		Type type = analyzer.typeOf("integerWithSmallExclusiveBounds");
 		assertThat(type).isEqualTo(DecimalType.INTEGER_TYPE);
 	}
 
 	@Test
-	public void integersWithSmallInclusiveBoundsAreCoercedToInteger() {
+    void integersWithSmallInclusiveBoundsAreCoercedToInteger() {
 		Type type = analyzer.typeOf("integerWithSmallInclusiveBounds");
 		assertThat(type).isEqualTo(DecimalType.INTEGER_TYPE);
 	}
 
 	@Test
-	public void integersWithMediumDigitsAreCoercedToLong() {
+    void integersWithMediumDigitsAreCoercedToLong() {
 		Type type = analyzer.typeOf("integerWithMediumDigits");
 		assertThat(type).isEqualTo(DecimalType.LONG_TYPE);
 	}
 
 	@Test
-	public void integersWithMediumBoundsAreCoercedToLong() {
+    void integersWithMediumBoundsAreCoercedToLong() {
 		Type type = analyzer.typeOf("integerWithMediumBounds");
 		assertThat(type).isEqualTo(DecimalType.LONG_TYPE);
 	}
 
 	@Test
-	public void integersWithManyDigitsAreSupported() {
+    void integersWithManyDigitsAreSupported() {
 		Type type = analyzer.typeOf("integerWithManyDigits");
 		assertThat(type).is(decimalWithPrecisionAndScale(20, 0));
 	}
 
 	@Test
-	public void integersWithLargeBoundsAreSupported() {
+    void integersWithLargeBoundsAreSupported() {
 		Type type = analyzer.typeOf("integerWithLargeBounds");
 		assertThat(type).is(decimalWithPrecisionAndScale(19, 0));
 	}
 
 	@Test
-	public void enumerationsAreSupported() {
+    void enumerationsAreSupported() {
 		analyzer.mapTargetNamespace("");
 		Type type = analyzer.typeOf("enumeration");
 		assertThat(type).isEqualTo(enumType("enumeration", null, List.of("NONE", "BICYCLE", "BUS", "TRAIN", "CAR")));
 	}
 
 	@Test
-	public void binaryDataIsSupported() {
+    void binaryDataIsSupported() {
 		assertThat(analyzer.typeOf("hexEncodedBinary")).isEqualTo(BINARY_HEX);
 		assertThat(analyzer.typeOf("base64EncodedBinary")).isEqualTo(BINARY_BASE64);
 	}
@@ -691,7 +690,7 @@ public class XsdAnalyzerTest {
 	 */
 
 	@Test
-	public void coverMethodThatCannotBeCalled() {
+    void coverMethodThatCannotBeCalled() {
 		// As substitution groups are not supported, onEnterSubstitutionGroup(...) always throws and onExitSubstitutionGroup(...) is never called.
 		// We call it here to ensure that the statement "< 100% coverage means the code may fail unpredictably" is still true.
 		new TypeBuildingVisitor(null, null, Integer.MAX_VALUE).onExitSubstitutionGroup(null);

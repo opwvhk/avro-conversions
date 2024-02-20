@@ -299,7 +299,7 @@ public abstract class AsAvroParserBase<WriteSchema> {
     private static final ThreadLocal<Map<Utils.Seen, ValueResolver>> SEEN = ThreadLocal.withInitial(HashMap::new);
 
     /**
-     * <p>Create a {@code ValueResolver} that can resolve written values int the write schema into parsed values in the read schema.</p>
+     * <p>Create a {@code ValueResolver} that can resolve written values in the write schema into parsed values in the read schema.</p>
      *
      * <p>This method uses the rules returned by {@link #createResolveRules()}. Please note that these rules are explicitly encouraged to use this method to
      * resolve elements of composite types. This method guards against infinite recursion, by using a delegating {@code ValueResolver} that receives a delegate
@@ -321,12 +321,17 @@ public abstract class AsAvroParserBase<WriteSchema> {
             }
 
             if (resolveRules == null) {
+				// This method might (but should not) cause recursive calls to the current method.
                 resolveRules = createResolveRules();
             }
             for (ResolveRule<WriteSchema> rule : resolveRules) {
                 if (rule.test(writeSchema, readSchema)) {
+	                // This method will (but may not) cause recursive calls to the current method.
                     ValueResolver resolver = requireNonNull(rule.createResolver(writeSchema, readSchema));
-                    // the map contains the DelegatingResolver we put in above: if there's a different resolver for the schemaPair, we exit the method above.
+
+	                // The map contains the DelegatingResolver we put in above (otherwise the method would have exited directly after that).
+	                // Now we replace the DelegatingResolver with the created resolver, but we set it in the DelegatingResolver in case that was
+	                // used due to recursion.
                     DelegatingResolver delegatingResolver = requireNonNull((DelegatingResolver) resolversForSeenSchemas.put(schemaPair, resolver));
                     delegatingResolver.setDelegate(resolver);
                     return resolver;

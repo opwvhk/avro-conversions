@@ -20,8 +20,8 @@ import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.io.EncoderFactory;
 import org.apache.avro.io.JsonEncoder;
 import org.assertj.core.api.Assertions;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
@@ -34,12 +34,12 @@ import static opwvhk.avro.xml.datamodel.TestStructures.struct;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-public class XmlResolvingTest {
+class XmlResolvingTest {
 
     private static final GenericData MODEL = GenericData.get();
 
-    @BeforeClass
-    public static void beforeClass() {
+    @BeforeAll
+    static void beforeClass() {
         Assertions.setMaxStackTraceElementsDisplayed(10);
 
         MODEL.addLogicalTypeConversion(new TimeConversions.DateConversion());
@@ -52,7 +52,7 @@ public class XmlResolvingTest {
     }
 
     @Test
-    public void testHappyFlowSchema() throws IOException {
+    void testHappyFlowSchema() throws IOException {
         URL xsdLocation = requireNonNull(getClass().getResource("resolvingTest.xsd"));
         XsdAnalyzer xsdAnalyzer = new XsdAnalyzer(xsdLocation);
         Schema actualSchema = xsdAnalyzer.schemaOf("outer");
@@ -62,7 +62,7 @@ public class XmlResolvingTest {
     }
 
 	@Test
-	public void testHappyFlowWithoutXsd() throws IOException, SAXException {
+    void testHappyFlowWithoutXsd() throws IOException, SAXException {
 		Schema readSchema = new Schema.Parser().parse(getClass().getResourceAsStream("resolvingTestNoBinary.avsc"));
 		XmlAsAvroParser parser = new XmlAsAvroParser(readSchema, MODEL);
 
@@ -88,7 +88,7 @@ public class XmlResolvingTest {
 
     @SuppressWarnings("UnnecessaryUnicodeEscape")
     @Test
-    public void testSuccessfulResolvingAndParsing() throws IOException, SAXException {
+    void testSuccessfulResolvingAndParsing() throws IOException, SAXException {
         URL xsdLocation = requireNonNull(getClass().getResource("resolvingTest.xsd"));
         Schema readSchema = new Schema.Parser().parse(getClass().getResourceAsStream("resolvingTest.avsc"));
         XmlAsAvroParser parser = new XmlAsAvroParser(xsdLocation, "outer", readSchema, MODEL);
@@ -158,7 +158,7 @@ public class XmlResolvingTest {
     }
 
     @Test
-    public void testResolvingAndParsingWithoutNamespace() throws IOException, SAXException {
+    void testResolvingAndParsingWithoutNamespace() throws IOException, SAXException {
         URL xsdLocation = requireNonNull(getClass().getResource("resolvingTest.xsd"));
         Schema readSchema = new Schema.Parser().parse(getClass().getResourceAsStream("resolvingTest.avsc"));
         XmlAsAvroParser parser = new XmlAsAvroParser(xsdLocation, "outer", readSchema, MODEL);
@@ -195,7 +195,7 @@ public class XmlResolvingTest {
     }
 
     @Test
-    public void testFailuresForNamespaceRelatedErrors() throws IOException {
+    void testFailuresForNamespaceRelatedErrors() throws IOException {
         URL xsdLocation = requireNonNull(getClass().getResource("resolvingTest.xsd"));
         Schema readSchema = new Schema.Parser().parse(getClass().getResourceAsStream("resolvingTest.avsc"));
         XmlAsAvroParser parser = new XmlAsAvroParser(xsdLocation, "outer", readSchema, MODEL);
@@ -210,7 +210,7 @@ public class XmlResolvingTest {
     }
 
     @Test
-    public void testContentOfMixedElements() throws IOException, SAXException {
+    void testContentOfMixedElements() throws IOException, SAXException {
         URL xsdLocation = requireNonNull(getClass().getResource("payload.xsd"));
         Schema readSchema = new Schema.Parser().parse(getClass().getResourceAsStream("envelope.avsc"));
         XmlAsAvroParser parser = new XmlAsAvroParser(xsdLocation, "envelope", readSchema, MODEL);
@@ -290,7 +290,7 @@ public class XmlResolvingTest {
     }
 
     @Test
-    public void testResolvingFailuresForScalars() {
+    void testResolvingFailuresForScalars() {
 
         // Short though this list is, it covers all failure paths for scalar types.
 
@@ -321,7 +321,7 @@ public class XmlResolvingTest {
     }
 
     @Test
-    public void testAllRequiredFieldsMustBeResolved() {
+    void testAllRequiredFieldsMustBeResolved() {
         assertThatSchemasFailToResolve(
                 struct("read").withFields(
                         required("name", FixedType.STRING),
@@ -339,7 +339,7 @@ public class XmlResolvingTest {
     }
 
     @Test
-    public void testFieldsMustMatchCardinalityAndType() {
+    void testFieldsMustMatchCardinalityAndType() {
         // 2nd type is not a struct: there are no fields to match...
         assertThatSchemasFailToResolve(struct("tooComplex").withFields(required("field", FixedType.STRING)), FixedType.STRING);
 
@@ -394,7 +394,7 @@ public class XmlResolvingTest {
     }
 
     @Test
-    public void testWrappedArrayFailures() {
+    void testWrappedArrayFailures() {
         // Arrays can be "wrapped", but then:
         // * the wrapping struct (write type) cannot have multiple fields
         // * the read type should not be a wrapping type

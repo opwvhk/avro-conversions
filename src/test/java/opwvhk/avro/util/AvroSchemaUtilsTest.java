@@ -7,15 +7,15 @@ import org.apache.avro.Protocol;
 import org.apache.avro.Schema;
 import org.apache.avro.compiler.idl.Idl;
 import org.apache.avro.compiler.idl.ParseException;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.catchThrowable;
 
-public class AvroSchemaUtilsTest {
+class AvroSchemaUtilsTest {
     @Test
-    public void testMarkdownTable()
+    void testMarkdownTable()
             throws ParseException {
         //language=Avro IDL
         String idlSchema = """
@@ -90,7 +90,7 @@ public class AvroSchemaUtilsTest {
     }
 
     @Test
-    public void checkDocumentationNewlinesAreHtml() {
+    void checkDocumentationNewlinesAreHtml() {
         String textWithNewlines = "Line 1\nLine 2\nLine 3";
         AvroSchemaUtils.Entry entry = new AvroSchemaUtils.Entry("path.to.entry", "test", textWithNewlines);
         assertThat(entry.documentation()).isEqualTo(textWithNewlines);
@@ -98,7 +98,7 @@ public class AvroSchemaUtilsTest {
     }
 
     @Test
-    public void testDuplicateNameDetection() throws ParseException {
+    void testDuplicateNameDetection() throws ParseException {
         String idlSchema = """
                 @namespace("ns")
                 protocol dummy {
@@ -109,11 +109,11 @@ public class AvroSchemaUtilsTest {
                         Good @aliases(["good_field"]) third;
                         string fourth;
                     }
-                
+
                     enum one {on, off}
-                
+
                     fixed two(16);
-                
+
                     record Good {
                         string description;
                         Good rabbitHole;
@@ -138,7 +138,7 @@ public class AvroSchemaUtilsTest {
     }
 
     @Test
-    public void testUnwrappingNullableUnion() {
+    void testUnwrappingNullableUnion() {
         Schema nonUnionSchema = Schema.create(Schema.Type.STRING);
         assertThat(AvroSchemaUtils.nonNullableSchemaOf(nonUnionSchema)).isSameAs(nonUnionSchema);
 

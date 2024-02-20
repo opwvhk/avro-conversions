@@ -7,7 +7,7 @@ import org.apache.avro.Protocol;
 import org.apache.avro.Schema;
 import org.apache.avro.compiler.idl.Idl;
 import org.apache.avro.compiler.idl.ParseException;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -21,9 +21,9 @@ import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-public class IdlUtilsTest {
+class IdlUtilsTest {
     @Test
-    public void idlUtilsUtilitiesThrowRuntimeExceptions() {
+    void idlUtilsUtilitiesThrowRuntimeExceptions() {
         assertThatThrownBy(() -> IdlUtils.getField(Object.class, "noSuchField"))
                 .isInstanceOf(IllegalStateException.class).hasMessage("Programmer error");
         assertThatThrownBy(() -> IdlUtils.getFieldValue(String.class.getDeclaredField("value"), "anything"))
@@ -38,7 +38,7 @@ public class IdlUtilsTest {
     }
 
     @Test
-    public void validateHappyFlow() throws ParseException, IOException {
+    void validateHappyFlow() throws ParseException, IOException {
         StringWriter schemaBuffer = new StringWriter();
         try (InputStreamReader reader = new InputStreamReader(Objects.requireNonNull(getClass().getResourceAsStream("schema.avdl")))) {
             char[] buf = new char[1024];
@@ -61,19 +61,19 @@ public class IdlUtilsTest {
     }
 
     @Test
-    public void cannotWriteUnnamedTypes() {
+    void cannotWriteUnnamedTypes() {
         assertThatThrownBy(() -> IdlUtils.writeIdlProtocol("naming", "Error", new StringWriter(),
                 Schema.create(Schema.Type.STRING))).isInstanceOf(AvroRuntimeException.class);
     }
 
     @Test
-    public void cannotWriteEmptyEnums() {
+    void cannotWriteEmptyEnums() {
         assertThatThrownBy(() -> IdlUtils.writeIdlProtocol("naming", "Error", new StringWriter(),
                 Schema.createEnum("Single", null, "naming", emptyList()))).isInstanceOf(IllegalStateException.class);
     }
 
     @Test
-    public void cannotWriteEmptyUnionTypes() {
+    void cannotWriteEmptyUnionTypes() {
         assertThatThrownBy(() -> IdlUtils.writeIdlProtocol("naming", "Error", new StringWriter(),
                 Schema.createRecord("Single", null, "naming", false, singletonList(
                         new Schema.Field("field", Schema.createUnion())
@@ -81,12 +81,12 @@ public class IdlUtilsTest {
     }
 
     @Test
-    public void validateNullToJson() throws IOException {
+    void validateNullToJson() throws IOException {
         assertThat(callToJson(JsonProperties.NULL_VALUE)).isEqualTo("null");
     }
 
     @Test
-    public void validateMapToJson() throws IOException {
+    void validateMapToJson() throws IOException {
         Map<String, Object> data = new LinkedHashMap<>();
         data.put("key", "name");
         data.put("value", 81763);
@@ -94,52 +94,52 @@ public class IdlUtilsTest {
     }
 
     @Test
-    public void validateCollectionToJson() throws IOException {
+    void validateCollectionToJson() throws IOException {
         assertThat(callToJson(Arrays.asList(123, "abc"))).isEqualTo("[123,\"abc\"]");
     }
 
     @Test
-    public void validateBytesToJson() throws IOException {
+    void validateBytesToJson() throws IOException {
         assertThat(callToJson("getalletjes".getBytes(StandardCharsets.US_ASCII))).isEqualTo("\"getalletjes\"");
     }
 
     @Test
-    public void validateStringToJson() throws IOException {
+    void validateStringToJson() throws IOException {
         assertThat(callToJson("foo")).isEqualTo("\"foo\"");
     }
 
     @Test
-    public void validateEnumToJson() throws IOException {
+    void validateEnumToJson() throws IOException {
         assertThat(callToJson(SingleValue.FILE_NOT_FOUND)).isEqualTo("\"FILE_NOT_FOUND\"");
     }
 
     @Test
-    public void validateDoubleToJson() throws IOException {
+    void validateDoubleToJson() throws IOException {
         assertThat(callToJson(25_000.025)).isEqualTo("25000.025");
     }
 
     @Test
-    public void validateFloatToJson() throws IOException {
+    void validateFloatToJson() throws IOException {
         assertThat(callToJson(15_000.002f)).isEqualTo("15000.002");
     }
 
     @Test
-    public void validateLongToJson() throws IOException {
+    void validateLongToJson() throws IOException {
         assertThat(callToJson(7254378234L)).isEqualTo("7254378234");
     }
 
     @Test
-    public void validateIntegerToJson() throws IOException {
+    void validateIntegerToJson() throws IOException {
         assertThat(callToJson(123)).isEqualTo("123");
     }
 
     @Test
-    public void validateBooleanToJson() throws IOException {
+    void validateBooleanToJson() throws IOException {
         assertThat(callToJson(true)).isEqualTo("true");
     }
 
     @Test
-    public void validateUnknownCannotBeWrittenAsJson() {
+    void validateUnknownCannotBeWrittenAsJson() {
         assertThatThrownBy(() -> callToJson(new Object())).isInstanceOf(AvroRuntimeException.class);
     }
 

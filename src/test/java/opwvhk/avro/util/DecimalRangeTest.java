@@ -2,19 +2,19 @@ package opwvhk.avro.util;
 
 import java.math.BigDecimal;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.ZERO;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-public class DecimalRangeTest {
+class DecimalRangeTest {
     private static final BigDecimal ONE_AND_A_HALF = new BigDecimal("1.5");
     private static final BigDecimal TWO = new BigDecimal("2.0");
 
     @Test
-    public void testRangeConstruction() {
+    void testRangeConstruction() {
         DecimalRange decimalRange = new DecimalRange(bd(1), null, bd(2), null);
         assertThat(decimalRange.lowerBound()).isEqualTo(ONE);
         assertThat(decimalRange.lowerBoundInclusive()).isTrue();
@@ -40,7 +40,7 @@ public class DecimalRangeTest {
     }
 
     @Test
-    public void testRangeInspection() {
+    void testRangeInspection() {
         assertThat(new DecimalRange(ZERO, true, ONE_AND_A_HALF, true).isIntegerRange(false)).isFalse();
         assertThat(new DecimalRange(ZERO, true, TWO, true).isIntegerRange(false)).isFalse();
         assertThat(new DecimalRange(ZERO, true, ONE, true).isIntegerRange(false)).isTrue();
@@ -78,7 +78,7 @@ public class DecimalRangeTest {
     }
 
     @Test
-    public void testRangesAsStrings () {
+    void testRangesAsStrings() {
         assertThat(openOpen(null, null).toString()).isEqualTo("(-inf, inf)");
         assertThat(closedOpen(bd(1), bd(2, 10)).toString()).isEqualTo("[1, 2.10)");
         assertThat(openClosed(null, bd(2, 10)).toString()).isEqualTo("(-inf, 2.10]");
@@ -86,7 +86,7 @@ public class DecimalRangeTest {
     }
 
     @Test
-    public void verifyRangeExtension() {
+    void verifyRangeExtension() {
         // All tests are double: extendsWith should be commutative
 
         // infinity always wins
@@ -116,7 +116,7 @@ public class DecimalRangeTest {
     }
 
     @Test
-    public void verifyRangeRestriction() {
+    void verifyRangeRestriction() {
         // All tests are double: extendsWith should be commutative
 
         // infinity never wins

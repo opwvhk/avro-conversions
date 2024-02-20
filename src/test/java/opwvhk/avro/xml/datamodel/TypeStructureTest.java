@@ -6,7 +6,7 @@ import java.util.List;
 
 import org.apache.avro.JsonProperties;
 import org.apache.avro.Schema;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static opwvhk.avro.xml.datamodel.TestStructures.optional;
@@ -16,9 +16,9 @@ import static opwvhk.avro.xml.datamodel.TestStructures.unparsed;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-public class TypeStructureTest {
+class TypeStructureTest {
 	@Test
-	public void testAvroDefaultValues() {
+    void testAvroDefaultValues() {
 		StructType struct = struct("defaults", "Testing default values").withFields(
 				optional("optional1", null, FixedType.STRING, StructType.Field.NULL_VALUE),
 				optional("optional2", null, FixedType.STRING, JsonProperties.NULL_VALUE),
@@ -57,7 +57,7 @@ public class TypeStructureTest {
 	}
 
 	@Test
-	public void testSimpleScalarParsing() {
+    void testSimpleScalarParsing() {
 		// Nulls always succeed
 		assertThat(FixedType.BOOLEAN.parse(null)).isNull();
 		assertThat(FixedType.FLOAT.parse(null)).isNull();
@@ -84,7 +84,7 @@ public class TypeStructureTest {
 	}
 
 	@Test
-	public void testDecimals() {
+    void testDecimals() {
 		DecimalType smallInteger = DecimalType.integer(20, 7);
 		assertThat(smallInteger.debugString("")).isEqualTo("decimal(7; 20 bits)");
 		DecimalType largeInteger = DecimalType.integer(40, 13);
@@ -116,7 +116,7 @@ public class TypeStructureTest {
 	}
 
 	@Test
-	public void testEnums() {
+    void testEnums() {
 		assertThatThrownBy(() -> new EnumType("name", null, List.of("the", "default", "symbol", "must"), "exist")).isInstanceOf(
 				IllegalArgumentException.class);
 
@@ -142,14 +142,14 @@ public class TypeStructureTest {
 	}
 
 	@Test
-	public void testUnparsedContent() {
+    void testUnparsedContent() {
 		Type type = unparsed(FixedType.STRING);
 		assertThat(type.toString()).isEqualTo("(unparsed) string");
 		assertThat(type.debugString("> ")).isEqualTo("> (unparsed) string");
 	}
 
 	@Test
-	public void testStructuralEdgeCases() {
+    void testStructuralEdgeCases() {
 		StructType type = struct("name", "Testing");
 		assertThat(type.toString()).isEqualTo("""
 				StructType(name) {

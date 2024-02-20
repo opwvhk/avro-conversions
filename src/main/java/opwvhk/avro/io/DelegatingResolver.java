@@ -7,15 +7,6 @@ public class DelegatingResolver extends ValueResolver {
     private ValueResolver delegate;
 
     /**
-     * Tell whether this resolver has a delegate to delegate method calls to.
-     *
-     * @return {@code true} if this resolver has a delegate, {@code false} otherwise
-     */
-    public boolean hasDelegate() {
-        return delegate != null;
-    }
-
-    /**
      * Set the delegate for this resolver.
      *
      * @param delegate the delegate to use

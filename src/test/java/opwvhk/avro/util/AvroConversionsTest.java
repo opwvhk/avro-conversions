@@ -11,14 +11,14 @@ import org.apache.avro.LogicalType;
 import org.apache.avro.LogicalTypes;
 import org.apache.avro.Schema;
 import org.apache.avro.data.TimeConversions;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static java.time.ZoneOffset.UTC;
 import static org.assertj.core.api.Assertions.*;
 
-public class AvroConversionsTest {
+class AvroConversionsTest {
 	@Test
-	public void testTimeMillisBasics() {
+    void testTimeMillisBasics() {
 		Conversion<LocalTime> localTimeConversion  = new TimeConversions.TimeMillisConversion();
 		Conversion<OffsetTime> offsetTimeConversion  = new AvroConversions.OffsetTimeMillisConversion();
 		assertThat(offsetTimeConversion.getLogicalTypeName()).isEqualTo(localTimeConversion.getLogicalTypeName());
@@ -31,7 +31,7 @@ public class AvroConversionsTest {
 	}
 
 	@Test
-	public void testTimeMillisConversion() {
+    void testTimeMillisConversion() {
 		Conversion<LocalTime> localTimeConversion  = new TimeConversions.TimeMillisConversion();
 		Conversion<OffsetTime> offsetTimeConversion  = new AvroConversions.OffsetTimeMillisConversion();
 
@@ -53,7 +53,7 @@ public class AvroConversionsTest {
 	}
 
 	@Test
-	public void testTimeMicrosBasics() {
+    void testTimeMicrosBasics() {
 		Conversion<LocalTime> localTimeConversion  = new TimeConversions.TimeMicrosConversion();
 		Conversion<OffsetTime> offsetTimeConversion  = new AvroConversions.OffsetTimeMicrosConversion();
 		assertThat(offsetTimeConversion.getLogicalTypeName()).isEqualTo(localTimeConversion.getLogicalTypeName());
@@ -66,7 +66,7 @@ public class AvroConversionsTest {
 	}
 
 	@Test
-	public void testTimeMicrosConversion() {
+    void testTimeMicrosConversion() {
 		Conversion<LocalTime> localTimeConversion  = new TimeConversions.TimeMicrosConversion();
 		Conversion<OffsetTime> offsetTimeConversion  = new AvroConversions.OffsetTimeMicrosConversion();
 

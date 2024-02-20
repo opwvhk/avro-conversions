@@ -1,53 +1,95 @@
 package opwvhk.avro.io;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
+import java.util.ArrayList;
+import java.util.List;
 
-public class DelegatingResolverTest {
+import static org.assertj.core.api.Assertions.assertThat;
 
-    @Test
-    public void validateDelegation() {
-        ValueResolver delegate = mock(ValueResolver.class);
-        DelegatingResolver resolver = new DelegatingResolver();
+class DelegatingResolverTest {
 
-        Object collector = new Object();
-        Object value = new Object();
+	@Test
+	void validateDelegation() {
+		DelegatingResolver resolver = new DelegatingResolver();
 
-        assertThat(resolver.hasDelegate()).isFalse();
+		MockResolver delegate = new MockResolver();
+		resolver.setDelegate(delegate);
 
-        resolver.setDelegate(delegate);
-        assertThat(resolver.hasDelegate()).isTrue();
+		Object collector = new Object();
+		Object value = new Object();
 
-        resolver.doNotParseContent();
-        verify(delegate).doNotParseContent();
-        verifyNoMoreInteractions(delegate);
+		resolver.doNotParseContent();
+		assertThat(delegate.calls()).containsExactly("doNotParseContent()");
 
-        resolver.resolve("name");
-        verify(delegate).resolve("name");
-        verifyNoMoreInteractions(delegate);
+		resolver.resolve("name");
+		assertThat(delegate.calls()).containsExactly("resolve(name)");
 
-        resolver.createCollector();
-        verify(delegate).createCollector();
-        verifyNoMoreInteractions(delegate);
+		resolver.createCollector();
+		assertThat(delegate.calls()).containsExactly("createCollector()");
 
-        resolver.addProperty(collector, "name", value);
-        verify(delegate).addProperty(collector, "name", value);
-        verifyNoMoreInteractions(delegate);
+		resolver.addProperty(collector, "name", value);
+		assertThat(delegate.calls()).containsExactly("addProperty(" + collector + ", name, " + value + ")");
 
-        resolver.addContent(collector, "text");
-        verify(delegate).addContent(collector, "text");
-        verifyNoMoreInteractions(delegate);
+		resolver.addContent(collector, "text");
+		assertThat(delegate.calls()).containsExactly("addContent(" + collector + ", text)");
 
-        resolver.complete(collector);
-        verify(delegate).complete(collector);
-        verifyNoMoreInteractions(delegate);
+		resolver.complete(collector);
+		assertThat(delegate.calls()).containsExactly("complete(" + collector + ")");
 
-        resolver.parseContent();
-        verify(delegate).parseContent();
-        verifyNoMoreInteractions(delegate);
-    }
+		resolver.parseContent();
+		assertThat(delegate.calls()).containsExactly("parseContent()");
+	}
+
+	private static class MockResolver extends ValueResolver {
+		private List<String> calls = new ArrayList<>();
+
+		@Override
+		public void doNotParseContent() {
+			calls.add("doNotParseContent()");
+			super.doNotParseContent();
+		}
+
+		@Override
+		public ValueResolver resolve(String name) {
+			calls.add("resolve(%s)".formatted(name));
+			return super.resolve(name);
+		}
+
+		@Override
+		public Object createCollector() {
+			calls.add("createCollector()");
+			return super.createCollector();
+		}
+
+		@Override
+		public Object addProperty(Object collector, String name, Object value) {
+			calls.add("addProperty(%s, %s, %s)".formatted(collector, name, value));
+			return collector;
+		}
+
+		@Override
+		public Object addContent(Object collector, String content) {
+			calls.add("addContent(%s, %s)".formatted(collector, content));
+			return collector;
+		}
+
+		@Override
+		public Object complete(Object collector) {
+			calls.add("complete(%s)".formatted(collector));
+			return super.complete(collector);
+		}
+
+		@Override
+		public boolean parseContent() {
+			calls.add("parseContent()");
+			return super.parseContent();
+		}
+
+		private List<String> calls() {
+			List<String> result = calls;
+			calls = new ArrayList<>();
+			return result;
+		}
+	}
 }
