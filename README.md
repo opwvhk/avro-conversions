@@ -1,4 +1,4 @@
-![Build Status](https://github.com/opwvhk/avro-conversions/workflows/Java%20CI%20with%20Maven/badge.svg)
+[![Build Status](https://github.com/opwvhk/avro-conversions/workflows/Java%20CI%20with%20Maven/badge.svg)](https://github.com/opwvhk/avro-conversions/actions/workflows/maven.yml)
 [![License](https://img.shields.io/github/license/opwvhk/avro-conversions?color=brightgreen)](https://www.apache.org/licenses/LICENSE-2.0.html)
 [![Maven Central Version](https://img.shields.io/maven-central/v/net.sf.opk/avro-conversions?color=brightgreen)](https://maven-badges.herokuapp.com/maven-central/net.sf.opk/avro-conversions)
 
