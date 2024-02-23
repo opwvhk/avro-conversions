@@ -20,8 +20,8 @@ section below. For the others, there is [more elaborate documentation](doc/index
 Quickstart
 ----------
 
-Want to jump right in? Here's a simple example to readan Avro schema, JSON schema, and JSON file,
-and parse the latter using the first two:
+Want to jump right in? Here's a simple example to read a JSON schema, manipulate in into an Avro
+schema, and then parse a JSON file into the (different) Avro records:
 
 ```java
 import opwvhk.avro.SchemaManipulator;
@@ -61,6 +61,17 @@ class Example {
 	}
 }
 ```
+
+Upgrade notes
+-------------
+
+### From 1.3 to 2.0
+
+1. XML validation has been changed. Now, parsing will either always or never validate, depending on
+   how the parser was created. See the constructor parameters for details.
+2. Constructing a JSON parser can no longer throw a (library specific) `GenerationException`; this
+   has become a runtime exception instead.
+
 
 Contributing ✨
 ---------------

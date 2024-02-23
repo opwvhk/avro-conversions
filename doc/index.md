@@ -21,12 +21,12 @@ records.
 
 The following formats can be converted to Avro:
 
-| Format             | Parser constructor                                  | Parser class                        |
-|--------------------|-----------------------------------------------------|-------------------------------------|
-| JSON (with schema) | `JsonAsAvroParser(URI, Schema, GenericData)`        | `opwvhk.avro.json.JsonAsAvroParser` |
-| JSON (unvalidated) | `JsonAsAvroParser(Schema, GenericData)`             | `opwvhk.avro.json.JsonAsAvroParser` |
-| XML (with XSD)     | `XmlAsAvroParser(URL, String, Schema, GenericData)` | `opwvhk.avro.xml.XmlAsAvroParser`   |
-| XML (unvalidated)  | `XmlAsAvroParser(Schema, GenericData)`              | `opwvhk.avro.xml.XmlAsAvroParser`   |
+| Format             | Parser constructor                                                                           |
+|--------------------|----------------------------------------------------------------------------------------------|
+| JSON (with schema) | `opwvhk.avro.json.JsonAsAvroParser#JsonAsAvroParser(URI, boolean, Schema, GenericData)`      |
+| JSON (unvalidated) | `opwvhk.avro.json.JsonAsAvroParser#JsonAsAvroParser(Schema, GenericData)`                    |
+| XML (with XSD)     | `opwvhk.avro.xml.XmlAsAvroParser#XmlAsAvroParser(URL, String, boolean, Schema, GenericData)` |
+| XML (unvalidated)  | `opwvhk.avro.xml.XmlAsAvroParser#XmlAsAvroParser(Schema, GenericData)`                       |
 
 Parsers all use both a write schema and a read schema, just like Avro does. The write schema is used
 to validate the input, and the read schema is used to describe the result.
