@@ -161,7 +161,7 @@ class XmlResolvingTest {
     void testResolvingAndParsingWithoutNamespace() throws IOException, SAXException {
         URL xsdLocation = requireNonNull(getClass().getResource("resolvingTest.xsd"));
         Schema readSchema = new Schema.Parser().parse(getClass().getResourceAsStream("resolvingTest.avsc"));
-        XmlAsAvroParser parser = new XmlAsAvroParser(xsdLocation, "outer", readSchema, MODEL);
+        XmlAsAvroParser parser = new XmlAsAvroParser(xsdLocation, "outer", false, readSchema, MODEL);
 
         GenericRecord resultMinimal = parser.parse(requireNonNull(getClass().getResource("resolvingTestMinimalWithoutNamespace.xml")));
         assertThat(toJson(resultMinimal)).isEqualToNormalizingWhitespace("""
@@ -198,15 +198,15 @@ class XmlResolvingTest {
     void testFailuresForNamespaceRelatedErrors() throws IOException {
         URL xsdLocation = requireNonNull(getClass().getResource("resolvingTest.xsd"));
         Schema readSchema = new Schema.Parser().parse(getClass().getResourceAsStream("resolvingTest.avsc"));
-        XmlAsAvroParser parser = new XmlAsAvroParser(xsdLocation, "outer", readSchema, MODEL);
+        XmlAsAvroParser parser = new XmlAsAvroParser(xsdLocation, "outer", true, readSchema, MODEL);
 
         InputSource inputSource1 = new InputSource();
         inputSource1.setSystemId(requireNonNull(getClass().getResource("resolvingTestMinimalWithoutNamespace.xml")).toExternalForm());
-        assertThatThrownBy(() -> parser.parse(inputSource1, true)).isInstanceOf(SAXException.class);
+        assertThatThrownBy(() -> parser.parse(inputSource1)).isInstanceOf(SAXException.class);
 
         InputSource inputSource3 = new InputSource();
         inputSource3.setSystemId(requireNonNull(getClass().getResource("resolvingTestInvalidWithNamespace.xml")).toExternalForm());
-        assertThatThrownBy(() -> parser.parse(inputSource3, true)).isInstanceOf(SAXException.class);
+        assertThatThrownBy(() -> parser.parse(inputSource3)).isInstanceOf(SAXException.class);
     }
 
     @Test
@@ -424,7 +424,7 @@ class XmlResolvingTest {
     private void assertThatSchemasFailToResolve(Schema readSchema, Type writeType) {
         URL xsdLocation = requireNonNull(getClass().getResource("resolvingTest.xsd"));
         assertThatThrownBy(
-                () -> new XmlAsAvroParser(GenericData.get(), xsdLocation, null, null, ValueResolver.NOOP).createResolver(writeType, readSchema)
+                () -> new XmlAsAvroParser(GenericData.get(), xsdLocation, null, false, null, ValueResolver.NOOP).createResolver(writeType, readSchema)
         ).isInstanceOf(ResolvingFailure.class);
     }
 

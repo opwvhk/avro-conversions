@@ -17,14 +17,12 @@ import static opwvhk.avro.xml.Constants.XML_SCHEMA_DEFINITION_NAMESPACES;
 class SimpleContentAdapter extends DefaultHandler {
 	private static final int DEFAULT_BUFFER_CAPACITY = 1024;
 	private final SimpleContentHandler simpleContentHandler;
-	private final boolean enforceXsd;
 	private final StringBuilder charBuffer;
 	private int reassemblingDepth;
 	private boolean reassemblingStartTag;
 
-	SimpleContentAdapter(SimpleContentHandler simpleContentHandler, boolean enforceXsd) {
+	SimpleContentAdapter(SimpleContentHandler simpleContentHandler) {
 		this.simpleContentHandler = simpleContentHandler;
-		this.enforceXsd = enforceXsd;
 		charBuffer = new StringBuilder(DEFAULT_BUFFER_CAPACITY);
 	}
 
@@ -133,8 +131,6 @@ class SimpleContentAdapter extends DefaultHandler {
 
 	@Override
 	public void error(SAXParseException e) throws SAXException {
-		if (enforceXsd) {
-			throw e;
-		}
+		throw e;
 	}
 }

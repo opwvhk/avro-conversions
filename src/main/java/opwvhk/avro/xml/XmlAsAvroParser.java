@@ -1,18 +1,5 @@
 package opwvhk.avro.xml;
 
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
-import javax.xml.transform.stream.StreamSource;
-import javax.xml.validation.SchemaFactory;
-import java.io.IOException;
-import java.net.URL;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.function.Predicate;
-
 import opwvhk.avro.ResolvingFailure;
 import opwvhk.avro.io.AsAvroParserBase;
 import opwvhk.avro.io.ListResolver;
@@ -33,6 +20,19 @@ import org.apache.avro.generic.GenericData;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+import javax.xml.transform.stream.StreamSource;
+import javax.xml.validation.SchemaFactory;
+import java.io.IOException;
+import java.net.URL;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Predicate;
+
 /**
  * <p>XML parser to read Avro records.</p>
  *
@@ -49,7 +49,7 @@ public class XmlAsAvroParser extends AsAvroParserBase<Type> {
 
 	private static boolean isValidEnum(Type writeType, Schema readSchema) {
 		// Not an issue: enums are generally not that large
-		//noinspection SlowListContainsAll
+		// noinspection SlowListContainsAll
 		return writeType instanceof EnumType writeEnum && readSchema.getType() == Schema.Type.ENUM &&
 		       (readSchema.getEnumDefault() != null || readSchema.getEnumSymbols().containsAll(writeEnum.enumSymbols()));
 	}
@@ -71,13 +71,10 @@ public class XmlAsAvroParser extends AsAvroParserBase<Type> {
 	private final ValueResolver resolver;
 
 	/**
-	 * <p>Create an XML parser for the specified XSD and root element, reading data into records created by the model for the given read schema.</p>
+	 * <p>Create a validating XML parser for the specified XSD and root element, reading data into records created by the model for the given read schema.</p>
 	 *
 	 * <p>The parser is built to read XML that conforms to the XSD, yielding records in the read schema. It will fail to construct if the two are not
-	 * compatible.</p>
-	 *
-	 * <p>Note that validating the XML while parsing is optional. The resulting parser can read any XML data, also invalid data, as long as it fits the result.
-	 * Be aware though, that parsing invalid data is likely to result in invalid records. These may/will cause unspecified problems downstream.</p>
+	 * compatible. Also, being a validating parser, it will fail to parse is the parsed XML does not conform to the XSD.</p>
 	 *
 	 * @param xsdLocation the XSD defining the data to read
 	 * @param rootElement the root element that will be read
@@ -86,29 +83,47 @@ public class XmlAsAvroParser extends AsAvroParserBase<Type> {
 	 * @throws IOException when the XSD cannot be read
 	 */
 	public XmlAsAvroParser(URL xsdLocation, String rootElement, Schema readSchema, GenericData model) throws IOException {
-		this(model, xsdLocation, rootElement, readSchema, null);
+		this(xsdLocation, rootElement, true, readSchema, model);
+	}
+
+	/**
+	 * <p>Create an XML parser for the specified XSD and root element, reading data into records created by the model for the given read schema.</p>
+	 *
+	 * <p>The parser is built to read XML that conforms to the XSD, yielding records in the read schema. It will fail to construct if the two are not
+	 * compatible.</p>
+	 *
+	 * <p>Note that validating the XML while parsing is optional. If {@code validate == false}, the resulting parser can read any XML data (also invalid data)
+	 * as long as it fits the result. Be aware though, that parsing invalid data is likely to result in invalid records. These will cause unspecified problems
+	 * when used.</p>
+	 *
+	 * @param xsdLocation the XSD defining the data to read
+	 * @param rootElement the root element that will be read
+	 * @param validate    whether the XML parser should validate XML while parsing
+	 * @param readSchema  the schema of the resulting records
+	 * @param model       the model to create records
+	 * @throws IOException when the XSD cannot be read
+	 */
+	public XmlAsAvroParser(URL xsdLocation, String rootElement, boolean validate, Schema readSchema, GenericData model) throws IOException {
+		this(model, xsdLocation, rootElement, validate, readSchema, null);
 	}
 
 	/**
 	 * <p>Create an XML parser (just) the given read schema and model.</p>
 	 *
-	 * <p>The parser is built to read any XML, yielding records in the read schema. There is no early detection of parsing failures, as the structure of the
-	 * XML is not known in advance.</p>
-	 *
-	 * <p>Validating the XML while parsing is not possible (the boolean flag of {@link #parse(InputSource, boolean)} is ignored). The resulting parser can read
-	 * any XML data, also invalid data, as long as it fits the result. Be aware though, that parsing invalid data is likely to result in invalid records. These
-	 * may/will cause unspecified problems downstream.</p>
+	 * <p>The parser is built to read any XML, yielding records in the read schema. There is no validation (there's no XSD to validate against), and will read
+	 * any XML data that fits into the read schema. Be aware though that there is also no way to detect missing required fields, so parsing invalid data is
+	 * likely to result in invalid records. These will cause unspecified problems when used.</p>
 	 *
 	 * @param readSchema the schema of the resulting records
 	 * @param model      the model to create records
 	 */
 	public XmlAsAvroParser(Schema readSchema, GenericData model) throws IOException {
-		this(model, null, null, readSchema, null);
+		this(model, null, null, false, readSchema, null);
 	}
 
-	XmlAsAvroParser(GenericData model, URL xsdLocation, String rootElement, Schema readSchema, ValueResolver resolver) throws IOException {
+	XmlAsAvroParser(GenericData model, URL xsdLocation, String rootElement, boolean validate, Schema readSchema, ValueResolver resolver) throws IOException {
 		super(model);
-		parser = createParser(xsdLocation);
+		parser = createParser(validate ? xsdLocation : null);
 		this.resolver = resolver != null ? resolver : createResolver(xsdLocation, rootElement, readSchema);
 	}
 
@@ -256,20 +271,19 @@ public class XmlAsAvroParser extends AsAvroParserBase<Type> {
 	 * Parse the given source into records.
 	 *
 	 * @param source     a source of XML data
-	 * @param enforceXsd if {@code true}, parsing will fail if the XML is not valid (this includes a missing namespace)
 	 * @param <T>        the record type
 	 * @return the parsed record
 	 * @throws IOException  when the XML cannot be read
 	 * @throws SAXException when the XML cannot be parsed
 	 */
-	public <T> T parse(InputSource source, boolean enforceXsd) throws IOException, SAXException {
+	public <T> T parse(InputSource source) throws IOException, SAXException {
 		XmlRecordHandler handler = new XmlRecordHandler(resolver);
-		parser.parse(source, new SimpleContentAdapter(handler, enforceXsd));
+		parser.parse(source, new SimpleContentAdapter(handler));
 		return handler.getValue();
 	}
 
 	/**
-	 * Parse the given source into records. Does not enforce the XSD.
+	 * Parse the given source into records.
 	 *
 	 * @param url a location to read XML data from
 	 * @param <T> the record type
@@ -280,6 +294,6 @@ public class XmlAsAvroParser extends AsAvroParserBase<Type> {
 	public <T> T parse(URL url) throws IOException, SAXException {
 		InputSource inputSource = new InputSource();
 		inputSource.setSystemId(url.toExternalForm());
-		return parse(inputSource, false);
+		return parse(inputSource);
 	}
 }
