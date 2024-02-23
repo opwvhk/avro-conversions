@@ -6,7 +6,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Objects;
 
-import net.jimblackler.jsonschemafriend.GenerationException;
 import opwvhk.avro.ResolvingFailure;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericData;
@@ -18,7 +17,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class JsonAsAvroParserTest {
     @Test
-    void testMostTypesWithJsonSchema() throws IOException, GenerationException, URISyntaxException {
+    void testMostTypesWithJsonSchema() throws IOException, URISyntaxException {
         Schema readSchema = avroSchema("TestRecord.avsc");
 
         JsonAsAvroParser parser = new JsonAsAvroParser(resourceUri("TestRecord.schema.json"), readSchema, GenericData.get());
@@ -34,36 +33,36 @@ class JsonAsAvroParserTest {
     }
 
     @Test
-    void testParsingDatesAndTimesWithJsonSchema() throws IOException, URISyntaxException, GenerationException {
+    void testParsingDatesAndTimesWithJsonSchema() throws IOException, URISyntaxException {
         Schema readSchema = avroSchema("DatesAndTimes.avsc");
 
         JsonAsAvroParser parser = new JsonAsAvroParser(resourceUri("DatesAndTimes.schema.json"), readSchema, GenericData.get());
         GenericRecord minimalRecord = parser.parse("""
-                {"dateOnly": "2023-04-17", "timeMillis": "17:08:34.567+02:00", "timeMicros": "17:08:34.567123",
-                 "timestampMillis": "2023-04-17T17:08:34.567123CET", "timestampMicros": "2023-04-17T17:08:34.567123+02:00",
+                {"dateOnly": "2023-04-17", "timeMillis": "17:08:34.567+02:00", "timeMicros": "17:08:34.567123Z",
+                 "timestampMillis": "2023-04-17T17:08:34.567+02:00", "timestampMicros": "2023-04-17T17:08:34.567123+02:00",
                  "localTimestampMillis": "2023-04-17T17:08:34.567", "localTimestampMicros": "2023-04-17T17:08:34.567123"
                 }""");
 
         assertThat(minimalRecord.toString()).isEqualTo(
                 "{\"dateOnly\": \"2023-04-17\", \"timeMillis\": \"17:08:34.567+02:00\", \"timeMicros\": \"17:08:34.567123Z\", " +
-                "\"timestampMillis\": \"2023-04-17T15:08:34.567123Z\", \"timestampMicros\": \"2023-04-17T15:08:34.567123Z\", " +
+                "\"timestampMillis\": \"2023-04-17T15:08:34.567Z\", \"timestampMicros\": \"2023-04-17T15:08:34.567123Z\", " +
                 "\"localTimestampMillis\": \"2023-04-17T17:08:34.567\", \"localTimestampMicros\": \"2023-04-17T17:08:34.567123\"}");
     }
 
     @Test
-    void testParsingEnumDifferentlyThanJsonSchema() throws IOException, URISyntaxException, GenerationException {
+    void testParsingEnumDifferentlyThanJsonSchema() throws IOException, URISyntaxException {
         URI jsonSchema = resourceUri("TestRecord.schema.json");
         JsonAsAvroParser parser;
         GenericRecord record;
 
-        parser = new JsonAsAvroParser(jsonSchema, avroSchema("DifferentChoiceWithDefault.avsc"), GenericData.get());
+        parser = new JsonAsAvroParser(jsonSchema, false, avroSchema("DifferentChoiceWithDefault.avsc"), GenericData.get());
         record = parser.parse("""
                 {"choice": "no"}""");
 
         assertThat(record.toString()).isEqualTo(
                 "{\"choice\": \"vielleicht\"}");
 
-        parser = new JsonAsAvroParser(jsonSchema, avroSchema("ChoiceAsString.avsc"), GenericData.get());
+        parser = new JsonAsAvroParser(jsonSchema, false, avroSchema("ChoiceAsString.avsc"), GenericData.get());
         record = parser.parse("""
                 {"choice": "no"}""");
 
@@ -85,6 +84,14 @@ class JsonAsAvroParserTest {
         assertThatThrownBy(() -> new JsonAsAvroParser(jsonSchema, avroSchema("TooShortInteger.avsc"), model)).isInstanceOf(ResolvingFailure.class);
         assertThatThrownBy(() -> new JsonAsAvroParser(jsonSchema, avroSchema("NonNullableInt.avsc"), model)).isInstanceOf(ResolvingFailure.class);
     }
+
+	@Test
+	void testValidationFailure() throws IOException, URISyntaxException {
+		Schema readSchema = avroSchema("TestRecord.avsc");
+		JsonAsAvroParser parser = new JsonAsAvroParser(resourceUri("TestRecord.schema.json"), readSchema, GenericData.get());
+
+		assertThatThrownBy(() -> parser.parse("{}")).isInstanceOf(IOException.class).hasMessage("Invalid JSON");
+	}
 
     @Test
     void testMostTypesFromAvroSchema() throws IOException {

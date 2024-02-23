@@ -10,7 +10,7 @@
 	"defaultNumber": 98765.4321,
     "choice": "maybe",
     "date": "2023-04-17",
-    "time": "17:08:34.567123",
+    "time": "17:08:34.567123Z",
     "timestamp": "2023-04-17T17:08:34.567123",
     "binary": "SGVsbG8gV29ybGQh",
     "hexBytes": "48656C6C6F20576F726C6421",

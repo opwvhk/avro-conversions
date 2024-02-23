@@ -7,6 +7,7 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
+import net.jimblackler.jsonschemafriend.Schema;
 import opwvhk.avro.util.DecimalRange;
 import opwvhk.avro.util.Utils;
 
@@ -16,7 +17,8 @@ import opwvhk.avro.util.Utils;
 public class SchemaProperties {
     private static final EnumSet<SchemaType> NON_NULL_TYPES = EnumSet.complementOf(EnumSet.of(SchemaType.NULL));
     private final boolean allowZeroFractionInIntegerRange;
-    private String inferredTitle;
+	private Schema jsonSchema;
+	private String inferredTitle;
     private String title;
     private String description;
     private EnumSet<SchemaType> types;
@@ -38,7 +40,25 @@ public class SchemaProperties {
         properties = new LinkedHashMap<>();
     }
 
-    /**
+	/**
+	 * Set the JSON schema these properties describe.
+	 *
+	 * @param jsonSchema a JSON schema
+	 */
+	public void setJsonSchema(Schema jsonSchema) {
+		this.jsonSchema = jsonSchema;
+	}
+
+	/**
+	 * Get the JSON schema these properties describe.
+	 *
+	 * @return the JSON schema
+	 */
+	public Schema getJsonSchema() {
+		return jsonSchema;
+	}
+
+	/**
      * Set the types supported by this schema.
      *
      * @param types the types to support

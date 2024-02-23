@@ -16,7 +16,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class SchemaAnalyzerTest {
     @Test
-    void testSchemaVersionDraft4() throws URISyntaxException, GenerationException {
+    void testSchemaVersionDraft4() throws URISyntaxException {
         SchemaProperties schemaProperties = parseSchemaResource("draft4-schema.json");
         // * range of "number" is not an integer range: type "integer" is NOT inferred because bounds have a fraction
         // * number range has boolean properties for exclusive bounds
@@ -35,7 +35,7 @@ class SchemaAnalyzerTest {
     }
 
     @Test
-    void testSchemaVersionDraft6() throws GenerationException, URISyntaxException {
+    void testSchemaVersionDraft6() throws URISyntaxException {
         SchemaProperties schemaProperties = parseSchemaResource("draft6-schema.json");
         // * range of "number" is an integer range: type "integer" is inferred as no bounds have a non-zero fraction
         // * number range has separate number properties for exclusive bounds
@@ -53,7 +53,7 @@ class SchemaAnalyzerTest {
     }
 
     @Test
-    void testSchemaVersionDraft7() throws GenerationException, URISyntaxException {
+    void testSchemaVersionDraft7() throws URISyntaxException {
         SchemaProperties schemaProperties = parseSchemaResource("draft7-schema.json");
         // * 'contentEncoding', 'if', 'then', 'else' are now applied
         assertThat(schemaString(schemaProperties)).isEqualTo(
@@ -66,7 +66,7 @@ class SchemaAnalyzerTest {
     }
 
     @Test
-    void testUnknownSchemaVersion() throws GenerationException, URISyntaxException {
+    void testUnknownSchemaVersion() throws URISyntaxException {
         SchemaProperties schemaProperties = parseSchemaResource("unspecified-schema.json");
         // Unknown schema causes no references to be resolved by the underlying library
         assertThat(schemaString(schemaProperties)).isEqualTo(
@@ -75,7 +75,7 @@ class SchemaAnalyzerTest {
     }
 
     @Test
-    void testSchemaVersionDraft2020() throws GenerationException, URISyntaxException {
+    void testSchemaVersionDraft2020() throws URISyntaxException {
         SchemaProperties schemaProperties = parseSchemaResource("draft2020-12-schema.json");
         // * arrays are defined using 'prefixItems' (an array) & 'items'; 'contains' remains valid, also use 'unevaluatedItems'
         // * additional structures to test all code paths missed so far
@@ -94,7 +94,7 @@ class SchemaAnalyzerTest {
                 "}}");
     }
 
-    private SchemaProperties parseSchemaResource(String schemaResource) throws GenerationException, URISyntaxException {
+    private SchemaProperties parseSchemaResource(String schemaResource) throws URISyntaxException {
         URI jsonSchemaLocation = requireNonNull(getClass().getResource(schemaResource)).toURI();
         return new SchemaAnalyzer().parseJsonProperties(jsonSchemaLocation);
     }
@@ -134,6 +134,7 @@ class SchemaAnalyzerTest {
 
     @Test
     void testAvroSchemaConversion() throws URISyntaxException, GenerationException, IOException {
+	    assertThatThrownBy(() -> parseSchemaResourceAsAvro("invalid.schema.json")).isInstanceOf(AnalysisFailure.class);
         assertThatThrownBy(() -> parseSchemaResourceAsAvro("null.schema.json")).isInstanceOf(IllegalArgumentException.class);
 
         Schema avroSchema = parseSchemaResourceAsAvro("TestRecord.schema.json");

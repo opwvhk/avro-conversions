@@ -220,13 +220,18 @@ public class SchemaAnalyzer {
      *
      * @param jsonSchemaLocation the location of a JSON schema
      * @return an object describing the JSON schema
-     * @throws GenerationException when the JSON schema cannot be analysed
+     * @throws AnalysisFailure when the JSON schema cannot be analysed
      */
-    public SchemaProperties parseJsonProperties(URI jsonSchemaLocation) throws GenerationException {
-        // Load/parse the schema.
-        net.jimblackler.jsonschemafriend.Schema schema = schemaStore.loadSchema(jsonSchemaLocation, validator);
+    public SchemaProperties parseJsonProperties(URI jsonSchemaLocation) throws AnalysisFailure {
+	    net.jimblackler.jsonschemafriend.Schema schema = null;
+	    try {
+		    // Load/parse the schema.
+		    schema = schemaStore.loadSchema(jsonSchemaLocation, validator);
+	    } catch (GenerationException e) {
+		    throw new AnalysisFailure("Failed to load the JSON schema", e);
+	    }
 
-        // Interpret the schema
+	    // Interpret the schema
 
         URI metaSchema = schema.getMetaSchema();
         SchemaVersion schemaVersion = SchemaVersion.valueOf(metaSchema);
@@ -238,6 +243,7 @@ public class SchemaAnalyzer {
     private SchemaProperties determineSchemaProperties(net.jimblackler.jsonschemafriend.Schema schema, SchemaVersion version,
                                                        Map<URI, SchemaProperties> examinedSchemas) {
         SchemaProperties schemaProperties = new SchemaProperties(version.isAtLeast(SchemaVersion.DRAFT_6));
+		schemaProperties.setJsonSchema(schema);
         SchemaProperties existing = examinedSchemas.putIfAbsent(schema.getUri(), schemaProperties);
         if (existing != null) {
             return existing;
