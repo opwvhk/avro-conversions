@@ -17,8 +17,8 @@ import org.apache.avro.data.TimeConversions;
  */
 public final class AvroConversions {
 	/**
-	 * Convert an Avro logical type "{@link LogicalTypes.TimeMillis time-millis}" to/from the number of milliseconds since midnight in the specified timezone.
-	 * If not specified, the timezone {@link ZoneOffset#UTC UTC} is used.
+	 * Convert an Avro logical type {@link LogicalTypes.TimeMillis "time-millis"} to/from the number of milliseconds since midnight in the timezone specified
+	 * by the schema property {@value TIMEZONE_PROP}, or {@link ZoneOffset#UTC UTC} if none is specified.
 	 */
 	public static class OffsetTimeMillisConversion extends Conversion<OffsetTime> {
 		/**
