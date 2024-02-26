@@ -67,11 +67,11 @@ Upgrade notes
 
 ### From 1.3 to 2.0
 
-1. XML validation has been changed. Now, parsing will either always or never validate, depending on
-   how the parser was created. See the constructor parameters for details.
+1. XML validation has been changed. Previously you could choose whether to validate per input. Now,
+   whether inputs will be validated is a fixed setting per parser instance. See the constructor
+   parameters for details.
 2. Constructing a JSON parser can no longer throw a (library specific) `GenerationException`; this
    has become a runtime exception instead.
-
 
 Contributing ✨
 ---------------
