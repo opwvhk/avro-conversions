@@ -2,7 +2,7 @@ Avro Conversions
 ================
 Copyright © Oscar Westra van Holthe - Kind (and any human contributors)
 
-The various [contributors](https://github.com/opwvhk/avro-schema-support/graphs/contributors)
+The various [contributors](https://github.com/opwvhk/avro-conversions/graphs/contributors)
 license this software to you under the Apache License, Version 2.0
 (the "License"); you may not use  this software except in compliance with the
 License. You may obtain a copy of the License at
