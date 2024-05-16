@@ -20,22 +20,27 @@ class TypeStructureTest {
 	@Test
     void testAvroDefaultValues() {
 		StructType struct = struct("defaults", "Testing default values").withFields(
-				optional("optional1", null, FixedType.STRING, StructType.Field.NULL_VALUE),
-				optional("optional2", null, FixedType.STRING, JsonProperties.NULL_VALUE),
-				optional("optional3", null, FixedType.STRING, Schema.Field.NULL_DEFAULT_VALUE),
+				required("nullDefaults", struct("nulls").withFields(
+						optional("optional1", null, FixedType.STRING, StructType.Field.NULL_VALUE),
+						optional("optional2", null, FixedType.STRING, JsonProperties.NULL_VALUE),
+						optional("optional3", null, FixedType.STRING, Schema.Field.NULL_DEFAULT_VALUE)
+				)),
 				optional("optional4", "Only non-null default", FixedType.STRING, "text"));
 		assertThat(struct.debugString("")).isEqualTo("""
 				StructType(defaults) {
 				  Doc: Testing default values
-				  optional1?
-				    Default: @NULL1@
-				    string
-				  optional2?
-				    Default: @NULL2@
-				    string
-				  optional3?
-				    Default: @NULL3@
-				    string
+				  nullDefaults
+				    StructType(nulls) {
+				      optional1?
+				        Default: @NULL1@
+				        string
+				      optional2?
+				        Default: @NULL2@
+				        string
+				      optional3?
+				        Default: @NULL3@
+				        string
+				    }
 				  optional4?
 				    Doc: Only non-null default
 				    Default: text
@@ -48,9 +53,11 @@ class TypeStructureTest {
 
 		Schema schema = new Schema.Parser().parse("""
 				{"type": "record", "name": "defaults", "fields": [
-					{"name": "optional1", "type": ["null", "string"], "default": null},
-					{"name": "optional2", "type": ["null", "string"], "default": null},
-					{"name": "optional3", "type": ["null", "string"], "default": null},
+					{"name": "nullDefaults", "type": {"type": "record", "name": "nulls", "fields": [
+						{"name": "optional1", "type": ["null", "string"], "default": null},
+						{"name": "optional2", "type": ["null", "string"], "default": null},
+						{"name": "optional3", "type": ["null", "string"], "default": null}
+					]}},
 					{"name": "optional4", "type": ["string", "null"], "default": "text"}
 				]}""");
 		assertThat(struct.toSchema()).isEqualTo(schema);
@@ -199,6 +206,8 @@ class TypeStructureTest {
 
 		assertThat(type1.hashCode()).isEqualTo(type1.hashCode());
 		assertThat(type4.hashCode()).isEqualTo(type5.hashCode());
+
+		assertThat(type.fields().get(0).hashCode()).isNotEqualTo(type.fields().get(1).hashCode());
 	}
 
 	private static byte[] bytes(int... bytes) {

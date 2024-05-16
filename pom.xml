@@ -58,15 +58,19 @@
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-simple</artifactId>
+			<artifactId>jul-to-slf4j</artifactId>
 			<version>${org.slf4j.version}</version>
-			<scope>runtime</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>jcl-over-slf4j</artifactId>
 			<version>${org.slf4j.version}</version>
-			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-simple</artifactId>
+			<version>${org.slf4j.version}</version>
+			<scope>test</scope>
 		</dependency>
 
 		<!-- Avro & Parquet related -->
@@ -133,6 +137,10 @@
 					<groupId>commons-collections</groupId>
 					<artifactId>commons-collections</artifactId>
 				</exclusion>
+				<exclusion>
+					<groupId>commons-logging</groupId>
+					<artifactId>commons-logging</artifactId>
+				</exclusion>
 			</exclusions>
 		</dependency>
 		<dependency>
@@ -167,6 +175,7 @@
 		</dependency>
 	</dependencies>
 	<build>
+		<defaultGoal>clean verify</defaultGoal>
 		<pluginManagement>
 			<plugins>
 				<plugin>
@@ -203,6 +212,44 @@
 						<exclude>**/*Old*</exclude>
 					</excludes>
 				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>com.github.siom79.japicmp</groupId>
+				<artifactId>japicmp-maven-plugin</artifactId>
+				<version>0.20.0</version>
+				<configuration>
+					<skip>true</skip>
+					<parameter>
+						<!--
+							The plugin finds all versions (in order) in the repository up to the current project version. It excludes
+							snapshots and all versions that do not match this pattern (if given). Then it takes the last version and
+							compares the current API against that.
+						-->
+						<!--<oldVersionPattern>${previous.version}</oldVersionPattern>-->
+						<ignoreMissingOldVersion>true</ignoreMissingOldVersion>
+						<onlyModified>true</onlyModified>
+						<breakBuildBasedOnSemanticVersioning>true</breakBuildBasedOnSemanticVersioning>
+						<breakBuildOnSourceIncompatibleModifications>true</breakBuildOnSourceIncompatibleModifications>
+						<ignoreNonResolvableArtifacts>true</ignoreNonResolvableArtifacts>
+						<ignoreMissingOptionalDependency>true</ignoreMissingOptionalDependency>
+						<excludeModules>
+							<!-- Exclude modules that are not part of the public API, don't have classes but have missing dependencies, etc. -->
+							<!--<excludeModule>parquet-benchmarks</excludeModule>-->
+						</excludeModules>
+						<excludes>
+							<!-- Due to the removal of deprecated methods -->
+							<!--<exclude>org.apache.parquet.arrow.schema.SchemaMapping</exclude>-->
+						</excludes>
+					</parameter>
+				</configuration>
+				<executions>
+					<execution>
+						<phase>verify</phase>
+						<goals>
+							<goal>cmp</goal>
+						</goals>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 	</build>

@@ -423,9 +423,11 @@ class XmlResolvingTest {
 
     private void assertThatSchemasFailToResolve(Schema readSchema, Type writeType) {
         URL xsdLocation = requireNonNull(getClass().getResource("resolvingTest.xsd"));
-        assertThatThrownBy(
-                () -> new XmlAsAvroParser(GenericData.get(), xsdLocation, null, false, null, ValueResolver.NOOP).createResolver(writeType, readSchema)
-        ).isInstanceOf(ResolvingFailure.class);
+	    assertThatThrownBy(() -> {
+				    Schema dummySchema = Schema.create(Schema.Type.STRING);
+				    new XmlAsAvroParser(GenericData.get(), xsdLocation, null, false, dummySchema, ValueResolver.NOOP).createResolver(writeType, readSchema);
+			    }
+	    ).isInstanceOf(ResolvingFailure.class);
     }
 
     private static String toJson(GenericRecord record) throws IOException {

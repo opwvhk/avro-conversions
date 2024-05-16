@@ -73,6 +73,13 @@ Upgrade notes
 2. Constructing a JSON parser can no longer throw a (library specific) `GenerationException`; this
    has become a runtime exception instead.
 
+
+Logging
+-------
+
+This library uses SLF4J, redirects Commons-Logging over SLF4J, and includes a dependency to direct the JDK 1.4 logging framework to SLF4J as well (one of the dependencies uses it). To correctly log via SLF4J, use the provided file `logging.properties` to configure java.util.logging.
+
+
 Contributing ✨
 ---------------
 

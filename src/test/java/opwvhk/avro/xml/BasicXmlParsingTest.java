@@ -6,11 +6,10 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import opwvhk.avro.io.ValueResolver;
+import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericData;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
 
 import static java.util.Objects.requireNonNull;
@@ -18,25 +17,22 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class BasicXmlParsingTest {
-    /**
-     * Logger for this class.
-     */
-    private static final Logger LOGGER = LoggerFactory.getLogger(BasicXmlParsingTest.class);
-
     private XmlAsAvroParser validatingParser;
     private XmlAsAvroParser lenientParser;
 
     @BeforeEach
     void setUp() throws IOException {
         URL payloadXsd = requireNonNull(getClass().getResource("payload.xsd"));
-        validatingParser = new XmlAsAvroParser(GenericData.get(), payloadXsd, null, true, null, new PayloadDebugHandler());
-	    lenientParser = new XmlAsAvroParser(GenericData.get(), payloadXsd, null, false, null, new PayloadDebugHandler());
+		Schema dummySchema = Schema.create(Schema.Type.STRING);
+        validatingParser = new XmlAsAvroParser(GenericData.get(), payloadXsd, null, true, dummySchema, new PayloadDebugHandler());
+	    lenientParser = new XmlAsAvroParser(GenericData.get(), payloadXsd, null, false, dummySchema, new PayloadDebugHandler());
     }
 
     @Test
     void testValidXsdIsRequired() {
         URL notAnXsd = requireNonNull(getClass().getResource("textPayload.xml"));
-        assertThatThrownBy(() -> new XmlAsAvroParser(GenericData.get(), notAnXsd, null, true, null, new PayloadDebugHandler())).isInstanceOf(
+	    Schema dummySchema = Schema.create(Schema.Type.STRING);
+        assertThatThrownBy(() -> new XmlAsAvroParser(GenericData.get(), notAnXsd, null, true, dummySchema, new PayloadDebugHandler())).isInstanceOf(
                 IllegalStateException.class);
     }
 
@@ -144,7 +140,6 @@ class BasicXmlParsingTest {
 
         @Override
         public ValueResolver resolve(String name) {
-            LOGGER.debug("{} has {}", myName, name);
             String newName = myPrefix == null ? name : myPrefix + name;
             return new PayloadDebugHandler(newName, newName + ".");
         }
@@ -156,21 +151,18 @@ class BasicXmlParsingTest {
 
         @Override
         public Object addProperty(Object collector, String name, Object value) {
-            LOGGER.debug("{}.{} = {}", myName, name, value);
             ((Map<String, Object>) collector).put(name, value);
             return collector;
         }
 
         @Override
         public Object addContent(Object collector, String value) {
-            LOGGER.debug("({} = {})", myName, value);
             ((Map<String, Object>) collector).put("", value);
             return collector;
         }
 
         @Override
         public Object complete(Object collector) {
-            LOGGER.debug("end of {}", myName);
             Map<String, Object> map = (Map<String, Object>) collector;
             if (map.size() == 1 && map.containsKey("")) {
                 return map.get("");

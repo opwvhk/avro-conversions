@@ -17,6 +17,7 @@ import opwvhk.avro.xml.datamodel.TypeWithUnparsedContent;
 import org.apache.avro.LogicalTypes;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericData;
+import org.jetbrains.annotations.Nullable;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
@@ -50,8 +51,10 @@ public class XmlAsAvroParser extends AsAvroParserBase<Type> {
 	private static boolean isValidEnum(Type writeType, Schema readSchema) {
 		// Not an issue: enums are generally not that large
 		// noinspection SlowListContainsAll
-		return writeType instanceof EnumType writeEnum && readSchema.getType() == Schema.Type.ENUM &&
-		       (readSchema.getEnumDefault() != null || readSchema.getEnumSymbols().containsAll(writeEnum.enumSymbols()));
+		return writeType instanceof EnumType writeEnum &&
+		       readSchema.getType() == Schema.Type.ENUM &&
+		       (readSchema.getEnumDefault() != null ||
+		        readSchema.getEnumSymbols().containsAll(writeEnum.enumSymbols()));
 	}
 
 	private static Predicate<Type> decimal(int maxBitSize) {
@@ -122,9 +125,22 @@ public class XmlAsAvroParser extends AsAvroParserBase<Type> {
 	}
 
 	XmlAsAvroParser(GenericData model, URL xsdLocation, String rootElement, boolean validate, Schema readSchema, ValueResolver resolver) throws IOException {
-		super(model);
+		super(model, determineWriteType(xsdLocation, rootElement), readSchema);
 		parser = createParser(validate ? xsdLocation : null);
-		this.resolver = resolver != null ? resolver : createResolver(xsdLocation, rootElement, readSchema);
+		this.resolver = resolver;
+	}
+
+	private static @Nullable Type determineWriteType(URL xsdLocation, String rootElement) throws IOException {
+		if (xsdLocation == null || rootElement == null) {
+			return null;
+		}
+		XsdAnalyzer xsdAnalyzer = new XsdAnalyzer(xsdLocation);
+		return xsdAnalyzer.typeOf(rootElement);
+	}
+
+	@Override
+	protected ValueResolver getResolver() {
+		return resolver != null ? resolver : super.getResolver();
 	}
 
 	@Override
@@ -161,15 +177,6 @@ public class XmlAsAvroParser extends AsAvroParserBase<Type> {
 				(w, r) -> new ScalarValueResolver(FixedType.BINARY_BASE64::parse)));
 
 		return resolveRules;
-	}
-
-	private ValueResolver createResolver(URL xsdLocation, String rootElement, Schema readSchema) throws IOException {
-		if (xsdLocation == null) {
-			return createResolver(readSchema);
-		}
-		XsdAnalyzer xsdAnalyzer = new XsdAnalyzer(xsdLocation);
-		Type writeType = xsdAnalyzer.typeOf(rootElement);
-		return createResolver(writeType, readSchema);
 	}
 
 	protected ValueResolver createResolver(Type writeType, Schema readSchema) {
@@ -277,7 +284,7 @@ public class XmlAsAvroParser extends AsAvroParserBase<Type> {
 	 * @throws SAXException when the XML cannot be parsed
 	 */
 	public <T> T parse(InputSource source) throws IOException, SAXException {
-		XmlRecordHandler handler = new XmlRecordHandler(resolver);
+		XmlRecordHandler handler = new XmlRecordHandler(getResolver());
 		parser.parse(source, new SimpleContentAdapter(handler));
 		return handler.getValue();
 	}

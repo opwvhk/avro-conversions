@@ -45,10 +45,10 @@ import static opwvhk.avro.util.Utils.require;
  * types is something other than a single type (optionally with null).</p>
  */
 public class SchemaAnalyzer {
-    /**
-     * Logger for this class.
-     */
-    private static final Logger LOGGER = LoggerFactory.getLogger(SchemaAnalyzer.class);
+	/**
+	 * Logger for this class.
+	 */
+	private static final Logger LOGGER = LoggerFactory.getLogger(SchemaAnalyzer.class);
 
     private static final Pattern MATCH_NAME_IN_REFERENCE = Pattern.compile(
             ".*#/(?:\\$defs|definitions).*?/(\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*)" +
@@ -72,9 +72,8 @@ public class SchemaAnalyzer {
      *
      * @param jsonSchemaLocation the location of a JSON schema
      * @return an equivalent Avro schema
-     * @throws GenerationException when the JSON schema cannot be analysed
      */
-    public Schema parseJsonSchema(URI jsonSchemaLocation) throws GenerationException {
+    public Schema parseJsonSchema(URI jsonSchemaLocation) {
         SchemaProperties schemaProperties = parseJsonProperties(jsonSchemaLocation);
         IdentityHashMap<SchemaProperties, Schema> seenResults = new IdentityHashMap<>();
         return asAvroSchema(schemaProperties, seenResults);
@@ -123,12 +122,17 @@ public class SchemaAnalyzer {
                         parsedDefault = optionalField ? Schema.Field.NULL_DEFAULT_VALUE : null;
                     } else {
                         // Assume a scalar value
-                        ValueResolver resolver = new AsAvroParserBase<>(GenericData.get()) {
+                        ValueResolver resolver = new AsAvroParserBase<>(GenericData.get(), fieldProperties, fieldSchema) {
                             @Override
-                            protected ValueResolver createResolver(Schema readSchema) {
-                                return super.createResolver(readSchema);
+                            protected ValueResolver createResolver(SchemaProperties ignored, Schema readSchema) {
+                                return super.createResolver(null, readSchema);
                             }
-                        }.createResolver(fieldSchema);
+
+	                        @Override
+	                        public ValueResolver getResolver() {
+		                        return super.getResolver();
+	                        }
+                        }.getResolver();
                         parsedDefault = resolver.complete(resolver.addContent(resolver.createCollector(), defaultValue));
                     }
                     if (optionalField) {
@@ -223,7 +227,7 @@ public class SchemaAnalyzer {
      * @throws AnalysisFailure when the JSON schema cannot be analysed
      */
     public SchemaProperties parseJsonProperties(URI jsonSchemaLocation) throws AnalysisFailure {
-	    net.jimblackler.jsonschemafriend.Schema schema = null;
+	    net.jimblackler.jsonschemafriend.Schema schema;
 	    try {
 		    // Load/parse the schema.
 		    schema = schemaStore.loadSchema(jsonSchemaLocation, validator);

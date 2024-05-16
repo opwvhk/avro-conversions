@@ -139,7 +139,7 @@ public class JsonAsAvroParser extends AsAvroParserBase<SchemaProperties> {
 	}
 
 	private JsonAsAvroParser(GenericData model, SchemaProperties schemaProperties, Schema readSchema, boolean validateInput) {
-		super(model);
+		super(model, schemaProperties, readSchema);
 		resolver = createResolver(schemaProperties, readSchema);
 		mapper = new ObjectMapper();
 		if (validateInput) {
@@ -306,7 +306,7 @@ public class JsonAsAvroParser extends AsAvroParserBase<SchemaProperties> {
 						if (collectingResolver.isCollectingRecord()) {
 							parseStack.push(noopResolver);
 						} else {
-							JsonLocation location = getTokenLocation();
+							JsonLocation location = currentTokenLocation();
 							throw new IllegalStateException("Did not expect an object at %d:%d".formatted(location.getLineNr(), location.getColumnNr()));
 						}
 						break;
@@ -314,7 +314,7 @@ public class JsonAsAvroParser extends AsAvroParserBase<SchemaProperties> {
 						if (collectingResolver.isCollectingArray()) {
 							parseStack.push(collectingResolver.resolve("value")); // Any value will do
 						} else {
-							JsonLocation location = getTokenLocation();
+							JsonLocation location = currentTokenLocation();
 							throw new IllegalStateException("Did not expect an array at %d:%d".formatted(location.getLineNr(), location.getColumnNr()));
 						}
 						break;

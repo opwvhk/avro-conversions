@@ -52,7 +52,7 @@ class AsAvroParserBaseTest {
                     {"name": "choice", "type": ["null", {"type": "enum", "name": "Answer", "symbols": ["maybe", "yes", "no"], "default": "maybe"}], "default": null}
                 ]}
                 """);
-        ValueResolver resolver = new AsAvroParserBase<>(GenericData.get(), ZoneOffset.ofHours(0)) {}.createResolver(schema);
+        ValueResolver resolver = new AsAvroParserBase<>(GenericData.get(), null, schema, ZoneOffset.ofHours(0)) {}.getResolver();
         Object object = resolver.createCollector();
         object = resolveScalar(resolver, object, "bool", "true");
         object = resolveScalar(resolver, object, "shortInt", "42");
@@ -116,23 +116,19 @@ class AsAvroParserBaseTest {
     @Test
     void testFailuresForUnmatchedBinaryData() {
         Schema bytesSchema = Schema.create(Schema.Type.BYTES);
-        AsAvroParserBase<Object> parserBase = new AsAvroParserBase<>(GenericData.get()) {};
-
-        assertThatThrownBy(() -> parserBase.createResolver(bytesSchema)).isInstanceOf(ResolvingFailure.class);
+        assertThatThrownBy(() -> new AsAvroParserBase<>(GenericData.get(), null, bytesSchema) {}).isInstanceOf(ResolvingFailure.class);
     }
 
     @Test
     void testParsingInvalidEnum() {
-        AsAvroParserBase<?> parserBase = new AsAvroParserBase<>(GenericData.get()) {};
-
         Schema enumWithDefault = Schema.createEnum("choice", null, null, List.of("maybe", "yes", "no"), "maybe");
-        ValueResolver res1 = parserBase.createResolver(enumWithDefault);
+        ValueResolver res1 = new AsAvroParserBase<>(GenericData.get(), null, enumWithDefault) {}.getResolver();
         Object result = res1.complete(res1.addContent(res1.createCollector(), "invalid"));
         assertThat(result).isInstanceOf(GenericData.EnumSymbol.class);
         assertThat(result.toString()).isEqualTo("maybe");
 
         Schema enumWithoutDefault = Schema.createEnum("choice", null, null, List.of("maybe", "yes", "no"));
-        ValueResolver res2 = parserBase.createResolver(enumWithoutDefault);
+        ValueResolver res2 = new AsAvroParserBase<>(GenericData.get(), null, enumWithoutDefault) {}.getResolver();
         assertThatThrownBy(() -> res2.complete(res2.addContent(res2.createCollector(), "invalid"))).isInstanceOf(NullPointerException.class);
     }
 
