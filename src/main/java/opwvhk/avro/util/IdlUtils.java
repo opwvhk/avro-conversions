@@ -32,6 +32,7 @@ import static java.util.Objects.requireNonNull;
 /**
  * Utility class to write IDL protocols, a more readable format than JSON for Avro schemas.
  */
+// TODO: remove with switch to Aro 1.12.0
 public final class IdlUtils {
 	static final JsonFactory SCHEMA_FACTORY;
 	private static final Function<Field, JsonNode> DEFAULT_VALUE;
