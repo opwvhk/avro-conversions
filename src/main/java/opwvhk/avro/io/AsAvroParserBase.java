@@ -175,8 +175,9 @@ public abstract class AsAvroParserBase<WriteSchema> {
 	 * @param model       the model to create records and enum symbols with
 	 * @param writeSchema the write schema to parse
 	 * @param readSchema  the read schema to parse into
-	 * @see AsAvroParserBase#AsAvroParserBase(GenericData, WriteSchema, Schema, Set<Schema.Field>, ZoneId)
+	 * @see #AsAvroParserBase(GenericData, WriteSchema, Schema, Set<Schema.Field>, ZoneId)
 	 */
+	@SuppressWarnings({"JavadocDeclaration"}) // Bug: marks generics as illegal, but current javadoc tool requires it
 	protected AsAvroParserBase(GenericData model, WriteSchema writeSchema, Schema readSchema) {
 		this(model, writeSchema, readSchema, Set.of(), UTC);
 	}
@@ -190,6 +191,7 @@ public abstract class AsAvroParserBase<WriteSchema> {
 	 * @param fieldsAllowedMissing fields in the read schema that are allowed to be missing, even when this yields invalid records
 	 * @see #AsAvroParserBase(GenericData, WriteSchema, Schema, Set<Schema.Field>, ZoneId)
 	 */
+	@SuppressWarnings({"UnnecessaryJavaDocLink", "JavadocDeclaration"}) // Bug: marks generics as illegal, but current javadoc tool requires it
 	protected AsAvroParserBase(GenericData model, WriteSchema writeSchema, Schema readSchema, Set<Schema.Field> fieldsAllowedMissing) {
 		this(model, writeSchema, readSchema, fieldsAllowedMissing, UTC);
 	}
@@ -198,10 +200,9 @@ public abstract class AsAvroParserBase<WriteSchema> {
 	 * <p>Create an {@code AsAvroParserBase}, using the specified model, schemas and default time zone.</p>
 	 *
 	 * <p>
-	 * You can specify fields from the read schema that are allowed to have missing values regardless of what the read schema says. If there is a mismatch
-	 * between the write and read schemata,	where the read schema requires a value but the write schema does not guarantee there is one, this usually
-	 * leads to an exception. You can whitelist fields for which this should not happen. <strong>Note:</strong> this can lead to invalid records, so you
-	 * must take care to fill in the missing values before the records are serialized!
+	 * You can specify fields from the read schema that are allowed to have missing values regardless of what the read schema says. If the write schema does
+	 * not guarantee a value that the read schema requires, this normally leads to an exception. You can whitelist fields for which this should not happen.
+	 * <strong>Note:</strong> this can lead to invalid records, so you must take care to fill in the missing values before the records are serialized!
 	 * </p>
 	 *
 	 * <p>
