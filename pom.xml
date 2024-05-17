@@ -207,9 +207,6 @@
 					<excludes>
 						<!-- Copy of a class in xmlschema-walker with a fix for XMLSCHEMA-64 applied -->
 						<exclude>**/FixedXmlSchemaWalker.*</exclude>
-						<!-- Old and PoC code -->
-						<exclude>**/*Test*</exclude>
-						<exclude>**/*Old*</exclude>
 					</excludes>
 				</configuration>
 			</plugin>
