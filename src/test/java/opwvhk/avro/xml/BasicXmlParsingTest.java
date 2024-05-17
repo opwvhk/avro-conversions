@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
 
 import opwvhk.avro.io.ValueResolver;
 import org.apache.avro.Schema;
@@ -24,15 +25,15 @@ class BasicXmlParsingTest {
     void setUp() throws IOException {
         URL payloadXsd = requireNonNull(getClass().getResource("payload.xsd"));
 		Schema dummySchema = Schema.create(Schema.Type.STRING);
-        validatingParser = new XmlAsAvroParser(GenericData.get(), payloadXsd, null, true, dummySchema, new PayloadDebugHandler());
-	    lenientParser = new XmlAsAvroParser(GenericData.get(), payloadXsd, null, false, dummySchema, new PayloadDebugHandler());
+        validatingParser = new XmlAsAvroParser(GenericData.get(), payloadXsd, null, true, dummySchema, Set.of(), new PayloadDebugHandler());
+	    lenientParser = new XmlAsAvroParser(GenericData.get(), payloadXsd, null, false, dummySchema, Set.of(), new PayloadDebugHandler());
     }
 
     @Test
     void testValidXsdIsRequired() {
         URL notAnXsd = requireNonNull(getClass().getResource("textPayload.xml"));
 	    Schema dummySchema = Schema.create(Schema.Type.STRING);
-        assertThatThrownBy(() -> new XmlAsAvroParser(GenericData.get(), notAnXsd, null, true, dummySchema, new PayloadDebugHandler())).isInstanceOf(
+        assertThatThrownBy(() -> new XmlAsAvroParser(GenericData.get(), notAnXsd, null, true, dummySchema, Set.of(), new PayloadDebugHandler())).isInstanceOf(
                 IllegalStateException.class);
     }
 

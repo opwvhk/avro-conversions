@@ -139,7 +139,7 @@ public class JsonAsAvroParser extends AsAvroParserBase<SchemaProperties> {
 	}
 
 	private JsonAsAvroParser(GenericData model, SchemaProperties schemaProperties, Schema readSchema, boolean validateInput) {
-		super(model, schemaProperties, readSchema);
+		super(model, schemaProperties, readSchema, Set.of());
 		resolver = createResolver(schemaProperties, readSchema);
 		mapper = new ObjectMapper();
 		if (validateInput) {

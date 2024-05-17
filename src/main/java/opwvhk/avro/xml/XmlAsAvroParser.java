@@ -86,7 +86,7 @@ public class XmlAsAvroParser extends AsAvroParserBase<Type> {
 	 * @throws IOException when the XSD cannot be read
 	 */
 	public XmlAsAvroParser(URL xsdLocation, String rootElement, Schema readSchema, GenericData model) throws IOException {
-		this(xsdLocation, rootElement, true, readSchema, model);
+		this(xsdLocation, rootElement, true, readSchema, Set.of(), model);
 	}
 
 	/**
@@ -99,15 +99,17 @@ public class XmlAsAvroParser extends AsAvroParserBase<Type> {
 	 * as long as it fits the result. Be aware though, that parsing invalid data is likely to result in invalid records. These will cause unspecified problems
 	 * when used.</p>
 	 *
-	 * @param xsdLocation the XSD defining the data to read
-	 * @param rootElement the root element that will be read
-	 * @param validate    whether the XML parser should validate XML while parsing
-	 * @param readSchema  the schema of the resulting records
-	 * @param model       the model to create records
+	 * @param xsdLocation          the XSD defining the data to read
+	 * @param rootElement          the root element that will be read
+	 * @param validate             whether the XML parser should validate XML while parsing
+	 * @param readSchema           the schema of the resulting records
+	 * @param fieldsAllowedMissing fields in the read schema that are allowed to be missing, even when this yields invalid records
+	 * @param model                the model to create records
 	 * @throws IOException when the XSD cannot be read
 	 */
-	public XmlAsAvroParser(URL xsdLocation, String rootElement, boolean validate, Schema readSchema, GenericData model) throws IOException {
-		this(model, xsdLocation, rootElement, validate, readSchema, null);
+	public XmlAsAvroParser(URL xsdLocation, String rootElement, boolean validate, Schema readSchema, Set<Schema.Field> fieldsAllowedMissing, GenericData model)
+			throws IOException {
+		this(model, xsdLocation, rootElement, validate, readSchema, fieldsAllowedMissing, null);
 	}
 
 	/**
@@ -121,11 +123,12 @@ public class XmlAsAvroParser extends AsAvroParserBase<Type> {
 	 * @param model      the model to create records
 	 */
 	public XmlAsAvroParser(Schema readSchema, GenericData model) throws IOException {
-		this(model, null, null, false, readSchema, null);
+		this(model, null, null, false, readSchema, Set.of(), null);
 	}
 
-	XmlAsAvroParser(GenericData model, URL xsdLocation, String rootElement, boolean validate, Schema readSchema, ValueResolver resolver) throws IOException {
-		super(model, determineWriteType(xsdLocation, rootElement), readSchema);
+	XmlAsAvroParser(GenericData model, URL xsdLocation, String rootElement, boolean validate, Schema readSchema, Set<Schema.Field> fieldsAllowedMissing,
+	                ValueResolver resolver) throws IOException {
+		super(model, determineWriteType(xsdLocation, rootElement), readSchema, fieldsAllowedMissing);
 		parser = createParser(validate ? xsdLocation : null);
 		this.resolver = resolver;
 	}

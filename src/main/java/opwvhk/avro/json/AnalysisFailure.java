@@ -24,7 +24,6 @@ import java.net.URI;
 
 /**
  * Runtime exception for analysis failures. Used to indicate a failure in analysing a data schema.
- * {@link opwvhk.avro.json.JsonAsAvroParser#JsonAsAvroParser(URI, boolean, Schema, GenericData )}
  */
 public class AnalysisFailure extends RuntimeException {
 	/**

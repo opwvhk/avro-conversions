@@ -155,6 +155,7 @@ public abstract class AsAvroParserBase<WriteSchema> {
 	}
 
 	protected final GenericData model;
+	private final Set<Schema.Field> fieldsAllowedMissing;
 	/**
 	 * Resolver for ISO8601 times (format {@code HH:mm:ss[,SSS][V]}). When a timezone is not specified, the default timezone will be used. Note that times are
 	 * parsed up to nanosecond level, even though many parsed formats allow any precision.
@@ -169,32 +170,58 @@ public abstract class AsAvroParserBase<WriteSchema> {
 	private final ValueResolver resolver;
 
 	/**
-	 * Create an {@code AsAvroParserBase}, using the specified model and the {@code UTC} time zone.
+	 * Create an {@code AsAvroParserBase}, using the specified model, write and read schemata, and the {@code UTC} time zone as default.
 	 *
 	 * @param model       the model to create records and enum symbols with
 	 * @param writeSchema the write schema to parse
 	 * @param readSchema  the read schema to parse into
-	 * @see #AsAvroParserBase(GenericData, WriteSchema, Schema, ZoneId)
+	 * @see #AsAvroParserBase(GenericData, WriteSchema, Schema, Set, ZoneId)
 	 */
 	protected AsAvroParserBase(GenericData model, WriteSchema writeSchema, Schema readSchema) {
-		this(model, writeSchema, readSchema, UTC);
+		this(model, writeSchema, readSchema, Set.of(), UTC);
 	}
 
 	/**
-	 * <p>Create an {@code AsAvroParserBase}, using the specified model and default time zone.</p>
+	 * <p>Create an {@code AsAvroParserBase}, using the specified model, write and read schemata, and the {@code UTC} time zone as default.</p>
 	 *
-	 * <p>The time zone will be used when parsing times and timestamps, if the parsed string does not contain a timestamp.</p>
-	 *
-	 * <p>NOTE: if the timezone is not an offset, times will be parsed using the offset for today (the day this instance is created).</p>
-	 *
-	 * @param model           the model to create records and enum symbols with
-	 * @param defaultTimezone the default time zone to use when parsing times and timestamps
+	 * @param model                the model to create records and enum symbols with
+	 * @param writeSchema          the write schema to parse
+	 * @param readSchema           the read schema to parse into
+	 * @param fieldsAllowedMissing fields in the read schema that are allowed to be missing, even when this yields invalid records
+	 * @see #AsAvroParserBase(GenericData, WriteSchema, Schema, Set, ZoneId)
 	 */
-	protected AsAvroParserBase(GenericData model, WriteSchema writeSchema, Schema readSchema, ZoneId defaultTimezone) {
+	protected AsAvroParserBase(GenericData model, WriteSchema writeSchema, Schema readSchema, Set<Schema.Field> fieldsAllowedMissing) {
+		this(model, writeSchema, readSchema, fieldsAllowedMissing, UTC);
+	}
+
+	/**
+	 * <p>Create an {@code AsAvroParserBase}, using the specified model, schemas and default time zone.</p>
+	 *
+	 * <p>
+	 * You can specify fields from the read schema that are allowed to have missing values regardless of what the read schema says. If there is a mismatch
+	 * between the write and read schemata,	where the read schema requires a value but the write schema does not guarantee there is one, this usually
+	 * leads to an exception. You can whitelist fields for which this should not happen. <strong>Note:</strong> this can lead to invalid records, so you
+	 * must take care to fill in the missing values before the records are serialized!
+	 * </p>
+	 *
+	 * <p>
+	 * The fallback time zone will be used when parsing times and timestamps that do not contain a timezone. Because times do not carry date information,
+	 * daylight saving cannot be determined. To solve this, they will be parsed as if they're today (the day this parser is created).
+	 * </p>
+	 *
+	 * @param model                the model to create records and enum symbols with
+	 * @param writeSchema          the write schema to parse
+	 * @param readSchema           the read schema to parse into
+	 * @param fieldsAllowedMissing fields in the read schema that are allowed to be missing, even when this yields invalid records
+	 * @param fallbackTimezone     the fallback time zone to use when parsing times and timestamps
+	 */
+	protected AsAvroParserBase(GenericData model, WriteSchema writeSchema, Schema readSchema, Set<Schema.Field> fieldsAllowedMissing,
+                               ZoneId fallbackTimezone) {
 		this.model = model;
-		DateTimeFormatter timeFormat = ZONE_LESS_TIME_FORMATTER.withZone(requireNonNull(asOffset(defaultTimezone, Clock.systemDefaultZone())));
+		this.fieldsAllowedMissing = fieldsAllowedMissing;
+		DateTimeFormatter timeFormat = ZONE_LESS_TIME_FORMATTER.withZone(asOffset(fallbackTimezone, Clock.systemDefaultZone()));
 		offsetTimeResolver = new ScalarValueResolver(text -> OffsetTime.parse(text, timeFormat));
-		DateTimeFormatter dateTimeFormat = ZONE_LESS_DATE_TIME_FORMATTER.withZone(defaultTimezone);
+		DateTimeFormatter dateTimeFormat = ZONE_LESS_DATE_TIME_FORMATTER.withZone(fallbackTimezone);
 		instantResolver = new ScalarValueResolver(text -> ZonedDateTime.parse(text, dateTimeFormat).toInstant());
 
 		ensureConversionFor(LogicalTypes.decimal(1, 1), BigDecimal.class, Conversions.DecimalConversion::new);
@@ -237,8 +264,8 @@ public abstract class AsAvroParserBase<WriteSchema> {
 	protected Set<Schema.Field> determineRequiredFields(Schema recordSchema) {
 		Set<Schema.Field> unhandledButRequiredFields = new HashSet<>();
 		for (Schema.Field readField : recordSchema.getFields()) {
-			if (!readField.hasDefaultValue()) {
-				unhandledButRequiredFields.add((readField));
+			if (!fieldsAllowedMissing.contains(readField) && !readField.hasDefaultValue()) {
+				unhandledButRequiredFields.add(readField);
 			}
 		}
 		return unhandledButRequiredFields;
@@ -363,7 +390,7 @@ public abstract class AsAvroParserBase<WriteSchema> {
 	 * <ul>
 	 *
 	 * <li>There is no early detection of incompatible types; exceptions due to incompatibilities will happen (at best) while parsing, but can occur later
-     * .</li>
+	 * .</li>
 	 *
 	 * <li>
 	 *     Specifically, it is impossible to determine if required fields may be missing. This will not cause problems when parsing, but will cause problems

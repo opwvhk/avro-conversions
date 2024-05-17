@@ -5,11 +5,13 @@ import java.io.IOException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Set;
 
 import opwvhk.avro.ResolvingFailure;
 import opwvhk.avro.io.ValueResolver;
 import opwvhk.avro.xml.datamodel.DecimalType;
 import opwvhk.avro.xml.datamodel.FixedType;
+import opwvhk.avro.xml.datamodel.StructType;
 import opwvhk.avro.xml.datamodel.Type;
 import org.apache.avro.LogicalTypes;
 import org.apache.avro.Schema;
@@ -161,7 +163,7 @@ class XmlResolvingTest {
     void testResolvingAndParsingWithoutNamespace() throws IOException, SAXException {
         URL xsdLocation = requireNonNull(getClass().getResource("resolvingTest.xsd"));
         Schema readSchema = new Schema.Parser().parse(getClass().getResourceAsStream("resolvingTest.avsc"));
-        XmlAsAvroParser parser = new XmlAsAvroParser(xsdLocation, "outer", false, readSchema, MODEL);
+        XmlAsAvroParser parser = new XmlAsAvroParser(xsdLocation, "outer", false, readSchema, Set.of(), MODEL);
 
         GenericRecord resultMinimal = parser.parse(requireNonNull(getClass().getResource("resolvingTestMinimalWithoutNamespace.xml")));
         assertThat(toJson(resultMinimal)).isEqualToNormalizingWhitespace("""
@@ -198,7 +200,7 @@ class XmlResolvingTest {
     void testFailuresForNamespaceRelatedErrors() throws IOException {
         URL xsdLocation = requireNonNull(getClass().getResource("resolvingTest.xsd"));
         Schema readSchema = new Schema.Parser().parse(getClass().getResourceAsStream("resolvingTest.avsc"));
-        XmlAsAvroParser parser = new XmlAsAvroParser(xsdLocation, "outer", true, readSchema, MODEL);
+        XmlAsAvroParser parser = new XmlAsAvroParser(xsdLocation, "outer", true, readSchema, Set.of(), MODEL);
 
         InputSource inputSource1 = new InputSource();
         inputSource1.setSystemId(requireNonNull(getClass().getResource("resolvingTestMinimalWithoutNamespace.xml")).toExternalForm());
@@ -321,21 +323,24 @@ class XmlResolvingTest {
     }
 
     @Test
-    void testAllRequiredFieldsMustBeResolved() {
-        assertThatSchemasFailToResolve(
-                struct("read").withFields(
-                        required("name", FixedType.STRING),
-                        optional("description", FixedType.STRING)
-                ),
-                struct("write").withFields(required("different", FixedType.STRING))
-        );
-        assertThatSchemasFailToResolve(
-                struct("read").withFields(
-                        required("name", FixedType.STRING),
-                        optional("description", FixedType.STRING)
-                ),
-                struct("write").withFields(required("name", FixedType.BINARY_BASE64))
-        );
+    void testAllRequiredFieldsMustBeResolved() throws IOException {
+	    StructType readType = struct("read").withFields(
+			    required("name", FixedType.STRING),
+			    optional("description", FixedType.STRING)
+	    );
+	    StructType writeType = struct("write").withFields(required("description", FixedType.STRING));
+
+	    assertThatSchemasFailToResolve(readType, writeType);
+	    assertThatSchemasFailToResolve(readType, struct("write").withFields(required("different", FixedType.STRING)));
+
+	    Schema readSchema = readType.toSchema();
+		Schema.Field nameField = readSchema.getField("name");
+
+	    URL xsdLocation = requireNonNull(getClass().getResource("resolvingTest.xsd"));
+	    Schema dummySchema = Schema.create(Schema.Type.STRING);
+	    XmlAsAvroParser parser = new XmlAsAvroParser(GenericData.get(), xsdLocation, null, false, dummySchema, Set.of(nameField), ValueResolver.NOOP);
+	    ValueResolver resolver = parser.createResolver(writeType, readSchema);
+		assertThat(resolver).isNotNull();
     }
 
     @Test
@@ -422,10 +427,14 @@ class XmlResolvingTest {
     }
 
     private void assertThatSchemasFailToResolve(Schema readSchema, Type writeType) {
+	    assertThatSchemasFailToResolve(readSchema, Set.of(), writeType);
+    }
+
+    private void assertThatSchemasFailToResolve(Schema readSchema, Set<Schema.Field> fieldsAllowedMissing, Type writeType) {
         URL xsdLocation = requireNonNull(getClass().getResource("resolvingTest.xsd"));
 	    assertThatThrownBy(() -> {
 				    Schema dummySchema = Schema.create(Schema.Type.STRING);
-				    new XmlAsAvroParser(GenericData.get(), xsdLocation, null, false, dummySchema, ValueResolver.NOOP).createResolver(writeType, readSchema);
+				    new XmlAsAvroParser(GenericData.get(), xsdLocation, null, false, dummySchema, fieldsAllowedMissing, ValueResolver.NOOP).createResolver(writeType, readSchema);
 			    }
 	    ).isInstanceOf(ResolvingFailure.class);
     }
