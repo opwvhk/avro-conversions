@@ -106,25 +106,26 @@ public class JsonAsAvroParser extends AsAvroParserBase<SchemaProperties> {
 	 * @param model              the Avro model used to create records
 	 */
 	public JsonAsAvroParser(URI jsonSchemaLocation, Schema readSchema, GenericData model) {
-		this(jsonSchemaLocation, true, readSchema, model);
+		this(jsonSchemaLocation, true, readSchema, Set.of(), model);
 	}
 
 	/**
 	 * Create a JSON parser using only the specified Avro schema. The parse result will match the schema, but can be invalid if {@code validateInput} is set to
 	 * {@code false}.
 	 *
-	 * @param jsonSchemaLocation the location of the JSON (write) schema (schema of the JSON data to parse)
-	 * @param validateInput      if {@code true}, validate the input when parsing
-	 * @param readSchema         the read schema (schema of the resulting records)
-	 * @param model              the Avro model used to create records
+	 * @param jsonSchemaLocation   the location of the JSON (write) schema (schema of the JSON data to parse)
+	 * @param validateInput        if {@code true}, validate the input when parsing
+	 * @param readSchema           the read schema (schema of the resulting records)
+	 * @param fieldsAllowedMissing fields in the read schema that are allowed to be missing, even when this yields invalid records
+	 * @param model                the Avro model used to create records
 	 */
-	public JsonAsAvroParser(URI jsonSchemaLocation, boolean validateInput, Schema readSchema, GenericData model) {
-		this(model, analyseJsonSchema(jsonSchemaLocation), readSchema, validateInput);
+	public JsonAsAvroParser(URI jsonSchemaLocation, boolean validateInput, Schema readSchema, Set<Schema.Field> fieldsAllowedMissing, GenericData model) {
+		this(model, analyseJsonSchema(jsonSchemaLocation), readSchema, fieldsAllowedMissing, validateInput);
 	}
 
 	private static SchemaProperties analyseJsonSchema(URI jsonSchemaLocation) {
 		SchemaAnalyzer schemaAnalyzer = new SchemaAnalyzer();
-        return schemaAnalyzer.parseJsonProperties(jsonSchemaLocation);
+		return schemaAnalyzer.parseJsonProperties(jsonSchemaLocation);
 	}
 
 	/**
@@ -135,11 +136,11 @@ public class JsonAsAvroParser extends AsAvroParserBase<SchemaProperties> {
 	 * @param model      the Avro model used to create records
 	 */
 	public JsonAsAvroParser(Schema readSchema, GenericData model) {
-		this(model, null, readSchema, false);
+		this(model, null, readSchema, Set.of(), false);
 	}
 
-	private JsonAsAvroParser(GenericData model, SchemaProperties schemaProperties, Schema readSchema, boolean validateInput) {
-		super(model, schemaProperties, readSchema, Set.of());
+	private JsonAsAvroParser(GenericData model, SchemaProperties schemaProperties, Schema readSchema, Set<Schema.Field> fieldsAllowedMissing, boolean validateInput) {
+		super(model, schemaProperties, readSchema, fieldsAllowedMissing);
 		resolver = createResolver(schemaProperties, readSchema);
 		mapper = new ObjectMapper();
 		if (validateInput) {

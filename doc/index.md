@@ -15,26 +15,36 @@ This document describes the various functionality in more detail.
 Parsing
 -------
 
-The main day-to-day use of this library is to parse records in various formats into Avro. As such,
-you won't find a converter for (for example) CSV files: these are container files with multiple
-records.
+The main day-to-day use of this library is to parse single records in various formats into Avro. As
+a result, you won't find a converter for (for example) CSV files: these are container files with
+multiple records.
 
 The following formats can be converted to Avro:
 
-| Format             | Parser constructor                                                                           |
-|--------------------|----------------------------------------------------------------------------------------------|
-| JSON (with schema) | `opwvhk.avro.json.JsonAsAvroParser#JsonAsAvroParser(URI, boolean, Schema, GenericData)`      |
-| JSON (unvalidated) | `opwvhk.avro.json.JsonAsAvroParser#JsonAsAvroParser(Schema, GenericData)`                    |
-| XML (with XSD)     | `opwvhk.avro.xml.XmlAsAvroParser#XmlAsAvroParser(URL, String, boolean, Schema, GenericData)` |
-| XML (unvalidated)  | `opwvhk.avro.xml.XmlAsAvroParser#XmlAsAvroParser(Schema, GenericData)`                       |
+| Format | Parser class                        |
+|--------|-------------------------------------|
+| JSON   | `opwvhk.avro.json.JsonAsAvroParser` |
+| XML    | `opwvhk.avro.xml.XmlAsAvroParser`   | 
 
-Parsers all use both a write schema and a read schema, just like Avro does. The write schema is used
-to validate the input, and the read schema is used to describe the result.
+Parsers require a read schema and an Avro model, determining the Avro record type to parse data into
+and how to create the these records, respectively. Additionally, they support a format dependent
+"write schema" (i.e., JSON schema, XSD, &hellip;), which is used for schema validation, and can be
+used for input validation.
+
+### Schema evolution
 
 When parsing/converting data, the conversion can do implicit conversions that "fit". This includes
 like widening conversions (like int→long), lossy conversions (like decimal→float or anything→string)
 and parsing dates. With a write schema, binary conversions (from hexadecimal/base64 encoded text)
 are also supported.
+
+In addition, the read schema is used for schema evolution:
+
+* removing fields: fields that are not present in the read schema will be ignored
+* adding fields: fields that are not present in the input will be filled with the default values
+  from the read schema
+* renaming fields: field aliases are also used to match incoming data, effectively renaming these
+  fields
 
 ### Source schema optional but encouraged
 
@@ -43,6 +53,8 @@ However, this is discouraged. The reason is that significant functionality is mi
 
 * No check on required fields:
   The parsers will happily generate incomplete records, which **will** break when using them.
+* No check on compatibility:
+  Incompatible data cannot be detected, which **will** break the parsing process.
 * No input validation:
   Without a schema, a parser cannot validate input. This can cause unpredictable failures later on.
 

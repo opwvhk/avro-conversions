@@ -390,8 +390,9 @@ public abstract class AsAvroParserBase<WriteSchema> {
 	 *
 	 * <ul>
 	 *
-	 * <li>There is no early detection of incompatible types; exceptions due to incompatibilities will happen (at best) while parsing, but can occur later
-	 * .</li>
+	 * <li>
+	 *     There is no early detection of incompatible types; exceptions due to incompatibilities will happen (at best) while parsing, but can occur later.
+	 * </li>
 	 *
 	 * <li>
 	 *     Specifically, it is impossible to determine if required fields may be missing. This will not cause problems when parsing, but will cause problems
