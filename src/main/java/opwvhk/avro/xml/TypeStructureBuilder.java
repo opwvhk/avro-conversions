@@ -1,13 +1,13 @@
 package opwvhk.avro.xml;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import opwvhk.avro.xml.datamodel.FixedType;
 import opwvhk.avro.xml.datamodel.ScalarType;
 import opwvhk.avro.xml.datamodel.StructType;
 import opwvhk.avro.xml.datamodel.Type;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static java.util.Objects.requireNonNull;
 
@@ -116,7 +116,7 @@ class TypeStructureBuilder {
 	 * but the corresponding {@link #endElement(TypeFields) endElement(&hellip;)} may not. Even so, this method is expected to return the same
 	 * (or an equivalent) result.</p>
 	 *
-	 * @param typeData  data describing the type (what content to expect inside the tag)
+	 * @param typeData data describing the type (what content to expect inside the tag)
 	 * @return a schema describing the element (type)
 	 */
 	Type repeatedElement(TypeData typeData) {
@@ -131,8 +131,8 @@ class TypeStructureBuilder {
 	 * {@link #repeatedElement(TypeData)} repeatedElement(&hellip;)} is called.</p>
 	 *
 	 * @param parentTypeFields the fields for the parent element/type
-	 * @param fieldData          data describing the field (an XML tag)
-	 * @param elementResult      the schema for the (type)
+	 * @param fieldData        data describing the field (an XML tag)
+	 * @param elementResult    the schema for the (type)
 	 */
 	void element(TypeFields parentTypeFields, FieldData fieldData, Type elementResult) {
 		if (parentTypeFields.isScalarValue()) {

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <envelope>
-    <source>Bronsysteem</source>
-    <target>Bestemming</target>
-    <payload type="text">Hello World!</payload>
+	<source>Bronsysteem</source>
+	<target>Bestemming</target>
+	<payload type="text">Hello World!</payload>
 </envelope>

@@ -1,11 +1,11 @@
 package opwvhk.avro.util;
 
+import org.junit.jupiter.api.Test;
+
 import java.util.Base64;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
-
-import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -13,13 +13,13 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class UtilsTest {
 
 	@Test
-    void digest() {
+	void digest() {
 		assertThat(Base64.getEncoder().encodeToString(Utils.digest("md5").digest(new byte[0]))).isEqualTo("1B2M2Y8AsgTpgAmY7PhCfg==");
 		assertThatThrownBy(() -> Utils.digest("foobar")).isInstanceOf(IllegalArgumentException.class).hasMessage("Unknown algorithm");
 	}
 
 	@Test
-    void findFirstNonNullParameter() {
+	void findFirstNonNullParameter() {
 		assertThat(Utils.first(1, null, null)).isEqualTo(1);
 		assertThat(Utils.first(null, 2, null)).isEqualTo(2);
 		assertThat(Utils.first(null, null, 3)).isEqualTo(3);
@@ -29,7 +29,7 @@ class UtilsTest {
 	}
 
 	@Test
-    void truncatingText() {
+	void truncatingText() {
 		assertThat(Utils.truncate(10, null)).isNull();
 
 		assertThat(Utils.truncate(30, "This is a simple sentence.")).isEqualTo("This is a simple sentence.");
@@ -38,7 +38,7 @@ class UtilsTest {
 	}
 
 	@Test
-    void testRecursiveEquality() {
+	void testRecursiveEquality() {
 		Dummy dummy1a = new Dummy("name", null);
 		Dummy dummy1b = new Dummy("name", null);
 		Dummy dummy2 = new Dummy("other", null);
@@ -75,14 +75,14 @@ class UtilsTest {
 	}
 
 	@Test
-    void testRecursionFailure() {
+	void testRecursionFailure() {
 		assertThatThrownBy(() -> Utils.nonRecursive("test", this, null, () -> {
 			throw new RuntimeException("Oops...");
 		})).isInstanceOf(RuntimeException.class).hasMessage("Oops...");
 	}
 
 	@Test
-    void testRequirementsCheckers() {
+	void testRequirementsCheckers() {
 		Utils.require(true, Objects::nonNull, "Good");
 		assertThatThrownBy(() -> Utils.require(null, Objects::nonNull, "foo")).isInstanceOf(IllegalArgumentException.class);
 

@@ -182,11 +182,11 @@ class SchemaManipulatorTest {
 				.name("field1").type("string").noDefault()
 				.name("field2").type("string").noDefault()
 				.endRecord();
-        assertThat(new SchemaManipulator(schemaWithoutNamespace).renameWithoutAliases()
-                .useSchemaNamingConvention(NamingConvention.SNAKE_CASE)
-                .useFieldNamingConvention(NamingConvention.CAMEL_CASE)
-                .finish().toString(true)
-        ).isEqualTo(schemaResultWithoutNamespace.toString(true));
+		assertThat(new SchemaManipulator(schemaWithoutNamespace).renameWithoutAliases()
+				.useSchemaNamingConvention(NamingConvention.SNAKE_CASE)
+				.useFieldNamingConvention(NamingConvention.CAMEL_CASE)
+				.finish().toString(true)
+		).isEqualTo(schemaResultWithoutNamespace.toString(true));
 
 		Schema schemaWithNamespace = SchemaBuilder.record("simple_name").namespace("somewhereInTheCode").fields()
 				.name("field_one").type("string").noDefault()
@@ -196,10 +196,10 @@ class SchemaManipulatorTest {
 				.name("fieldOne").type("string").noDefault()
 				.name("fieldTwo").type("string").noDefault()
 				.endRecord();
-        assertThat(new SchemaManipulator(schemaWithNamespace).renameWithoutAliases()
-                .useSchemaNamingConvention(NamingConvention.SNAKE_CASE, NamingConvention.PASCAL_CASE)
-                .useFieldNamingConvention(NamingConvention.CAMEL_CASE)
-                .finish().toString(true)
+		assertThat(new SchemaManipulator(schemaWithNamespace).renameWithoutAliases()
+				.useSchemaNamingConvention(NamingConvention.SNAKE_CASE, NamingConvention.PASCAL_CASE)
+				.useFieldNamingConvention(NamingConvention.CAMEL_CASE)
+				.finish().toString(true)
 		).isEqualTo(schemaResultWithNamespace.toString(true));
 	}
 
@@ -548,22 +548,22 @@ class SchemaManipulatorTest {
 				]
 			}""";
 	private static final String EXPECTED_RECURSIVE_SCHEMA_NAMING_CONVENTIONS = """
-			 {
-			 	"testCase": "SchemaManipulatorTest",
-			 	"type": "record",
-			 	"name": "RECURSIVE",
-			 	"aliases": ["recursive"],
-				"namespace": "ns",
-			 	"fields": [
-			 		{
-			 			"name": "Name",
-				     	"aliases": ["name"],
-			 			"type": "string"
-			 		}, {
-			 			"name": "droste",
-			 			"aliases": ["rabbitHole"],
-			 			"type": "RECURSIVE"
-			 		}
-			 	]
-			 }""";
+			{
+				"testCase": "SchemaManipulatorTest",
+				"type": "record",
+				"name": "RECURSIVE",
+				"aliases": ["recursive"],
+			"namespace": "ns",
+				"fields": [
+					{
+						"name": "Name",
+			     	"aliases": ["name"],
+						"type": "string"
+					}, {
+						"name": "droste",
+						"aliases": ["rabbitHole"],
+						"type": "RECURSIVE"
+					}
+				]
+			}""";
 }

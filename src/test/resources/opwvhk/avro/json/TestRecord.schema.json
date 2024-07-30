@@ -1,103 +1,127 @@
 {
-    "$schema": "http://json-schema.org/draft-07/schema#",
-    "title": "TestCase",
-    "description": "Test schema for parsing records.",
-    "properties": {
-        "bool": {
-            "type": "boolean"
-        },
-        "shortInt": {
-            "type": ["integer", "null"],
-            "$comment": "bounds are smaller than 2^31-1",
-            "minimum": -2000000000,
-            "maximum": 2000000000
-        },
-        "longInt": {
-            "type": "integer",
-            "$comment": "bounds are between 2^31-1 and 2^63-1",
-            "minimum": -9000000000,
-            "maximum": 9000000000
-        },
-        "hugeInt": {
-            "type": "integer",
-            "$comment": "bounds are larger than 2^63-1",
-            "minimum": 0,
-            "maximum": 200000000000000000000
-        },
-        "defaultInt": {
-            "type": "integer",
-	        "$comment": "no bounds, so the type defaults to LONG",
-            "default": 42
-        },
-        "singleFloat": {
-            "type": "number",
-            "$comment": "bounds have precision < 7",
-            "minimum": -999.9,
-            "maximum": 999.9
-        },
-        "doubleFloat": {
-            "type": "number",
-            "$comment": "bounds have precision >= 7 and < 16",
-            "minimum": -9999999.999,
-            "maximum": 99999.99999
-        },
-        "fixedPoint": {
-            "type": "number",
-            "minimum": -9999999999.999999,
-            "maximum": 99999999999.99999
-        },
-	    "defaultNumber": {
-		    "type": "number",
-		    "$comment": "no bounds, so the type defaults to DOUBLE",
-		    "default": 4.2
-	    },
-        "choice": {
-            "enum": ["yes", "no", "maybe"]
-        },
-        "date": {
-            "type": "string",
-            "format": "date"
-        },
-        "time": {
-            "type": "string",
-            "format": "time"
-        },
-        "timestamp": {
-            "type": "string",
-            "format": "date-time"
-        },
-        "binary": {
-            "contentEncoding": "base64"
-        },
-        "hexBytes": {
-            "contentEncoding": "base16"
-        },
-        "texts": {
-            "items": {
-                "type": "string"
-            }
-        },
-        "weirdStuff": {
-            "type": ["null", "object"],
-            "properties": {
-                "explanation": {
-                    "type": ["string", "null"],
-                    "format": "prose",
-                    "default": "Please explain why"
-                },
-                "fancy": {
-                    "type": ["null", "string"],
-                    "contentEncoding": "with-emoji"
-                },
-                "hatseflats": {
-                    "type": ["null", "string"],
-                    "$comment": "not included"
-                },
-                "rabbitHole": {
-                    "$ref": "#/properties/weirdStuff"
-                }
-            }
-        }
-    },
-    "required": ["bool", "choice", "texts", "weirdStuff"]
+	"$schema": "http://json-schema.org/draft-07/schema#",
+	"title": "TestCase",
+	"description": "Test schema for parsing records.",
+	"properties": {
+		"bool": {
+			"type": "boolean"
+		},
+		"shortInt": {
+			"type": [
+				"integer",
+				"null"
+			],
+			"$comment": "bounds are smaller than 2^31-1",
+			"minimum": -2000000000,
+			"maximum": 2000000000
+		},
+		"longInt": {
+			"type": "integer",
+			"$comment": "bounds are between 2^31-1 and 2^63-1",
+			"minimum": -9000000000,
+			"maximum": 9000000000
+		},
+		"hugeInt": {
+			"type": "integer",
+			"$comment": "bounds are larger than 2^63-1",
+			"minimum": 0,
+			"maximum": 200000000000000000000
+		},
+		"defaultInt": {
+			"type": "integer",
+			"$comment": "no bounds, so the type defaults to LONG",
+			"default": 42
+		},
+		"singleFloat": {
+			"type": "number",
+			"$comment": "bounds have precision < 7",
+			"minimum": -999.9,
+			"maximum": 999.9
+		},
+		"doubleFloat": {
+			"type": "number",
+			"$comment": "bounds have precision >= 7 and < 16",
+			"minimum": -9999999.999,
+			"maximum": 99999.99999
+		},
+		"fixedPoint": {
+			"type": "number",
+			"minimum": -9999999999.999999,
+			"maximum": 99999999999.99999
+		},
+		"defaultNumber": {
+			"type": "number",
+			"$comment": "no bounds, so the type defaults to DOUBLE",
+			"default": 4.2
+		},
+		"choice": {
+			"enum": [
+				"yes",
+				"no",
+				"maybe"
+			]
+		},
+		"date": {
+			"type": "string",
+			"format": "date"
+		},
+		"time": {
+			"type": "string",
+			"format": "time"
+		},
+		"timestamp": {
+			"type": "string",
+			"format": "date-time"
+		},
+		"binary": {
+			"contentEncoding": "base64"
+		},
+		"hexBytes": {
+			"contentEncoding": "base16"
+		},
+		"texts": {
+			"items": {
+				"type": "string"
+			}
+		},
+		"weirdStuff": {
+			"type": [
+				"null",
+				"object"
+			],
+			"properties": {
+				"explanation": {
+					"type": [
+						"string",
+						"null"
+					],
+					"format": "prose",
+					"default": "Please explain why"
+				},
+				"fancy": {
+					"type": [
+						"null",
+						"string"
+					],
+					"contentEncoding": "with-emoji"
+				},
+				"hatseflats": {
+					"type": [
+						"null",
+						"string"
+					],
+					"$comment": "not included"
+				},
+				"rabbitHole": {
+					"$ref": "#/properties/weirdStuff"
+				}
+			}
+		}
+	},
+	"required": [
+		"bool",
+		"choice",
+		"texts",
+		"weirdStuff"
+	]
 }

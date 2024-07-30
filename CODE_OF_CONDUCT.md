@@ -4,7 +4,8 @@ Code of Conduct
 Our Pledge
 ----------
 
-We pledge to act and interact in ways that contribute to an open, welcoming and healthy community. Anyone who wants to contribute should feel welcome, and all of us contribute to that goal.
+We pledge to act and interact in ways that contribute to an open, welcoming and healthy community.
+Anyone who wants to contribute should feel welcome, and all of us contribute to that goal.
 
 
 Our Standards

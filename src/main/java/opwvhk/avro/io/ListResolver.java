@@ -36,7 +36,7 @@ public class ListResolver extends ValueResolver {
 
 	@Override
 	public Object addProperty(Object collector, String name, Object value) {
-		((List<Object>)collector).add(value);
+		((List<Object>) collector).add(value);
 		return collector;
 	}
 }

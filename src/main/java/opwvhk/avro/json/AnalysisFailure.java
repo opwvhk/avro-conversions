@@ -17,11 +17,6 @@
 
 package opwvhk.avro.json;
 
-import org.apache.avro.Schema;
-import org.apache.avro.generic.GenericData;
-
-import java.net.URI;
-
 /**
  * Runtime exception for analysis failures. Used to indicate a failure in analysing a data schema.
  */

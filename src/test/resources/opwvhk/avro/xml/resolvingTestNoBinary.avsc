@@ -6,26 +6,41 @@
 		{
 			"name": "presentRequired",
 			"type": "string"
-		}, {
+		},
+		{
 			"name": "optionalField",
-			"aliases": ["presentOptional", "wouldBeNice"],
-			"type": ["null", "string"],
+			"aliases": [
+				"presentOptional",
+				"wouldBeNice"
+			],
+			"type": [
+				"null",
+				"string"
+			],
 			"default": null
-		}, {
+		},
+		{
 			"name": "textList",
-			"aliases": ["presentArray"],
+			"aliases": [
+				"presentArray"
+			],
 			"type": {
 				"type": "array",
 				"items": "string"
 			},
 			"noDefault": "This array has no default, so the XML parser will set "
-		}, {
+		},
+		{
 			"name": "inner",
 			"type": [
-				"null", {
+				"null",
+				{
 					"type": "record",
 					"name": "innerType",
-					"aliases": ["inner", "typeNamesAreUsedInUnions"],
+					"aliases": [
+						"inner",
+						"typeNamesAreUsedInUnions"
+					],
 					"fields": [
 						{
 							"name": "e",
@@ -33,8 +48,13 @@
 								{
 									"type": "enum",
 									"name": "e",
-									"symbols": ["one", "two", "three"]
-								}, "null"
+									"symbols": [
+										"one",
+										"two",
+										"three"
+									]
+								},
+								"null"
 							],
 							"default": "one"
 						},
@@ -46,9 +66,13 @@
 								"fields": [
 									{
 										"name": "currency",
-										"type": ["null", "string"],
+										"type": [
+											"null",
+											"string"
+										],
 										"default": null
-									}, {
+									},
+									{
 										"name": "value",
 										"type": {
 											"type": "bytes",
@@ -62,13 +86,17 @@
 						},
 						{
 							"name": "b",
-							"type": ["null", "boolean"],
+							"type": [
+								"null",
+								"boolean"
+							],
 							"default": null
 						},
 						{
 							"name": "d",
 							"type": [
-								"null", {
+								"null",
+								{
 									"type": "int",
 									"logicalType": "date"
 								}
@@ -78,7 +106,8 @@
 						{
 							"name": "dt",
 							"type": [
-								"null", {
+								"null",
+								{
 									"type": "long",
 									"logicalType": "timestamp-millis"
 								}
@@ -88,7 +117,8 @@
 						{
 							"name": "dtu",
 							"type": [
-								"null", {
+								"null",
+								{
 									"type": "long",
 									"logicalType": "timestamp-micros"
 								}
@@ -97,23 +127,33 @@
 						},
 						{
 							"name": "fd",
-							"type": ["null", "double"],
+							"type": [
+								"null",
+								"double"
+							],
 							"default": null
 						},
 						{
 							"name": "fs",
-							"type": ["null", "float"],
+							"type": [
+								"null",
+								"float"
+							],
 							"default": null
 						},
 						{
 							"name": "s",
-							"type": ["null", "string"],
+							"type": [
+								"null",
+								"string"
+							],
 							"default": null
 						},
 						{
 							"name": "t",
 							"type": [
-								"null", {
+								"null",
+								{
 									"type": "int",
 									"logicalType": "time-millis"
 								}
@@ -123,7 +163,8 @@
 						{
 							"name": "tu",
 							"type": [
-								"null", {
+								"null",
+								{
 									"type": "long",
 									"logicalType": "time-micros"
 								}
@@ -163,32 +204,52 @@
 				}
 			],
 			"default": null
-		}, {
+		},
+		{
 			"name": "switch",
 			"type": {
 				"type": "enum",
 				"name": "broken",
-				"symbols": ["broken"],
+				"symbols": [
+					"broken"
+				],
 				"default": "broken"
 			}
-		}, {
+		},
+		{
 			"name": "approximation",
-			"aliases": ["exactNumber"],
+			"aliases": [
+				"exactNumber"
+			],
 			"type": "float"
-		}, {
+		},
+		{
 			"name": "moreAccurateApproximation",
-			"aliases": ["largeExactNumber"],
-			"type": ["null", "double"],
+			"aliases": [
+				"largeExactNumber"
+			],
+			"type": [
+				"null",
+				"double"
+			],
 			"default": null
-		}, {
+		},
+		{
 			"name": "morePrecise",
-			"aliases": ["estimate"],
-			"type": ["null", "double"],
+			"aliases": [
+				"estimate"
+			],
+			"type": [
+				"null",
+				"double"
+			],
 			"default": null
-		}, {
+		},
+		{
 			"name": "exceptionToUnwrappingRule",
 			"type": [
-				"null", {
+				"null",
+				{
 					"type": "record",
 					"name": "mustMatch",
 					"fields": [
@@ -203,7 +264,8 @@
 				}
 			],
 			"default": null
-		}, {
+		},
+		{
 			"name": "upgrade",
 			"type": {
 				"type": "array",
@@ -214,7 +276,8 @@
 						{
 							"name": "key",
 							"type": "string"
-						}, {
+						},
+						{
 							"name": "value",
 							"type": "string"
 						}
@@ -222,9 +285,13 @@
 				}
 			},
 			"default": []
-		}, {
+		},
+		{
 			"name": "category",
-			"type": ["null", "string"],
+			"type": [
+				"null",
+				"string"
+			],
 			"default": null
 		}
 	]

@@ -1,8 +1,11 @@
 {
-    "type": "record",
-    "name": "TestCase",
-    "doc": "Test schema for parsing records.",
-    "fields": [
-        { "name": "shortInt", "type": "string" }
-    ]
+	"type": "record",
+	"name": "TestCase",
+	"doc": "Test schema for parsing records.",
+	"fields": [
+		{
+			"name": "shortInt",
+			"type": "string"
+		}
+	]
 }

@@ -1,8 +1,19 @@
 {
-    "type": "record",
-    "name": "TestCase",
-    "doc": "Test schema for parsing records.",
-    "fields": [
-        { "name": "choice", "type": { "type":  "enum", "name": "OtherChoice", "symbols":  ["ja", "nein", "vielleicht"] } }
-    ]
+	"type": "record",
+	"name": "TestCase",
+	"doc": "Test schema for parsing records.",
+	"fields": [
+		{
+			"name": "choice",
+			"type": {
+				"type": "enum",
+				"name": "OtherChoice",
+				"symbols": [
+					"ja",
+					"nein",
+					"vielleicht"
+				]
+			}
+		}
+	]
 }

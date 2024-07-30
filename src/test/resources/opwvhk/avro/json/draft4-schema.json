@@ -1,67 +1,83 @@
 {
-    "$schema": "http://json-schema.org/draft-04/schema#",
-    "title": "Test Schema",
-    "description": "Test schema for the JSON schema analyser.",
-    "$ref": "#/definitions/TestCase",
-    "definitions": {
-        "TestCase": {
-            "type": "object",
-            "allOf": [
-                {
-                    "required": ["number", "choice"],
-                    "properties": {
-                        "number": {
-                            "type": "number",
-                            "minimum": 0,
-                            "maximum": 123.0,
-                            "exclusiveMinimum": false,
-                            "exclusiveMaximum": true
-                        },
-                        "choice": {
-                            "type": "string",
-                            "const": "yes"
-                        }
-                    }
-                }, {
-                    "required": ["text", "choice"],
-                    "properties": {
-                        "text": {
-                            "type": ["null", "string"],
-                            "$comment": "The following property should be ignored",
-                            "contentEncoding": "7bit",
-                            "default": "abc"
-                        },
-                        "choice": {
-                            "enum": ["no", "maybe"]
-                        },
-                        "names": {
-                            "type": "array",
-                            "items": [{
-                                "type": "null"
-                            }, {
-                                "type": "string"
-                            }],
-                            "additionalItems": {
-                                "type": "number"
-                            },
-                            "contains": {
-                                "type": "boolean"
-                            }
-                        }
-                    }
-                }
-            ],
-            "$comment": "The following properties should be ignored",
-            "if": {
-                "type": "object"
-            },
-            "then": {
-                "properties": {
-                    "foo": {
-                        "type": "string"
-                    }
-                }
-            }
-        }
-    }
+	"$schema": "http://json-schema.org/draft-04/schema#",
+	"title": "Test Schema",
+	"description": "Test schema for the JSON schema analyser.",
+	"$ref": "#/definitions/TestCase",
+	"definitions": {
+		"TestCase": {
+			"type": "object",
+			"allOf": [
+				{
+					"required": [
+						"number",
+						"choice"
+					],
+					"properties": {
+						"number": {
+							"type": "number",
+							"minimum": 0,
+							"maximum": 123.0,
+							"exclusiveMinimum": false,
+							"exclusiveMaximum": true
+						},
+						"choice": {
+							"type": "string",
+							"const": "yes"
+						}
+					}
+				},
+				{
+					"required": [
+						"text",
+						"choice"
+					],
+					"properties": {
+						"text": {
+							"type": [
+								"null",
+								"string"
+							],
+							"$comment": "The following property should be ignored",
+							"contentEncoding": "7bit",
+							"default": "abc"
+						},
+						"choice": {
+							"enum": [
+								"no",
+								"maybe"
+							]
+						},
+						"names": {
+							"type": "array",
+							"items": [
+								{
+									"type": "null"
+								},
+								{
+									"type": "string"
+								}
+							],
+							"additionalItems": {
+								"type": "number"
+							},
+							"contains": {
+								"type": "boolean"
+							}
+						}
+					}
+				}
+			],
+			"$comment": "The following properties should be ignored",
+			"if": {
+				"type": "object"
+			},
+			"then": {
+				"properties": {
+					"foo": {
+						"type": "string"
+					}
+				}
+			}
+		}
+	}
 }

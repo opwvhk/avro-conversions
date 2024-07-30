@@ -1,8 +1,12 @@
 {
-    "type": "record",
-    "name": "TestCase",
-    "doc": "Test schema for parsing records.",
-    "fields": [
-        { "name": "choice", "type": "int", "doc": "Cannot work" }
-    ]
+	"type": "record",
+	"name": "TestCase",
+	"doc": "Test schema for parsing records.",
+	"fields": [
+		{
+			"name": "choice",
+			"type": "int",
+			"doc": "Cannot work"
+		}
+	]
 }

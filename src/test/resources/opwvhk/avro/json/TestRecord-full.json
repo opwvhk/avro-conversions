@@ -1,22 +1,25 @@
 {
-    "bool": true,
-    "shortInt": 42,
-    "longInt": 6789012345,
-    "hugeInt": 123456789012345678901,
-    "defaultInt": 4242,
-    "singleFloat": 123.456,
-    "doubleFloat": 1234.56789,
-    "fixedPoint": 12345678901.123456,
+	"bool": true,
+	"shortInt": 42,
+	"longInt": 6789012345,
+	"hugeInt": 123456789012345678901,
+	"defaultInt": 4242,
+	"singleFloat": 123.456,
+	"doubleFloat": 1234.56789,
+	"fixedPoint": 12345678901.123456,
 	"defaultNumber": 98765.4321,
-    "choice": "maybe",
-    "date": "2023-04-17",
-    "time": "17:08:34.567123Z",
-    "timestamp": "2023-04-17T17:08:34.567123",
-    "binary": "SGVsbG8gV29ybGQh",
-    "hexBytes": "48656C6C6F20576F726C6421",
-    "texts": ["Hello", "World!"],
-    "weirdStuff": {
-        "explanation": "No reason. I just felt like it.",
-        "fancy": "😄! You are on Candid Camera! 📹🍌"
-    }
+	"choice": "maybe",
+	"date": "2023-04-17",
+	"time": "17:08:34.567123Z",
+	"timestamp": "2023-04-17T17:08:34.567123",
+	"binary": "SGVsbG8gV29ybGQh",
+	"hexBytes": "48656C6C6F20576F726C6421",
+	"texts": [
+		"Hello",
+		"World!"
+	],
+	"weirdStuff": {
+		"explanation": "No reason. I just felt like it.",
+		"fancy": "😄! You are on Candid Camera! 📹🍌"
+	}
 }

@@ -32,19 +32,19 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class NamingConventionTest {
 	private static final String EXAMPLE = "multiple word identifier";
 	private static final Map<NamingConvention, String> EXAMPLES = Map.of(
-		NamingConvention.PASCAL_CASE, "MultipleWordIdentifier",
-		NamingConvention.CAMEL_CASE, "multipleWordIdentifier",
-		NamingConvention.SNAKE_CASE, "multiple_word_identifier",
-		NamingConvention.KEBAB_CASE, "multiple-word-identifier",
-		NamingConvention.PASCAL_SNAKE_CASE, "Multiple_Word_Identifier",
-		NamingConvention.CAMEL_SNAKE_CASE, "multiple_Word_Identifier",
-		NamingConvention.SCREAMING_SNAKE_CASE, "MULTIPLE_WORD_IDENTIFIER",
-		NamingConvention.TRAIN_CASE, "Multiple-Word-Identifier",
-		NamingConvention.COBOL_CASE, "MULTIPLE-WORD-IDENTIFIER"
+			NamingConvention.PASCAL_CASE, "MultipleWordIdentifier",
+			NamingConvention.CAMEL_CASE, "multipleWordIdentifier",
+			NamingConvention.SNAKE_CASE, "multiple_word_identifier",
+			NamingConvention.KEBAB_CASE, "multiple-word-identifier",
+			NamingConvention.PASCAL_SNAKE_CASE, "Multiple_Word_Identifier",
+			NamingConvention.CAMEL_SNAKE_CASE, "multiple_Word_Identifier",
+			NamingConvention.SCREAMING_SNAKE_CASE, "MULTIPLE_WORD_IDENTIFIER",
+			NamingConvention.TRAIN_CASE, "Multiple-Word-Identifier",
+			NamingConvention.COBOL_CASE, "MULTIPLE-WORD-IDENTIFIER"
 	);
 
 	@Test
-    void validatePredefinedNamingConventions() {
+	void validatePredefinedNamingConventions() {
 		assertThat(NamingConvention.PASCAL_CASE.convert("Pascal Case")).isEqualTo("PascalCase");
 		assertThat(NamingConvention.CAMEL_CASE.convert("Camel Case")).isEqualTo("camelCase");
 		assertThat(NamingConvention.SNAKE_CASE.convert("Snake Case")).isEqualTo("snake_case");
@@ -57,7 +57,7 @@ class NamingConventionTest {
 	}
 
 	@Test
-    void verifyPredefinedNamingConventionsAreDeterministic() {
+	void verifyPredefinedNamingConventionsAreDeterministic() {
 		List<NamingConvention> namingConventions = new ArrayList<>(EXAMPLES.keySet());
 		Collections.shuffle(namingConventions);
 
@@ -69,7 +69,7 @@ class NamingConventionTest {
 	}
 
 	@Test
-    void validateWordCase() {
+	void validateWordCase() {
 		assertThat(NamingConvention.WordCase.LOWER_CASE.apply("MiXeD")).isEqualTo("mixed");
 		assertThat(NamingConvention.WordCase.UPPER_CASE.apply("MiXeD")).isEqualTo("MIXED");
 		assertThat(NamingConvention.WordCase.CAPITALIZED.apply("MiXeD")).isEqualTo("Mixed");
@@ -77,7 +77,7 @@ class NamingConventionTest {
 
 	@Test
 	@SuppressWarnings("SpellCheckingInspection")
-    void validateWordSplitting() {
+	void validateWordSplitting() {
 		NamingConvention dummy = new NamingConvention(" ", NamingConvention.WordCase.CAPITALIZED, NamingConvention.WordCase.LOWER_CASE);
 
 		// Text with accents, various dashes & spaces, and nonsense characters

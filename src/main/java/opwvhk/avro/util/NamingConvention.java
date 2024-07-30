@@ -17,8 +17,6 @@
 
 package opwvhk.avro.util;
 
-import org.jetbrains.annotations.NotNull;
-
 import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -129,8 +127,8 @@ public class NamingConvention {
 	 * Create a naming convention for multiple-word identifiers. Combining an empty delimiter with {@link WordCase#LOWER_CASE} or
 	 * {@link WordCase#UPPER_CASE} is discouraged, as the result cannot be converted to another naming convention.
 	 *
-	 * @param delimiter the word delimiter to use
-	 * @param firstWord the capitalization for the first word
+	 * @param delimiter  the word delimiter to use
+	 * @param firstWord  the capitalization for the first word
 	 * @param otherWords the capitalization for the other words
 	 */
 	public NamingConvention(String delimiter, WordCase firstWord, WordCase otherWords) {
@@ -181,7 +179,6 @@ public class NamingConvention {
 	@SuppressWarnings("RegExpSimplifiable") // bug: the suggestion to remove [] from [\p{L}&&\P{Lu}] is wrong
 	private static final Pattern CAMEL_BOUNDARY = Pattern.compile("(?<=[\\p{L}&&\\P{Lu}])(?=\\p{Lu})");
 
-	@NotNull
 	private List<String> splitToWords(Pattern wordBoundary, String text) {
 		List<String> words = new ArrayList<>();
 		Matcher matcher = wordBoundary.matcher(text);

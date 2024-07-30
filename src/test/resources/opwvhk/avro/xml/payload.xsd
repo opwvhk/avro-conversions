@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xs:schema targetNamespace="https://www.schiphol.nl/opwvhk/test" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="https://www.schiphol.nl/opwvhk/test" elementFormDefault="qualified">
+<xs:schema targetNamespace="https://www.schiphol.nl/opwvhk/test" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="https://www.schiphol.nl/opwvhk/test"
+           elementFormDefault="qualified">
 	<xs:include schemaLocation="envelope.xsd"/>
 	<xs:element name="record">
 		<xs:complexType>
@@ -9,7 +10,7 @@
 					<xs:complexType>
 						<xs:simpleContent>
 							<xs:extension base="xs:string">
-								<xs:attribute  name="language" type="xs:string"/>
+								<xs:attribute name="language" type="xs:string"/>
 							</xs:extension>
 						</xs:simpleContent>
 					</xs:complexType>

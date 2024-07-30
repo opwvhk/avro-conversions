@@ -21,11 +21,6 @@ import org.jetbrains.annotations.Nullable;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
-import javax.xml.transform.stream.StreamSource;
-import javax.xml.validation.SchemaFactory;
 import java.io.IOException;
 import java.net.URL;
 import java.util.EnumSet;
@@ -33,6 +28,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Predicate;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+import javax.xml.transform.stream.StreamSource;
+import javax.xml.validation.SchemaFactory;
 
 /**
  * <p>XML parser to read Avro records.</p>
@@ -280,8 +280,8 @@ public class XmlAsAvroParser extends AsAvroParserBase<Type> {
 	/**
 	 * Parse the given source into records.
 	 *
-	 * @param source     a source of XML data
-	 * @param <T>        the record type
+	 * @param source a source of XML data
+	 * @param <T>    the record type
 	 * @return the parsed record
 	 * @throws IOException  when the XML cannot be read
 	 * @throws SAXException when the XML cannot be parsed

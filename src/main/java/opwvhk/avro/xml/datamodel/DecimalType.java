@@ -1,10 +1,10 @@
 package opwvhk.avro.xml.datamodel;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-
 import org.apache.avro.LogicalTypes;
 import org.apache.avro.Schema;
+
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 import static org.apache.avro.Schema.Type.BYTES;
 import static org.apache.avro.Schema.Type.INT;
@@ -13,9 +13,9 @@ import static org.apache.avro.Schema.Type.LONG;
 /**
  * A number type with fixed point, including integer numbers.
  *
- * @param bitSize the bit size of the integer number ({@link Integer#MAX_VALUE} for fractional numbers)
+ * @param bitSize   the bit size of the integer number ({@link Integer#MAX_VALUE} for fractional numbers)
  * @param precision the number of digits in the number
- * @param scale the scale of the number (number of digits after the decimal point)
+ * @param scale     the scale of the number (number of digits after the decimal point)
  */
 public record DecimalType(int bitSize, int precision, int scale) implements ScalarType {
 	/**

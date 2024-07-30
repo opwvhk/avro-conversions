@@ -1,8 +1,20 @@
 {
-    "type": "record",
-    "name": "TestCase",
-    "doc": "Test schema for parsing records.",
-    "fields": [
-        { "name": "fixedPoint", "type": ["null", { "type": "bytes", "logicalType": "decimal", "precision": 7, "scale": 6 }], "default": null }
-    ]
+	"type": "record",
+	"name": "TestCase",
+	"doc": "Test schema for parsing records.",
+	"fields": [
+		{
+			"name": "fixedPoint",
+			"type": [
+				"null",
+				{
+					"type": "bytes",
+					"logicalType": "decimal",
+					"precision": 7,
+					"scale": 6
+				}
+			],
+			"default": null
+		}
+	]
 }

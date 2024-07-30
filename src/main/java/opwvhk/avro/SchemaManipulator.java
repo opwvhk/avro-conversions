@@ -1,6 +1,5 @@
 package opwvhk.avro;
 
-import net.jimblackler.jsonschemafriend.GenerationException;
 import opwvhk.avro.json.SchemaAnalyzer;
 import opwvhk.avro.util.AvroSchemaUtils;
 import opwvhk.avro.util.NamingConvention;
@@ -83,7 +82,7 @@ public class SchemaManipulator {
 
 	/**
 	 * Create a schema manipulator from an XML Schema Definition (XSD). The location of the main {@code .xsd} file is provided, both to provide the XSD
-     * content,
+	 * content,
 	 * as to provide a way to locate imported/included {@code .xsd} files.
 	 *
 	 * @param schemaLocation the location of the main {@code .xsd} file (it may include/import other {@code .xsd} files)
@@ -101,7 +100,7 @@ public class SchemaManipulator {
 	 * @param schemaLocation the location of the JSON schema (it may reference other JSON schemas)
 	 * @return a {@code SchemaManipulator}
 	 */
-	public static SchemaManipulator startFromJsonSchema(URL schemaLocation) throws URISyntaxException, GenerationException {
+	public static SchemaManipulator startFromJsonSchema(URL schemaLocation) throws URISyntaxException {
 		SchemaAnalyzer analyzer = new SchemaAnalyzer();
 		Schema schema = analyzer.parseJsonSchema(schemaLocation.toURI());
 		return new SchemaManipulator(schema);
@@ -442,7 +441,7 @@ public class SchemaManipulator {
 	 *
 	 * <p>Wrapped arrays are an XML construct. They result in array fields without siblings in a record field (optionally in a union with null). In Avro,
 	 * Parquet, and in fact most/all other formats, they are both not needed and unwanted. This method unwraps them based on the path to the wrapping field
-     * .</p>
+	 * .</p>
 	 *
 	 * <p>When unwrapping, wrapped field will replace the wrapping field using the name of the wrapping field. As this is not a renaming action, no alias will
 	 * be added.</p>

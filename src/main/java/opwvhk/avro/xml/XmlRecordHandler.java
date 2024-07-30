@@ -1,10 +1,10 @@
 package opwvhk.avro.xml;
 
-import java.util.ArrayDeque;
-import java.util.Deque;
-
 import opwvhk.avro.io.ValueResolver;
 import org.xml.sax.Attributes;
+
+import java.util.ArrayDeque;
+import java.util.Deque;
 
 import static java.util.Objects.requireNonNullElse;
 
@@ -109,7 +109,7 @@ class XmlRecordHandler implements SimpleContentHandler {
 			String bufferContent = buffer.toString();
 			buffer.setLength(0);
 
-			String indentedBufferContent = bufferContent.replaceAll("^\\s*?\\R","").stripTrailing();
+			String indentedBufferContent = bufferContent.replaceAll("^\\s*?\\R", "").stripTrailing();
 			String unindentedBufferContent = indentedBufferContent.stripIndent();
 			String content = resolver.parseContent() ? unindentedBufferContent.strip() : unindentedBufferContent;
 			if (!content.isEmpty()) {

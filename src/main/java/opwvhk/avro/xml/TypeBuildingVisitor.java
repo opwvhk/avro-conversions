@@ -1,20 +1,5 @@
 package opwvhk.avro.xml;
 
-import javax.xml.namespace.QName;
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Deque;
-import java.util.IdentityHashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Optional;
-import java.util.function.Function;
-import java.util.function.UnaryOperator;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
 import opwvhk.avro.xml.datamodel.Cardinality;
 import opwvhk.avro.xml.datamodel.DecimalType;
 import opwvhk.avro.xml.datamodel.EnumType;
@@ -39,6 +24,21 @@ import org.apache.ws.commons.schema.walker.XmlSchemaRestriction;
 import org.apache.ws.commons.schema.walker.XmlSchemaTypeInfo;
 import org.apache.ws.commons.schema.walker.XmlSchemaVisitor;
 import org.w3c.dom.Node;
+
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Deque;
+import java.util.IdentityHashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Optional;
+import java.util.function.Function;
+import java.util.function.UnaryOperator;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import javax.xml.namespace.QName;
 
 import static java.lang.String.format;
 import static java.math.BigInteger.ONE;
@@ -76,7 +76,7 @@ class TypeBuildingVisitor implements XmlSchemaVisitor {
 	private Type result;
 
 	TypeBuildingVisitor(TypeStructureBuilder structureBuilder, Function<String, String> xmlToTypeNamespace,
-	                           int maxDuplicateClasses) {
+	                    int maxDuplicateClasses) {
 		this.structureBuilder = structureBuilder;
 		this.xmlToTypeNamespace = xmlToTypeNamespace;
 		this.maxDuplicateClasses = maxDuplicateClasses;

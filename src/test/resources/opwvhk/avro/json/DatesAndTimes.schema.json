@@ -1,16 +1,36 @@
 {
-    "$schema": "http://json-schema.org/draft-07/schema#",
-    "title": "DatesAndTimes",
-    "properties": {
-        "dateOnly": { "format": "date" },
-        "timeMillis": { "format": "time" },
-        "timeMicros": { "format": "time" },
-        "timestampMillis": { "format": "date-time" },
-        "timestampMicros": { "format": "date-time" },
-        "localTimestampMillis": { "format": "date-time" },
-        "localTimestampMicros": { "format": "date-time" }
-    },
-    "required": [
-        "dateOnly", "timeMillis", "timeMicros", "timestampMillis", "timestampMicros", "localTimestampMillis", "localTimestampMicros"
-    ]
+	"$schema": "http://json-schema.org/draft-07/schema#",
+	"title": "DatesAndTimes",
+	"properties": {
+		"dateOnly": {
+			"format": "date"
+		},
+		"timeMillis": {
+			"format": "time"
+		},
+		"timeMicros": {
+			"format": "time"
+		},
+		"timestampMillis": {
+			"format": "date-time"
+		},
+		"timestampMicros": {
+			"format": "date-time"
+		},
+		"localTimestampMillis": {
+			"format": "date-time"
+		},
+		"localTimestampMicros": {
+			"format": "date-time"
+		}
+	},
+	"required": [
+		"dateOnly",
+		"timeMillis",
+		"timeMicros",
+		"timestampMillis",
+		"timestampMicros",
+		"localTimestampMillis",
+		"localTimestampMicros"
+	]
 }

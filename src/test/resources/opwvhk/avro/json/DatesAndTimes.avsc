@@ -1,9 +1,55 @@
-{"type": "record", "name": "DatesAndTimes", "fields": [
-    {"name": "dateOnly", "type": {"type": "int", "logicalType": "date"}},
-    {"name": "timeMillis", "type": {"type": "int", "logicalType": "time-millis"}},
-    {"name": "timeMicros", "type": {"type": "long", "logicalType": "time-micros"}},
-    {"name": "timestampMillis", "type": {"type": "long", "logicalType": "timestamp-millis"}},
-    {"name": "timestampMicros", "type": {"type": "long", "logicalType": "timestamp-micros"}},
-    {"name": "localTimestampMillis", "type": {"type": "long", "logicalType": "local-timestamp-millis"}},
-    {"name": "localTimestampMicros", "type": {"type": "long", "logicalType": "local-timestamp-micros"}}
-]}
+{
+	"type": "record",
+	"name": "DatesAndTimes",
+	"fields": [
+		{
+			"name": "dateOnly",
+			"type": {
+				"type": "int",
+				"logicalType": "date"
+			}
+		},
+		{
+			"name": "timeMillis",
+			"type": {
+				"type": "int",
+				"logicalType": "time-millis"
+			}
+		},
+		{
+			"name": "timeMicros",
+			"type": {
+				"type": "long",
+				"logicalType": "time-micros"
+			}
+		},
+		{
+			"name": "timestampMillis",
+			"type": {
+				"type": "long",
+				"logicalType": "timestamp-millis"
+			}
+		},
+		{
+			"name": "timestampMicros",
+			"type": {
+				"type": "long",
+				"logicalType": "timestamp-micros"
+			}
+		},
+		{
+			"name": "localTimestampMillis",
+			"type": {
+				"type": "long",
+				"logicalType": "local-timestamp-millis"
+			}
+		},
+		{
+			"name": "localTimestampMicros",
+			"type": {
+				"type": "long",
+				"logicalType": "local-timestamp-micros"
+			}
+		}
+	]
+}

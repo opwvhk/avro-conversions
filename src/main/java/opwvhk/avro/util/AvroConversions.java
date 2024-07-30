@@ -1,16 +1,16 @@
 package opwvhk.avro.util;
 
-import java.time.LocalTime;
-import java.time.OffsetTime;
-import java.time.ZoneOffset;
-import java.util.Optional;
-import java.util.concurrent.TimeUnit;
-
 import org.apache.avro.Conversion;
 import org.apache.avro.LogicalType;
 import org.apache.avro.LogicalTypes;
 import org.apache.avro.Schema;
 import org.apache.avro.data.TimeConversions;
+
+import java.time.LocalTime;
+import java.time.OffsetTime;
+import java.time.ZoneOffset;
+import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Additional Avro conversions.
@@ -64,6 +64,7 @@ public final class AvroConversions {
 			return schema;
 		}
 	}
+
 	/**
 	 * Convert an Avro logical type "{@link LogicalTypes.TimeMicros time-micros}" to/from the number of microseconds since midnight in the specified timezone.
 	 * If not specified, the timezone {@link ZoneOffset#UTC UTC} is used.

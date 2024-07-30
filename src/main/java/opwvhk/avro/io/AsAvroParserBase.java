@@ -217,7 +217,7 @@ public abstract class AsAvroParserBase<WriteSchema> {
 	 * @param fallbackTimezone     the fallback time zone to use when parsing times and timestamps
 	 */
 	protected AsAvroParserBase(GenericData model, WriteSchema writeSchema, Schema readSchema, Set<Schema.Field> fieldsAllowedMissing,
-                               ZoneId fallbackTimezone) {
+	                           ZoneId fallbackTimezone) {
 		this.model = model;
 		this.fieldsAllowedMissing = fieldsAllowedMissing;
 		DateTimeFormatter timeFormat = ZONE_LESS_TIME_FORMATTER.withZone(asOffset(fallbackTimezone, Clock.systemDefaultZone()));

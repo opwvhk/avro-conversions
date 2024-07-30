@@ -1,17 +1,7 @@
 package opwvhk.avro.xml;
 
-import javax.xml.namespace.QName;
-import javax.xml.transform.stream.StreamSource;
-import java.io.IOException;
-import java.io.InputStream;
-import java.math.BigInteger;
-import java.net.URL;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Set;
-
-import opwvhk.avro.xml.datamodel.Type;
 import opwvhk.avro.util.Utils;
+import opwvhk.avro.xml.datamodel.Type;
 import org.apache.avro.Schema;
 import org.apache.ws.commons.schema.XmlSchema;
 import org.apache.ws.commons.schema.XmlSchemaCollection;
@@ -21,10 +11,32 @@ import org.apache.ws.commons.schema.walker.FixedXmlSchemaWalker;
 import org.apache.ws.commons.schema.walker.XmlSchemaVisitor;
 import org.xml.sax.helpers.DefaultHandler;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.math.BigInteger;
+import java.net.URL;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Set;
+import javax.xml.namespace.QName;
+import javax.xml.transform.stream.StreamSource;
+
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Collections.unmodifiableSet;
 import static java.util.Objects.requireNonNull;
-import static org.apache.ws.commons.schema.constants.Constants.*;
+import static org.apache.ws.commons.schema.constants.Constants.XSD_ANYURI;
+import static org.apache.ws.commons.schema.constants.Constants.XSD_BASE64;
+import static org.apache.ws.commons.schema.constants.Constants.XSD_BOOLEAN;
+import static org.apache.ws.commons.schema.constants.Constants.XSD_DATE;
+import static org.apache.ws.commons.schema.constants.Constants.XSD_DATETIME;
+import static org.apache.ws.commons.schema.constants.Constants.XSD_DECIMAL;
+import static org.apache.ws.commons.schema.constants.Constants.XSD_DOUBLE;
+import static org.apache.ws.commons.schema.constants.Constants.XSD_FLOAT;
+import static org.apache.ws.commons.schema.constants.Constants.XSD_HEXBIN;
+import static org.apache.ws.commons.schema.constants.Constants.XSD_INT;
+import static org.apache.ws.commons.schema.constants.Constants.XSD_LONG;
+import static org.apache.ws.commons.schema.constants.Constants.XSD_STRING;
+import static org.apache.ws.commons.schema.constants.Constants.XSD_TIME;
 
 /**
  * XSD analyzer; can build an Avro schema corresponding to an XML schema, or a SAX {@link DefaultHandler} to parse it into an Avro record.

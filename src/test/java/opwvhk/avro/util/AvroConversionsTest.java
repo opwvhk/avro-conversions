@@ -1,10 +1,5 @@
 package opwvhk.avro.util;
 
-import java.time.LocalTime;
-import java.time.OffsetTime;
-import java.time.ZoneOffset;
-import java.time.temporal.ChronoUnit;
-
 import org.apache.avro.Conversion;
 import org.apache.avro.Conversions;
 import org.apache.avro.LogicalType;
@@ -13,14 +8,19 @@ import org.apache.avro.Schema;
 import org.apache.avro.data.TimeConversions;
 import org.junit.jupiter.api.Test;
 
+import java.time.LocalTime;
+import java.time.OffsetTime;
+import java.time.ZoneOffset;
+import java.time.temporal.ChronoUnit;
+
 import static java.time.ZoneOffset.UTC;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 class AvroConversionsTest {
 	@Test
-    void testTimeMillisBasics() {
-		Conversion<LocalTime> localTimeConversion  = new TimeConversions.TimeMillisConversion();
-		Conversion<OffsetTime> offsetTimeConversion  = new AvroConversions.OffsetTimeMillisConversion();
+	void testTimeMillisBasics() {
+		Conversion<LocalTime> localTimeConversion = new TimeConversions.TimeMillisConversion();
+		Conversion<OffsetTime> offsetTimeConversion = new AvroConversions.OffsetTimeMillisConversion();
 		assertThat(offsetTimeConversion.getLogicalTypeName()).isEqualTo(localTimeConversion.getLogicalTypeName());
 
 		Schema schema = localTimeConversion.getRecommendedSchema();
@@ -31,9 +31,9 @@ class AvroConversionsTest {
 	}
 
 	@Test
-    void testTimeMillisConversion() {
-		Conversion<LocalTime> localTimeConversion  = new TimeConversions.TimeMillisConversion();
-		Conversion<OffsetTime> offsetTimeConversion  = new AvroConversions.OffsetTimeMillisConversion();
+	void testTimeMillisConversion() {
+		Conversion<LocalTime> localTimeConversion = new TimeConversions.TimeMillisConversion();
+		Conversion<OffsetTime> offsetTimeConversion = new AvroConversions.OffsetTimeMillisConversion();
 
 		Schema schema = localTimeConversion.getRecommendedSchema();
 		ZoneOffset offset = ZoneOffset.of("+01:00");
@@ -45,17 +45,17 @@ class AvroConversionsTest {
 		assertThat(rawSource).isEqualTo(51_896_123);
 
 		LocalTime localTime = toLogical(rawSource, schema, localTimeConversion);
-		assertThat(localTime).isEqualTo(LocalTime.of(14,24,56,123_000_000));
+		assertThat(localTime).isEqualTo(LocalTime.of(14, 24, 56, 123_000_000));
 
 		OffsetTime offsetTime = toLogical(rawSource, schema, offsetTimeConversion);
-		assertThat(offsetTime).isEqualTo(OffsetTime.of(14,24,56,123_000_000, offset));
+		assertThat(offsetTime).isEqualTo(OffsetTime.of(14, 24, 56, 123_000_000, offset));
 		assertThat(offsetTime.withOffsetSameInstant(UTC)).isEqualTo(source.truncatedTo(ChronoUnit.MILLIS));
 	}
 
 	@Test
-    void testTimeMicrosBasics() {
-		Conversion<LocalTime> localTimeConversion  = new TimeConversions.TimeMicrosConversion();
-		Conversion<OffsetTime> offsetTimeConversion  = new AvroConversions.OffsetTimeMicrosConversion();
+	void testTimeMicrosBasics() {
+		Conversion<LocalTime> localTimeConversion = new TimeConversions.TimeMicrosConversion();
+		Conversion<OffsetTime> offsetTimeConversion = new AvroConversions.OffsetTimeMicrosConversion();
 		assertThat(offsetTimeConversion.getLogicalTypeName()).isEqualTo(localTimeConversion.getLogicalTypeName());
 
 		Schema schema = localTimeConversion.getRecommendedSchema();
@@ -66,9 +66,9 @@ class AvroConversionsTest {
 	}
 
 	@Test
-    void testTimeMicrosConversion() {
-		Conversion<LocalTime> localTimeConversion  = new TimeConversions.TimeMicrosConversion();
-		Conversion<OffsetTime> offsetTimeConversion  = new AvroConversions.OffsetTimeMicrosConversion();
+	void testTimeMicrosConversion() {
+		Conversion<LocalTime> localTimeConversion = new TimeConversions.TimeMicrosConversion();
+		Conversion<OffsetTime> offsetTimeConversion = new AvroConversions.OffsetTimeMicrosConversion();
 
 		assertThat(offsetTimeConversion.getLogicalTypeName()).isEqualTo(localTimeConversion.getLogicalTypeName());
 
@@ -82,10 +82,10 @@ class AvroConversionsTest {
 		assertThat(rawSource).isEqualTo(51_896_123_456L);
 
 		LocalTime localTime = toLogical(rawSource, schema, localTimeConversion);
-		assertThat(localTime).isEqualTo(LocalTime.of(14,24,56,123_456_000));
+		assertThat(localTime).isEqualTo(LocalTime.of(14, 24, 56, 123_456_000));
 
 		OffsetTime offsetTime = toLogical(rawSource, schema, offsetTimeConversion);
-		assertThat(offsetTime).isEqualTo(OffsetTime.of(14,24,56,123_456_000, offset));
+		assertThat(offsetTime).isEqualTo(OffsetTime.of(14, 24, 56, 123_456_000, offset));
 		assertThat(offsetTime.withOffsetSameInstant(UTC)).isEqualTo(source.truncatedTo(ChronoUnit.MICROS));
 	}
 

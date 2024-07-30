@@ -22,7 +22,7 @@ public enum FixedType implements ScalarType {
 	 */
 	BOOLEAN() {
 		@Override
-		public Object parseNonNull(String text) {
+		public Boolean parseNonNull(String text) {
 			return Boolean.valueOf(text);
 		}
 
@@ -36,7 +36,7 @@ public enum FixedType implements ScalarType {
 	 */
 	FLOAT() {
 		@Override
-		public Object parseNonNull(String text) {
+		public Float parseNonNull(String text) {
 			return Float.valueOf(text);
 		}
 
@@ -50,7 +50,7 @@ public enum FixedType implements ScalarType {
 	 */
 	DOUBLE() {
 		@Override
-		public Object parseNonNull(String text) {
+		public Double parseNonNull(String text) {
 			return Double.valueOf(text);
 		}
 
@@ -91,7 +91,7 @@ public enum FixedType implements ScalarType {
 	 */
 	STRING() {
 		@Override
-		public Object parseNonNull(String text) {
+		public String parseNonNull(String text) {
 			return text;
 		}
 
@@ -119,7 +119,7 @@ public enum FixedType implements ScalarType {
 	 */
 	BINARY_BASE64() {
 		@Override
-		public Object parseNonNull(String text) {
+		public ByteBuffer parseNonNull(String text) {
 			return ByteBuffer.wrap(Base64.getDecoder().decode(text));
 		}
 

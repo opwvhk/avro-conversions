@@ -1,11 +1,11 @@
 package opwvhk.avro.xml.datamodel;
 
-import java.util.Optional;
-
 import org.apache.ws.commons.schema.XmlSchemaAttribute;
 import org.apache.ws.commons.schema.XmlSchemaElement;
 import org.apache.ws.commons.schema.XmlSchemaParticle;
 import org.apache.ws.commons.schema.XmlSchemaUse;
+
+import java.util.Optional;
 
 import static org.apache.ws.commons.schema.XmlSchemaUse.NONE;
 

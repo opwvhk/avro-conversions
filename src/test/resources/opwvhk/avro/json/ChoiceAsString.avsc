@@ -1,8 +1,12 @@
 {
-    "type": "record",
-    "name": "TestCase",
-    "doc": "Test schema for parsing records.",
-    "fields": [
-        { "name": "choice", "type": "string", "default": "unknown" }
-    ]
+	"type": "record",
+	"name": "TestCase",
+	"doc": "Test schema for parsing records.",
+	"fields": [
+		{
+			"name": "choice",
+			"type": "string",
+			"default": "unknown"
+		}
+	]
 }

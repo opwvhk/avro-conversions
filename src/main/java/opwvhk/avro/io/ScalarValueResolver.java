@@ -7,14 +7,14 @@ import java.util.function.Function;
  */
 public class ScalarValueResolver
 		extends ValueResolver {
-	private final Function<String, Object> converter;
+	private final Function<String, ?> converter;
 
 	/**
 	 * Create a scalar value resolver.
 	 *
 	 * @param converter a converter for string values
 	 */
-	public ScalarValueResolver(Function<String, Object> converter) {
+	public ScalarValueResolver(Function<String, ?> converter) {
 		this.converter = converter;
 	}
 

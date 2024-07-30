@@ -1,10 +1,11 @@
 <!--
 Thank you very much for contributing. To help review your contribution in the best possible way, please fill out the template below.
 -->
+
 ## What is the purpose of the change
 
-(For example: This pull request improves annotation performance by buffering data, fixing issue #xx.)
-
+(For example: This pull request improves annotation performance by buffering data, fixing issue
+#xx.)
 
 ## Verifying this change
 

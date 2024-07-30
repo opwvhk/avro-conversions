@@ -1,12 +1,12 @@
 package opwvhk.avro.xml.datamodel;
 
-import java.math.BigDecimal;
-import java.nio.ByteBuffer;
-import java.util.List;
-
 import org.apache.avro.JsonProperties;
 import org.apache.avro.Schema;
 import org.junit.jupiter.api.Test;
+
+import java.math.BigDecimal;
+import java.nio.ByteBuffer;
+import java.util.List;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static opwvhk.avro.xml.datamodel.TestStructures.optional;
@@ -18,7 +18,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class TypeStructureTest {
 	@Test
-    void testAvroDefaultValues() {
+	void testAvroDefaultValues() {
 		StructType struct = struct("defaults", "Testing default values").withFields(
 				required("nullDefaults", struct("nulls").withFields(
 						optional("optional1", null, FixedType.STRING, StructType.Field.NULL_VALUE),
@@ -64,7 +64,7 @@ class TypeStructureTest {
 	}
 
 	@Test
-    void testSimpleScalarParsing() {
+	void testSimpleScalarParsing() {
 		// Nulls always succeed
 		assertThat(FixedType.BOOLEAN.parse(null)).isNull();
 		assertThat(FixedType.FLOAT.parse(null)).isNull();
@@ -91,7 +91,7 @@ class TypeStructureTest {
 	}
 
 	@Test
-    void testDecimals() {
+	void testDecimals() {
 		DecimalType smallInteger = DecimalType.integer(20, 7);
 		assertThat(smallInteger.debugString("")).isEqualTo("decimal(7; 20 bits)");
 		DecimalType largeInteger = DecimalType.integer(40, 13);
@@ -123,7 +123,7 @@ class TypeStructureTest {
 	}
 
 	@Test
-    void testEnums() {
+	void testEnums() {
 		assertThatThrownBy(() -> new EnumType("name", null, List.of("the", "default", "symbol", "must"), "exist")).isInstanceOf(
 				IllegalArgumentException.class);
 
@@ -149,14 +149,14 @@ class TypeStructureTest {
 	}
 
 	@Test
-    void testUnparsedContent() {
+	void testUnparsedContent() {
 		Type type = unparsed(FixedType.STRING);
 		assertThat(type.toString()).isEqualTo("(unparsed) string");
 		assertThat(type.debugString("> ")).isEqualTo("> (unparsed) string");
 	}
 
 	@Test
-    void testStructuralEdgeCases() {
+	void testStructuralEdgeCases() {
 		StructType type = struct("name", "Testing");
 		assertThat(type.toString()).isEqualTo("""
 				StructType(name) {
@@ -193,11 +193,11 @@ class TypeStructureTest {
 		StructType type4 = struct("name1").withFields(required("field", null, FixedType.STRING, null));
 		StructType type5 = struct("name1").withFields(required("field", null, FixedType.STRING, null));
 
-		//noinspection EqualsWithItself
+		// noinspection EqualsWithItself
 		assertThat(type1).isEqualTo(type1);
 		assertThat(type4).isEqualTo(type5);
 		assertThat(type1).isNotEqualTo(null);
-		//noinspection AssertBetweenInconvertibleTypes
+		// noinspection AssertBetweenInconvertibleTypes
 		assertThat(type1).isNotEqualTo("mismatch");
 		assertThat(type1).isNotEqualTo(type2);
 		assertThat(type1).isNotEqualTo(type3);

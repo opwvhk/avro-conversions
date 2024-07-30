@@ -1,8 +1,8 @@
 package opwvhk.avro.xml.datamodel;
 
-import java.util.List;
-
 import org.apache.avro.Schema;
+
+import java.util.List;
 
 /**
  * An enumeration.

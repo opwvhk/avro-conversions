@@ -10,6 +10,7 @@ record FieldData(String name, String doc, Cardinality cardinality, ScalarType sc
 	public FieldData withName(String newName) {
 		return new FieldData(newName, doc, cardinality, scalarType, defaultValue);
 	}
+
 	@Override
 	public String toString() {
 		String doc0 = truncate(10, doc);

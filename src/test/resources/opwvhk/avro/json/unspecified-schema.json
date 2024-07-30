@@ -1,43 +1,54 @@
 {
-    "$schema": "unknown://schema",
-    "$id": "classpath://test-case-draft7",
-    "description": "Test schema for the JSON schema analyser.",
-    "$ref": "#/definitions/TestCase",
-    "definitions": {
-        "TestCase": {
-            "type": "object",
-            "required": ["choice", "number"],
-            "properties": {
-                "choice": {
-                    "enum": ["yes", "no", "maybe"]
-                },
-                "bytes": {
-                    "contentEncoding": "base64"
-                }
-            },
-            "if": {
-                "properties": {
-                    "choice": {
-                        "const": "maybe"
-                    }
-                }
-            },
-            "then": {
-                "required": ["missing"],
-                "properties": {
-                    "missing": {
-                        "type": "string"
-                    }
-                }
-            },
-            "else": {
-                "required": ["reason"],
-                "properties": {
-                    "reason": {
-                        "type": "string"
-                    }
-                }
-            }
-        }
-    }
+	"$schema": "unknown://schema",
+	"$id": "classpath://test-case-draft7",
+	"description": "Test schema for the JSON schema analyser.",
+	"$ref": "#/definitions/TestCase",
+	"definitions": {
+		"TestCase": {
+			"type": "object",
+			"required": [
+				"choice",
+				"number"
+			],
+			"properties": {
+				"choice": {
+					"enum": [
+						"yes",
+						"no",
+						"maybe"
+					]
+				},
+				"bytes": {
+					"contentEncoding": "base64"
+				}
+			},
+			"if": {
+				"properties": {
+					"choice": {
+						"const": "maybe"
+					}
+				}
+			},
+			"then": {
+				"required": [
+					"missing"
+				],
+				"properties": {
+					"missing": {
+						"type": "string"
+					}
+				}
+			},
+			"else": {
+				"required": [
+					"reason"
+				],
+				"properties": {
+					"reason": {
+						"type": "string"
+					}
+				}
+			}
+		}
+	}
 }

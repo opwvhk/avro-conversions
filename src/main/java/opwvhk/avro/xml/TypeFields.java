@@ -1,15 +1,15 @@
 package opwvhk.avro.xml;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Stream;
-
 import opwvhk.avro.xml.datamodel.Cardinality;
 import opwvhk.avro.xml.datamodel.FixedType;
 import opwvhk.avro.xml.datamodel.ScalarType;
 import opwvhk.avro.xml.datamodel.StructType;
 import opwvhk.avro.xml.datamodel.Type;
 import opwvhk.avro.xml.datamodel.TypeWithUnparsedContent;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Stream;
 
 class TypeFields {
 	private final Type recordType;
