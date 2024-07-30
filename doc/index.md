@@ -64,30 +64,36 @@ Summary: you should always use a write (source) schema whenever possible.
 
 When parsing, these Avro types are supported:
 
-| Avro                    | JSON (schema) | JSON | XML (schema) | XML |
-|-------------------------|---------------|------|--------------|-----|
-| Record                  | ✅             | ✅    | ✅            | ✅   |
-| Map                     | ❌             | ❌    | ❌            | ❌   |
-| Array                   | ✅             | ✅    | ✅            | ✅   |
-| Enum                    | ✅             | ✅    | ✅            | ✅   |
-| Boolean                 | ✅             | ✅    | ✅            | ✅   |
-| Integer                 | ✅             | ✅    | ✅            | ✅   |
-| Long                    | ✅             | ✅    | ✅            | ✅   |
-| Float                   | ✅             | ✅    | ✅            | ✅   |
-| Double                  | ✅             | ✅    | ✅            | ✅   |
-| String                  | ✅             | ✅    | ✅            | ✅   |
-| Fixed (hex)             | ❌             | ❌    | ❌            | ❌   |
-| Fixed (base64)          | ❌             | ❌    | ❌            | ❌   |
-| Bytes (hex)             | ✅             | ❌    | ✅            | ❌   |
-| Bytes (base64)          | ✅             | ❌    | ✅            | ❌   |
-| Decimal                 | ✅             | ✅    | ✅            | ✅   |
-| Datetime (millis)       | ✅             | ✅    | ✅            | ✅   |
-| Datetime (micros)       | ✅             | ✅    | ✅            | ✅   |
-| Local Datetime (millis) | ✅             | ✅    | ✅            | ✅   |
-| Local Datetime (micros) | ✅             | ✅    | ✅            | ✅   |
-| Date                    | ✅             | ✅    | ✅            | ✅   |
-| Time (millis)           | ✅             | ✅    | ✅            | ✅   |
-| Time (micros)           | ✅             | ✅    | ✅            | ✅   |
+| Avro                    | JSON | XML |
+|-------------------------|------|-----|
+| Record                  | ✅    | ✅   |
+| Map                     | ❌    | ❌   |
+| Array                   | ✅    | ✅   |
+| Enum                    | ✅    | ✅   |
+| Boolean                 | ✅    | ✅   |
+| Integer                 | ✅    | ✅   |
+| Long                    | ✅    | ✅   |
+| Float                   | ✅    | ✅   |
+| Double                  | ✅    | ✅   |
+| String                  | ✅    | ✅   |
+| Fixed (base 16)¹        | ✅    | ✅   |
+| Fixed (base 64)²        | ✅    | ✅   |
+| Bytes (base 16)¹        | ✅    | ✅   |
+| Bytes (base 64)²        | ✅    | ✅   |
+| Decimal                 | ✅    | ✅   |
+| Datetime (millis)       | ✅    | ✅   |
+| Datetime (micros)       | ✅    | ✅   |
+| Local Datetime (millis) | ✅    | ✅   |
+| Local Datetime (micros) | ✅    | ✅   |
+| Date                    | ✅    | ✅   |
+| Time (millis)           | ✅    | ✅   |
+| Time (micros)           | ✅    | ✅   |
+
+Notes:
+1. Base 16 encoded bytes require either a source-format schema (like an XSD), or a property "format"
+   with the value "base16"
+2. Base 64 encoded bytes require either a source-format schema (like an XSD), or a property "format"
+   with the value "base64"
 
 Schema manipulations
 --------------------

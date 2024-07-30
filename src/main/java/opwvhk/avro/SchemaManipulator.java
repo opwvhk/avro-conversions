@@ -5,6 +5,7 @@ import opwvhk.avro.util.AvroSchemaUtils;
 import opwvhk.avro.util.NamingConvention;
 import opwvhk.avro.xml.XsdAnalyzer;
 import org.apache.avro.Schema;
+import org.apache.avro.SchemaParser;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -63,7 +64,7 @@ public class SchemaManipulator {
 	 * @return a {@code SchemaManipulator}
 	 */
 	public static SchemaManipulator startFromAvro(String avroSchemaAsString) {
-		Schema schema = new Schema.Parser().parse(avroSchemaAsString);
+		Schema schema = new SchemaParser().parse(avroSchemaAsString).mainSchema();
 		return new SchemaManipulator(schema);
 	}
 
@@ -75,7 +76,7 @@ public class SchemaManipulator {
 	 */
 	public static SchemaManipulator startFromAvro(URL schemaLocation) throws IOException {
 		try (InputStream inputStream = schemaLocation.openStream()) {
-			Schema schema = new Schema.Parser().parse(inputStream);
+			Schema schema = new SchemaParser().parse(inputStream).mainSchema();
 			return new SchemaManipulator(schema);
 		}
 	}

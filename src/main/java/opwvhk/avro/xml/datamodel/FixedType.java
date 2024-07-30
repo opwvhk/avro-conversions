@@ -1,12 +1,13 @@
 package opwvhk.avro.xml.datamodel;
 
+import org.apache.avro.LogicalTypes;
+import org.apache.avro.Schema;
+import org.apache.commons.codec.binary.Base16;
+
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.util.Base64;
 import java.util.Locale;
-
-import org.apache.avro.LogicalTypes;
-import org.apache.avro.Schema;
 
 import static org.apache.avro.Schema.Type.BYTES;
 import static org.apache.avro.Schema.Type.INT;
@@ -105,13 +106,15 @@ public enum FixedType implements ScalarType {
 	 */
 	BINARY_HEX() {
 		@Override
-		public Object parseNonNull(String text) {
-			return ByteBuffer.wrap(new BigInteger(text, 16).toByteArray());
+		public ByteBuffer parseNonNull(String text) {
+			return ByteBuffer.wrap(new Base16().decode(text));
 		}
 
 		@Override
 		public Schema toSchema() {
-			return Schema.create(BYTES);
+			Schema schema = Schema.create(BYTES);
+			schema.addProp("format", "base16");
+			return schema;
 		}
 	},
 	/**
@@ -125,7 +128,9 @@ public enum FixedType implements ScalarType {
 
 		@Override
 		public Schema toSchema() {
-			return Schema.create(BYTES);
+			Schema schema = Schema.create(BYTES);
+			schema.addProp("format", "base64");
+			return schema;
 		}
 	};
 

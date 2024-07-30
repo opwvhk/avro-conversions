@@ -10,9 +10,12 @@ import org.apache.avro.LogicalTypes;
 import org.apache.avro.Schema;
 import org.apache.avro.data.TimeConversions;
 import org.apache.avro.generic.GenericData;
+import org.apache.commons.codec.binary.Base16;
+import org.jetbrains.annotations.VisibleForTesting;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.nio.ByteBuffer;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -26,6 +29,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.temporal.ChronoField;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -106,6 +110,14 @@ public abstract class AsAvroParserBase<WriteSchema> {
 	 * Resolver for string values.
 	 */
 	protected static final ScalarValueResolver STRING_RESOLVER = new ScalarValueResolver(s -> s);
+	/**
+	 * Resolver for base 16 formatted binary values.
+	 */
+	protected static final ScalarValueResolver BASE16_RESOLVER = new ScalarValueResolver(text -> ByteBuffer.wrap(new Base16().decode(text)));
+	/**
+	 * Resolver for base 64 formatted binary values.
+	 */
+	protected static final ScalarValueResolver BASE64_RESOLVER = new ScalarValueResolver(text -> ByteBuffer.wrap(Base64.getDecoder().decode(text)));
 	/**
 	 * Resolver for ISO8601 (local) dates (using {@link DateTimeFormatter#ISO_DATE}).
 	 */
@@ -318,6 +330,8 @@ public abstract class AsAvroParserBase<WriteSchema> {
 		resolveRules.add(new ResolveRule<>(Objects::isNull, rawType(Schema.Type.LONG), (w, r) -> LONG_RESOLVER));
 		resolveRules.add(new ResolveRule<>(Objects::isNull, rawType(Schema.Type.STRING), (w, r) -> STRING_RESOLVER));
 		resolveRules.add(new ResolveRule<>(Objects::isNull, rawType(Schema.Type.ENUM), (w, r) -> createEnumResolver(r)));
+		Predicate<Schema> binaryTypeWithFormat = rawType(Schema.Type.BYTES).or(rawType(Schema.Type.FIXED)).and(s -> s.getProp("format") != null);
+		resolveRules.add(new ResolveRule<>(Objects::isNull, binaryTypeWithFormat, (w, r) -> createBinaryResolver(r)));
 		// Composite types
 		resolveRules.add(new ResolveRule<>(Objects::isNull, rawType(Schema.Type.UNION), (w, r) -> createResolver(null, nonNullableSchemaOf(r))));
 		resolveRules.add(new ResolveRule<>(Objects::isNull, rawType(Schema.Type.ARRAY),
@@ -445,6 +459,40 @@ public abstract class AsAvroParserBase<WriteSchema> {
 		int scale = logicalType.getScale();
 		// Note: as the XML was validated before parsing, we're certain the precision is not too large.
 		return text -> new BigDecimal(text).setScale(scale, RoundingMode.UNNECESSARY);
+	}
+
+
+	/**
+	 * Create a resolver for binary values, including a size check for fixed types.
+	 *
+	 * @param schema an Avro schema with type {@link org.apache.avro.Schema.Type#BYTES} or  {@link org.apache.avro.Schema.Type#FIXED}.
+	 * @return a resolver for binary values
+	 */
+	@VisibleForTesting
+	ScalarValueResolver createBinaryResolver(Schema schema) {
+		Function<String, ByteBuffer> parser = switch (schema.getProp("format")) {
+			case "base16" -> this::parseBase16;
+			case "base64" -> this::parseBase64;
+			default -> throw new ResolvingFailure("Unsupported format: " + schema.getProp("format"));
+		};
+		if (schema.getType() == Schema.Type.FIXED) {
+			int size = schema.getFixedSize();
+			parser = parser.andThen(bb -> {
+				if (bb.capacity() != size) {
+					throw new IllegalArgumentException("Wrong input size: expected %d bytes, but got %d bytes".formatted(size, bb.capacity()));
+				}
+				return bb;
+			});
+		}
+		return new ScalarValueResolver(parser);
+	}
+
+	private ByteBuffer parseBase16(String text) {
+		return ByteBuffer.wrap(new Base16().decode(text));
+	}
+
+	private ByteBuffer parseBase64(String text) {
+		return ByteBuffer.wrap(Base64.getDecoder().decode(text));
 	}
 
 	private ValueResolver createRecordResolver(Schema readSchema) {

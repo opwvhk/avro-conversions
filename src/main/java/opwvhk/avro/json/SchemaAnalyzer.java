@@ -48,11 +48,11 @@ public class SchemaAnalyzer {
 	 */
 	private static final System.Logger LOGGER = System.getLogger(SchemaAnalyzer.class.getCanonicalName());
 
-    private static final Pattern MATCH_NAME_IN_REFERENCE = Pattern.compile(
-            ".*#/(?:\\$defs|definitions).*?/(\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*)" +
-            "(?:/(?:allOf|anyOf|oneOf)/\\d+|dependentRequired/[^/]+|if|then|else|prefixItems|items|additionalItems|contains)?");
-    private static final Pattern MATCH_NAME_FROM_ANY_ID = Pattern.compile(
-            ".*/(\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*)");
+	private static final Pattern MATCH_NAME_IN_REFERENCE = Pattern.compile(
+			".*#/(?:\\$defs|definitions).*?/(\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*)" +
+			"(?:/(?:allOf|anyOf|oneOf)/\\d+|dependentRequired/[^/]+|if|then|else|prefixItems|items|additionalItems|contains)?");
+	private static final Pattern MATCH_NAME_FROM_ANY_ID = Pattern.compile(
+			".*/(\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*)");
 
 	private final Validator validator;
 	private final SchemaStore schemaStore;

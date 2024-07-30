@@ -11,19 +11,15 @@ import opwvhk.avro.ResolvingFailure;
 import opwvhk.avro.io.AsAvroParserBase;
 import opwvhk.avro.io.ListResolver;
 import opwvhk.avro.io.RecordResolver;
-import opwvhk.avro.io.ScalarValueResolver;
 import opwvhk.avro.io.ValueResolver;
 import org.apache.avro.LogicalTypes;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericData;
 
 import java.io.IOException;
-import java.math.BigInteger;
 import java.net.URI;
 import java.net.URL;
-import java.nio.ByteBuffer;
 import java.util.ArrayDeque;
-import java.util.Base64;
 import java.util.Deque;
 import java.util.EnumSet;
 import java.util.List;
@@ -169,10 +165,8 @@ public class JsonAsAvroParser extends AsAvroParserBase<SchemaProperties> {
 		resolveRules.add(
 				new ResolveRule<>(hasStringFormat("date-time"), logicalType(LogicalTypes.LocalTimestampMicros.class), (w, r) -> LOCAL_DATE_TIME_RESOLVER));
 		// Raw scalar types (note: as logical types, binary types and enums are _also_ strings, strings must be last)
-		resolveRules.add(new ResolveRule<>(hasEncodedContent("base16"), rawType(Schema.Type.BYTES),
-				(w, r) -> new ScalarValueResolver(text -> ByteBuffer.wrap(new BigInteger(text, 16).toByteArray()))));
-		resolveRules.add(new ResolveRule<>(hasEncodedContent("base64"), rawType(Schema.Type.BYTES),
-				(w, r) -> new ScalarValueResolver(text -> ByteBuffer.wrap(Base64.getDecoder().decode(text)))));
+		resolveRules.add(new ResolveRule<>(hasEncodedContent("base16"), rawType(Schema.Type.BYTES), (w, r) -> BASE16_RESOLVER));
+		resolveRules.add(new ResolveRule<>(hasEncodedContent("base64"), rawType(Schema.Type.BYTES), (w, r) -> BASE64_RESOLVER));
 		resolveRules.add(new ResolveRule<>(JsonAsAvroParser::isValidEnum, (w, r) -> createEnumResolver(r)));
 		resolveRules.add(new ResolveRule<>(jsonType(SchemaType.BOOLEAN), rawType(Schema.Type.BOOLEAN), (w, r) -> BOOLEAN_RESOLVER));
 		resolveRules.add(new ResolveRule<>(isNumber(), rawType(Schema.Type.FLOAT), (w, r) -> FLOAT_RESOLVER));
