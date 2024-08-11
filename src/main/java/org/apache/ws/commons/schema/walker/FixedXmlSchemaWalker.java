@@ -452,8 +452,7 @@ public final class FixedXmlSchemaWalker {
 
 		XmlSchema schema = schemasByNamespace.getSchemaDefiningElement(elemQName);
 		if (schema == null) {
-			// TODO: is this correct? The previous code used whichever schema was stored in the schemasByNamespace HashMap
-			// for the element's namespace.
+			// If not found, inherit schema from the elements parent
 			schema = element.getParent();
 		}
 
