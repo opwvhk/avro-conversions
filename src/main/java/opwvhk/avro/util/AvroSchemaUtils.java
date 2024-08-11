@@ -3,9 +3,8 @@ package opwvhk.avro.util;
 import org.apache.avro.LogicalType;
 import org.apache.avro.LogicalTypes;
 import org.apache.avro.Schema;
-import org.apache.avro.compiler.schema.SchemaVisitor;
-import org.apache.avro.compiler.schema.SchemaVisitorAction;
-import org.apache.avro.compiler.schema.Schemas;
+import org.apache.avro.util.SchemaVisitor;
+import org.apache.avro.util.Schemas;
 
 import java.util.Collections;
 import java.util.IdentityHashMap;

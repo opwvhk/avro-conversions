@@ -1,9 +1,10 @@
 package opwvhk.avro;
 
-import net.jimblackler.jsonschemafriend.GenerationException;
 import opwvhk.avro.util.NamingConvention;
 import org.apache.avro.Schema;
 import org.apache.avro.SchemaBuilder;
+import org.apache.avro.SchemaFormatter;
+import org.apache.avro.SchemaParser;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -15,6 +16,7 @@ import static java.util.Objects.requireNonNull;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class SchemaManipulatorTest {
+	private static final SchemaFormatter FORMATTER = SchemaFormatter.getInstance("json");
 	@Test
 	void testSortedDocumentationViaXsd() throws IOException {
 		StringBuilder markdown = new StringBuilder();
@@ -36,7 +38,7 @@ class SchemaManipulatorTest {
 				| source | string |  |
 				| target | string |  |
 				""");
-		assertThat(envelopeSchema.toString(true)).isEqualTo(Schema.createRecord("ns.envelope", null, null, false, List.of(
+		assertThat(FORMATTER.format(envelopeSchema)).isEqualTo(FORMATTER.format(Schema.createRecord("ns.envelope", null, null, false, List.of(
 				new Schema.Field("payload",
 						Schema.createRecord("ns.payload", "The payload is either XML, UTF-8 text or base64 encoded binary data.", null, false, List.of(
 								new Schema.Field("type", Schema.createUnion(Schema.createEnum("ns.type", null, null, List.of("xml", "text", "binary")),
@@ -46,11 +48,11 @@ class SchemaManipulatorTest {
 						)), "The payload is either XML, UTF-8 text or base64 encoded binary data.", null),
 				new Schema.Field("source", Schema.create(Schema.Type.STRING)),
 				new Schema.Field("target", Schema.create(Schema.Type.STRING))
-		)).toString(true));
+		))));
 	}
 
 	@Test
-	void testSortedDocumentationViaJsonSchema() throws GenerationException, URISyntaxException, IOException {
+	void testSortedDocumentationViaJsonSchema() throws URISyntaxException, IOException {
 		StringBuilder markdown = new StringBuilder();
 
 		URL schemaLocation = getClass().getResource("json/TestRecord.schema.json");
@@ -85,7 +87,14 @@ class SchemaManipulatorTest {
 				| weirdStuff?.hatseflats? | string |  |
 				| weirdStuff?.rabbitHole? | record |  |
 				""");
-		assertThat(schema.toString(true)).isEqualTo(new Schema.Parser().parse(getClass().getResourceAsStream("json/TestRecordAll.avsc")).toString(true));
+		assertThat(SchemaFormatter.format("json", schema)).isEqualTo(readAndFormatSchema("json/TestRecordAll.avsc"));
+	}
+
+	private String readAndFormatSchema(@SuppressWarnings("SameParameterValue") String resource) throws IOException {
+		SchemaParser parser = new SchemaParser();
+		SchemaParser.ParseResult parseResult = parser.parse(getClass().getResourceAsStream(resource));
+		Schema schema = parseResult.mainSchema();
+		return SchemaFormatter.format("json", schema);
 	}
 
 	@Test
@@ -119,7 +128,7 @@ class SchemaManipulatorTest {
 				.finish();
 
 		Schema expectedSchema = new Schema.Parser().parse(EXPECTED_SCHEMA);
-		assertThat(schema.toString(true)).isEqualTo(expectedSchema.toString(true));
+		assertThat(FORMATTER.format(schema)).isEqualTo(FORMATTER.format(expectedSchema));
 	}
 
 	@Test
@@ -136,7 +145,7 @@ class SchemaManipulatorTest {
 				.finish();
 
 		Schema expectedSchema = new Schema.Parser().parse(EXPECTED_SCHEMA_WITHOUT_ALIASES);
-		assertThat(schema.toString(true)).isEqualTo(expectedSchema.toString(true));
+		assertThat(FORMATTER.format(schema)).isEqualTo(FORMATTER.format(expectedSchema));
 	}
 
 	@Test
@@ -147,7 +156,7 @@ class SchemaManipulatorTest {
 				.finish();
 
 		Schema expectedSchema = new Schema.Parser().parse(EXPECTED_SCHEMA_WITH_ARRAYS);
-		assertThat(schema.toString(true)).isEqualTo(expectedSchema.toString(true));
+		assertThat(FORMATTER.format(schema)).isEqualTo(FORMATTER.format(expectedSchema));
 	}
 
 	@Test
@@ -158,7 +167,7 @@ class SchemaManipulatorTest {
 				.finish();
 
 		Schema expectedSchema = new Schema.Parser().parse(EXPECTED_SCHEMA_WITH_ARRAYS);
-		assertThat(schema.toString(true)).isEqualTo(expectedSchema.toString(true));
+		assertThat(FORMATTER.format(schema)).isEqualTo(FORMATTER.format(expectedSchema));
 	}
 
 	@Test
@@ -169,7 +178,7 @@ class SchemaManipulatorTest {
 				.finish();
 
 		Schema expectedSchema = new Schema.Parser().parse(EXPECTED_RECURSIVE_SCHEMA);
-		assertThat(schema.toString(true)).isEqualTo(expectedSchema.toString(true));
+		assertThat(FORMATTER.format(schema)).isEqualTo(FORMATTER.format(expectedSchema));
 	}
 
 	@Test
@@ -182,11 +191,11 @@ class SchemaManipulatorTest {
 				.name("field1").type("string").noDefault()
 				.name("field2").type("string").noDefault()
 				.endRecord();
-		assertThat(new SchemaManipulator(schemaWithoutNamespace).renameWithoutAliases()
+		assertThat(FORMATTER.format(new SchemaManipulator(schemaWithoutNamespace).renameWithoutAliases()
 				.useSchemaNamingConvention(NamingConvention.SNAKE_CASE)
 				.useFieldNamingConvention(NamingConvention.CAMEL_CASE)
-				.finish().toString(true)
-		).isEqualTo(schemaResultWithoutNamespace.toString(true));
+				.finish())
+		).isEqualTo(FORMATTER.format(schemaResultWithoutNamespace));
 
 		Schema schemaWithNamespace = SchemaBuilder.record("simple_name").namespace("somewhereInTheCode").fields()
 				.name("field_one").type("string").noDefault()
@@ -196,11 +205,11 @@ class SchemaManipulatorTest {
 				.name("fieldOne").type("string").noDefault()
 				.name("fieldTwo").type("string").noDefault()
 				.endRecord();
-		assertThat(new SchemaManipulator(schemaWithNamespace).renameWithoutAliases()
+		assertThat(FORMATTER.format(new SchemaManipulator(schemaWithNamespace).renameWithoutAliases()
 				.useSchemaNamingConvention(NamingConvention.SNAKE_CASE, NamingConvention.PASCAL_CASE)
 				.useFieldNamingConvention(NamingConvention.CAMEL_CASE)
-				.finish().toString(true)
-		).isEqualTo(schemaResultWithNamespace.toString(true));
+				.finish())
+		).isEqualTo(FORMATTER.format(schemaResultWithNamespace));
 	}
 
 	private static final String SOURCE_SCHEMA = """
@@ -544,25 +553,6 @@ class SchemaManipulatorTest {
 						"name": "droste",
 						"aliases": ["rabbitHole"],
 						"type": "recursive"
-					}
-				]
-			}""";
-	private static final String EXPECTED_RECURSIVE_SCHEMA_NAMING_CONVENTIONS = """
-			{
-				"testCase": "SchemaManipulatorTest",
-				"type": "record",
-				"name": "RECURSIVE",
-				"aliases": ["recursive"],
-			"namespace": "ns",
-				"fields": [
-					{
-						"name": "Name",
-			     	"aliases": ["name"],
-						"type": "string"
-					}, {
-						"name": "droste",
-						"aliases": ["rabbitHole"],
-						"type": "RECURSIVE"
 					}
 				]
 			}""";

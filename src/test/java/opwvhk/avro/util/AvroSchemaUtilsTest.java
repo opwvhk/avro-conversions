@@ -2,11 +2,14 @@ package opwvhk.avro.util;
 
 import org.apache.avro.Protocol;
 import org.apache.avro.Schema;
-import org.apache.avro.compiler.idl.Idl;
-import org.apache.avro.compiler.idl.ParseException;
+import org.apache.avro.SchemaParser;
+import org.apache.avro.idl.IdlReader;
 import org.junit.jupiter.api.Test;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.StringReader;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -16,52 +19,54 @@ import static org.assertj.core.api.Assertions.catchThrowable;
 class AvroSchemaUtilsTest {
 	@Test
 	void testMarkdownTable()
-			throws ParseException {
+			throws IOException {
 		// language=Avro IDL
 		String idlSchema = """
-				protocol dummy {
+				schema MainRecord;
+
+				/**
+				 * A documented record
+				 */
+				record MainRecord {
+					/** An optional field */
+					Nested? optional;
 					/**
-					 * A documented record
+					 * A financial journal (list of transactions).
 					 */
-					record MainRecord {
-						/** An optional field */
-						Nested? optional;
-						/**
-						 * A financial journal (list of transactions).
-						 */
-						array<Transaction> journal;
-						map<int> labelledNumbers;
-						/** This is an unlikely field, containing either text or a number. */
-						union { string, int } textOrNumber;
-					}
+					array<Transaction> journal;
+					map<int> labelledNumbers;
+					/** This is an unlikely field, containing either text or a number. */
+					union { string, int } textOrNumber;
+				}
+
+				/**
+				* A nested record
+				*/
+				record Nested {
 					/**
-					 * A nested record
+					 * The title is required.
 					 */
-					record Nested {
-						/**
-						 * The title is required.
-						 */
-						string title;
-						/**
-						 * A description is not required.
-						 */
-						string? description;
-					}
+					string title;
 					/**
-					 * A financial transaction.
+					 * A description is not required.
 					 */
-					record Transaction {
-						/** When the payment was made */
-						timestamp_ms when;
-						/** The payment amount (in EUR) */
-						decimal(9,2) howMuch;
-						/** Who paid the money */
-						string fromWhom;
-						/** Who received the money */
-						string toWhom;
-						/** Why the payment was made */
-						string? why;
-					}
+					string? description;
+				}
+
+				/**
+				* A financial transaction.
+				*/
+				record Transaction {
+					/** When the payment was made */
+					timestamp_ms when;
+					/** The payment amount (in EUR) */
+					decimal(9,2) howMuch;
+					/** Who paid the money */
+					string fromWhom;
+					/** Who received the money */
+					string toWhom;
+					/** Why the payment was made */
+					string? why;
 				}
 				""";
 		// language=Markdown
@@ -83,7 +88,7 @@ class AvroSchemaUtilsTest {
 				| textOrNumber | int | This is an unlikely field, containing either text or a number. |
 				""";
 
-		Schema schema = new Idl(new StringReader(idlSchema)).CompilationUnit().getType("MainRecord");
+		Schema schema = new SchemaParser().parse(new StringReader(idlSchema)).mainSchema();
 		String result = AvroSchemaUtils.documentAsMarkdown(schema);
 
 		assertThat(result).isEqualTo(expectedResult);
@@ -98,7 +103,7 @@ class AvroSchemaUtilsTest {
 	}
 
 	@Test
-	void testDuplicateNameDetection() throws ParseException {
+	void testDuplicateNameDetection() throws IOException {
 		String idlSchema = """
 				@namespace("ns")
 				protocol dummy {
@@ -120,7 +125,7 @@ class AvroSchemaUtilsTest {
 				    }
 				}
 				""";
-		Protocol protocol = new Idl(new StringReader(idlSchema)).CompilationUnit();
+		Protocol protocol = new IdlReader().parse(new ByteArrayInputStream(idlSchema.getBytes(StandardCharsets.UTF_8))).getProtocol();
 
 		Schema withDuplicateNames = protocol.getType(protocol.getNamespace() + ".WithDuplicates");
 		List<String> namesInProtocol = protocol.getTypes().stream().map(Schema::getFullName).toList();

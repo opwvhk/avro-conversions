@@ -1,7 +1,7 @@
 package opwvhk.avro.json;
 
-import net.jimblackler.jsonschemafriend.GenerationException;
 import org.apache.avro.Schema;
+import org.apache.avro.SchemaFormatter;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -15,6 +15,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class SchemaAnalyzerTest {
+	private static final SchemaFormatter FORMATTER = SchemaFormatter.getInstance("json");
+
 	@Test
 	void testSchemaVersionDraft4() throws URISyntaxException {
 		SchemaProperties schemaProperties = parseSchemaResource("draft4-schema.json");
@@ -99,7 +101,7 @@ class SchemaAnalyzerTest {
 		return new SchemaAnalyzer().parseJsonProperties(jsonSchemaLocation);
 	}
 
-	private Schema parseSchemaResourceAsAvro(String schemaResource) throws GenerationException, URISyntaxException {
+	private Schema parseSchemaResourceAsAvro(String schemaResource) throws URISyntaxException {
 		URI jsonSchemaLocation = requireNonNull(getClass().getResource(schemaResource)).toURI();
 		return new SchemaAnalyzer().parseJsonSchema(jsonSchemaLocation);
 	}
@@ -133,7 +135,7 @@ class SchemaAnalyzerTest {
 	}
 
 	@Test
-	void testAvroSchemaConversion() throws URISyntaxException, GenerationException, IOException {
+	void testAvroSchemaConversion() throws URISyntaxException, IOException {
 		assertThatThrownBy(() -> parseSchemaResourceAsAvro("invalid.schema.json")).isInstanceOf(AnalysisFailure.class);
 		assertThatThrownBy(() -> parseSchemaResourceAsAvro("null.schema.json")).isInstanceOf(IllegalArgumentException.class);
 
@@ -143,6 +145,6 @@ class SchemaAnalyzerTest {
 		try (InputStream expectedSchemaStream = getClass().getResourceAsStream("TestRecordAll.avsc")) {
 			expectedSchema = new Schema.Parser().parse(expectedSchemaStream);
 		}
-		assertThat(avroSchema.toString(true)).isEqualTo(expectedSchema.toString(true));
+		assertThat(FORMATTER.format(avroSchema)).isEqualTo(FORMATTER.format(expectedSchema));
 	}
 }

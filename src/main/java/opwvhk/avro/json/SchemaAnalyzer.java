@@ -162,7 +162,9 @@ public class SchemaAnalyzer {
 				} else if ("date-time".equals(format)) {
 					yield LogicalTypes.timestampMillis().addToSchema(Schema.create(Schema.Type.LONG));
 				} else if ("base64".equals(contentEncoding) || "base16".equals(contentEncoding)) {
-                    yield Schema.create(Schema.Type.BYTES);
+					Schema binarySchema = Schema.create(Schema.Type.BYTES);
+					binarySchema.addProp("format", contentEncoding);
+					yield binarySchema;
 				} else {
 					if (format != null) {
 						LOGGER.log(System.Logger.Level.WARNING, "Unsupported format ({0}); using string instead", format);

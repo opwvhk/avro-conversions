@@ -4,7 +4,6 @@ import org.apache.avro.LogicalTypes;
 import org.apache.avro.Schema;
 import org.apache.commons.codec.binary.Base16;
 
-import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.util.Base64;
 import java.util.Locale;
@@ -105,9 +104,12 @@ public enum FixedType implements ScalarType {
 	 * Binary data, encoded as hexadecimal bytes.
 	 */
 	BINARY_HEX() {
+
+		private static final Base16 BASE_16 = new Base16();
+
 		@Override
 		public ByteBuffer parseNonNull(String text) {
-			return ByteBuffer.wrap(new Base16().decode(text));
+			return ByteBuffer.wrap(BASE_16.decode(text.toUpperCase(Locale.ROOT)));
 		}
 
 		@Override

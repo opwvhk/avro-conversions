@@ -81,7 +81,7 @@ class TypeStructureTest {
 		assertThat(FixedType.FLOAT.parse("12.34")).isInstanceOf(Float.class).isEqualTo(12.34f);
 		assertThat(FixedType.DOUBLE.parse("12.34")).isInstanceOf(Double.class).isEqualTo(12.34);
 		assertThat(FixedType.STRING.parse("some text")).isEqualTo("some text");
-		assertThat(FixedType.BINARY_HEX.parse("DEAD")).isEqualTo(ByteBuffer.wrap(bytes(0, 222, 173)));
+		assertThat(FixedType.BINARY_HEX.parse("DEAD")).isEqualTo(ByteBuffer.wrap(bytes(222, 173)));
 		assertThat(FixedType.BINARY_BASE64.parse("U2ltcGxlIHRleHQ=")).isEqualTo(ByteBuffer.wrap("Simple text".getBytes(UTF_8)));
 
 		// Date and time values cannot be parsed here (as default values)
