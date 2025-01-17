@@ -54,7 +54,8 @@ However, this is discouraged. The reason is that significant functionality is mi
 * No check on required fields:
   The parsers will happily generate incomplete records, which **will** break when using them.
 * No check on compatibility:
-  Incompatible data cannot be detected, which **will** break the parsing process.
+  Incompatible data cannot be detected cleanly, and this **will** break the parsing process in
+  unpredictable ways.
 * No input validation:
   Without a schema, a parser cannot validate input. This can cause unpredictable failures later on.
 
