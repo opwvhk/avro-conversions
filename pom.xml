@@ -10,7 +10,7 @@
 
 	<artifactId>avro-conversions</artifactId>
 	<packaging>jar</packaging>
-	<version>3.0-SNAPSHOT</version>
+	<version>3.0.0-SNAPSHOT</version>
 
 	<name>Avro Conversions</name>
 	<description>Schema based conversions for Avro for JSON, XML</description>
@@ -20,7 +20,9 @@
 		<!-- List all developers:
 		git shortlog -s | grep -v "\[bot\]" | sed -E -e 's/[[:space:]]*[[:digit:]]*[[:space:]]*(.*)$/\t\t<developer><name>\1<\/name><\/developer>/'
 		-->
-		<developer><name>Oscar Westra van Holthe - Kind</name></developer>
+		<developer>
+			<name>Oscar Westra van Holthe - Kind</name>
+		</developer>
 	</developers>
 	<organization>
 		<!-- Not a real organization, but the owner of the copyrights. -->
@@ -68,11 +70,6 @@
 			<groupId>org.apache.avro</groupId>
 			<artifactId>avro-idl</artifactId>
 			<version>${avro.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.commons</groupId>
-			<artifactId>commons-text</artifactId>
-			<version>1.12.0</version>
 		</dependency>
 		<dependency>
 			<groupId>ch.qos.reload4j</groupId>
@@ -161,6 +158,7 @@
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-simple</artifactId>
 			<version>${org.slf4j.version}</version>
+			<scope>test</scope>
 		</dependency>
 	</dependencies>
 	<build>
@@ -198,44 +196,6 @@
 						<exclude>**/FixedXmlSchemaWalker.*</exclude>
 					</excludes>
 				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>com.github.siom79.japicmp</groupId>
-				<artifactId>japicmp-maven-plugin</artifactId>
-				<version>0.20.0</version>
-				<configuration>
-					<skip>true</skip>
-					<parameter>
-						<!--
-							The plugin finds all versions (in order) in the repository up to the current project version. It excludes
-							snapshots and all versions that do not match this pattern (if given). Then it takes the last version and
-							compares the current API against that.
-						-->
-						<!--<oldVersionPattern>${previous.version}</oldVersionPattern>-->
-						<ignoreMissingOldVersion>true</ignoreMissingOldVersion>
-						<onlyModified>true</onlyModified>
-						<breakBuildBasedOnSemanticVersioning>true</breakBuildBasedOnSemanticVersioning>
-						<breakBuildOnSourceIncompatibleModifications>true</breakBuildOnSourceIncompatibleModifications>
-						<ignoreNonResolvableArtifacts>true</ignoreNonResolvableArtifacts>
-						<ignoreMissingOptionalDependency>true</ignoreMissingOptionalDependency>
-						<excludeModules>
-							<!-- Exclude modules that are not part of the public API, don't have classes but have missing dependencies, etc. -->
-							<!--<excludeModule>parquet-benchmarks</excludeModule>-->
-						</excludeModules>
-						<excludes>
-							<!-- Due to the removal of deprecated methods -->
-							<!--<exclude>org.apache.parquet.arrow.schema.SchemaMapping</exclude>-->
-						</excludes>
-					</parameter>
-				</configuration>
-				<executions>
-					<execution>
-						<phase>verify</phase>
-						<goals>
-							<goal>cmp</goal>
-						</goals>
-					</execution>
-				</executions>
 			</plugin>
 		</plugins>
 	</build>
