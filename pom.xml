@@ -105,7 +105,7 @@
 		</dependency>
 		<dependency>
 			<!-- From JITPack https://jitpack.io/ -->
-			<groupId>net.jimblackler.jsonschemafriend</groupId>
+			<groupId>com.github.jimblackler.jsonschemafriend</groupId>
 			<artifactId>core</artifactId>
 			<version>0.12.4</version>
 			<exclusions>
