@@ -107,7 +107,7 @@
 			<!-- From JITPack https://jitpack.io/ -->
 			<groupId>com.github.jimblackler.jsonschemafriend</groupId>
 			<artifactId>core</artifactId>
-			<version>0.12.4</version>
+			<version>0.12.5</version>
 			<exclusions>
 				<exclusion>
 					<groupId>commons-collections</groupId>
