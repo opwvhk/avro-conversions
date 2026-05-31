@@ -43,7 +43,7 @@
 	</scm>
 
 	<properties>
-		<jackson.version>2.21.3</jackson.version>
+		<jackson.version>2.21.4</jackson.version>
 		<avro.version>1.12.1</avro.version>
 		<org.slf4j.version>2.0.18</org.slf4j.version>
 		<!-- Build configurations -->
