@@ -17,6 +17,7 @@ import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericData;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayDeque;
@@ -115,11 +116,15 @@ public class JsonAsAvroParser extends AsAvroParserBase<SchemaProperties> {
 	 * @param fieldsAllowedMissing fields in the read schema that are allowed to be missing, even when this yields invalid records
 	 * @param model                the Avro model used to create records
 	 */
-	public JsonAsAvroParser(URI jsonSchemaLocation, boolean validateInput, Schema readSchema, Set<Schema.Field> fieldsAllowedMissing, GenericData model) {
+	public JsonAsAvroParser(URI jsonSchemaLocation, boolean validateInput, Schema readSchema,
+			Set<Schema.Field> fieldsAllowedMissing, GenericData model) {
 		this(model, analyseJsonSchema(jsonSchemaLocation), readSchema, fieldsAllowedMissing, validateInput);
 	}
 
 	private static SchemaProperties analyseJsonSchema(URI jsonSchemaLocation) {
+		if (jsonSchemaLocation == null) {
+			return null;
+		}
 		SchemaAnalyzer schemaAnalyzer = new SchemaAnalyzer();
 		return schemaAnalyzer.parseJsonProperties(jsonSchemaLocation);
 	}
@@ -135,8 +140,9 @@ public class JsonAsAvroParser extends AsAvroParserBase<SchemaProperties> {
 		this(model, null, readSchema, Set.of(), false);
 	}
 
-	private JsonAsAvroParser(GenericData model, SchemaProperties schemaProperties, Schema readSchema, Set<Schema.Field> fieldsAllowedMissing,
-	                         boolean validateInput) {
+	private JsonAsAvroParser(GenericData model, SchemaProperties schemaProperties, Schema readSchema,
+			Set<Schema.Field> fieldsAllowedMissing,
+			boolean validateInput) {
 		super(model, schemaProperties, readSchema, fieldsAllowedMissing);
 		resolver = createResolver(schemaProperties, readSchema);
 		mapper = new ObjectMapper();
@@ -155,31 +161,47 @@ public class JsonAsAvroParser extends AsAvroParserBase<SchemaProperties> {
 
 		// Logical types
 		resolveRules.add(new ResolveRule<>(JsonAsAvroParser::isValidDecimal, (w, r) -> createDecimalResolver(r)));
-		resolveRules.add(new ResolveRule<>(hasStringFormat("date"), logicalType(LogicalTypes.Date.class), (w, r) -> LOCAL_DATE_RESOLVER));
-		resolveRules.add(new ResolveRule<>(hasStringFormat("time"), logicalType(LogicalTypes.TimeMillis.class), (w, r) -> offsetTimeResolver));
-		resolveRules.add(new ResolveRule<>(hasStringFormat("time"), logicalType(LogicalTypes.TimeMicros.class), (w, r) -> offsetTimeResolver));
-		resolveRules.add(new ResolveRule<>(hasStringFormat("date-time"), logicalType(LogicalTypes.TimestampMillis.class), (w, r) -> instantResolver));
-		resolveRules.add(new ResolveRule<>(hasStringFormat("date-time"), logicalType(LogicalTypes.TimestampMicros.class), (w, r) -> instantResolver));
+		resolveRules.add(new ResolveRule<>(hasStringFormat("date"), logicalType(LogicalTypes.Date.class),
+				(w, r) -> LOCAL_DATE_RESOLVER));
+		resolveRules.add(new ResolveRule<>(hasStringFormat("time"), logicalType(LogicalTypes.TimeMillis.class),
+				(w, r) -> offsetTimeResolver));
+		resolveRules.add(new ResolveRule<>(hasStringFormat("time"), logicalType(LogicalTypes.TimeMicros.class),
+				(w, r) -> offsetTimeResolver));
 		resolveRules.add(
-				new ResolveRule<>(hasStringFormat("date-time"), logicalType(LogicalTypes.LocalTimestampMillis.class), (w, r) -> LOCAL_DATE_TIME_RESOLVER));
+				new ResolveRule<>(hasStringFormat("date-time"), logicalType(LogicalTypes.TimestampMillis.class),
+						(w, r) -> instantResolver));
 		resolveRules.add(
-				new ResolveRule<>(hasStringFormat("date-time"), logicalType(LogicalTypes.LocalTimestampMicros.class), (w, r) -> LOCAL_DATE_TIME_RESOLVER));
+				new ResolveRule<>(hasStringFormat("date-time"), logicalType(LogicalTypes.TimestampMicros.class),
+						(w, r) -> instantResolver));
+		resolveRules.add(
+				new ResolveRule<>(hasStringFormat("date-time"), logicalType(LogicalTypes.LocalTimestampMillis.class),
+						(w, r) -> LOCAL_DATE_TIME_RESOLVER));
+		resolveRules.add(
+				new ResolveRule<>(hasStringFormat("date-time"), logicalType(LogicalTypes.LocalTimestampMicros.class),
+						(w, r) -> LOCAL_DATE_TIME_RESOLVER));
 		// Raw scalar types (note: as logical types, binary types and enums are _also_ strings, strings must be last)
-		resolveRules.add(new ResolveRule<>(hasEncodedContent("base16"), rawType(Schema.Type.BYTES), (w, r) -> BASE16_RESOLVER));
-		resolveRules.add(new ResolveRule<>(hasEncodedContent("base64"), rawType(Schema.Type.BYTES), (w, r) -> BASE64_RESOLVER));
+		resolveRules.add(
+				new ResolveRule<>(hasEncodedContent("base16"), rawType(Schema.Type.BYTES), (w, r) -> BASE16_RESOLVER));
+		resolveRules.add(
+				new ResolveRule<>(hasEncodedContent("base64"), rawType(Schema.Type.BYTES), (w, r) -> BASE64_RESOLVER));
 		resolveRules.add(new ResolveRule<>(JsonAsAvroParser::isValidEnum, (w, r) -> createEnumResolver(r)));
-		resolveRules.add(new ResolveRule<>(jsonType(SchemaType.BOOLEAN), rawType(Schema.Type.BOOLEAN), (w, r) -> BOOLEAN_RESOLVER));
+		resolveRules.add(new ResolveRule<>(jsonType(SchemaType.BOOLEAN), rawType(Schema.Type.BOOLEAN),
+				(w, r) -> BOOLEAN_RESOLVER));
 		resolveRules.add(new ResolveRule<>(isNumber(), rawType(Schema.Type.FLOAT), (w, r) -> FLOAT_RESOLVER));
 		resolveRules.add(new ResolveRule<>(isNumber(), rawType(Schema.Type.DOUBLE), (w, r) -> DOUBLE_RESOLVER));
 		resolveRules.add(new ResolveRule<>(isInteger(32), rawType(Schema.Type.INT), (w, r) -> INTEGER_RESOLVER));
 		resolveRules.add(new ResolveRule<>(isInteger(64), rawType(Schema.Type.LONG), (w, r) -> LONG_RESOLVER));
-		resolveRules.add(new ResolveRule<>(jsonType(SchemaType.STRING), rawType(Schema.Type.STRING), (w, r) -> STRING_RESOLVER));
+		resolveRules.add(
+				new ResolveRule<>(jsonType(SchemaType.STRING), rawType(Schema.Type.STRING),
+						(w, r) -> STRING_RESOLVER));
 		// Composite types
 		// UNION is not needed: this is unwrapped as needed (and forced if the JSON may contain explicit null values)
 		resolveRules.add(new ResolveRule<>(jsonType(SchemaType.ARRAY), rawType(Schema.Type.ARRAY),
-				(w, r) -> new ListResolver(createResolver(w.itemSchemaProperties(), nonNullableSchemaOf(r.getElementType())))));
+				(w, r) -> new ListResolver(
+						createResolver(w.itemSchemaProperties(), nonNullableSchemaOf(r.getElementType())))));
 		// resolveRules.add(new ResolveRule<>(JsonAsAvroParser::isValidEnum, (w, r) -> createRecordResolver(r)));
-		resolveRules.add(new ResolveRule<>(jsonType(SchemaType.OBJECT), rawType(Schema.Type.RECORD), this::createResolverForRecord));
+		resolveRules.add(new ResolveRule<>(jsonType(SchemaType.OBJECT), rawType(Schema.Type.RECORD),
+				this::createResolverForRecord));
 
 		return resolveRules;
 	}
@@ -190,7 +212,8 @@ public class JsonAsAvroParser extends AsAvroParserBase<SchemaProperties> {
 		    writerProperties.isNullable() &&
 		    !readSchema.isNullable()) {
 			throw new ResolvingFailure(
-					"The write schema allows null, but the read schema doesn't. Cannot map %s to %s".formatted(writerProperties, readSchema));
+					"The write schema allows null, but the read schema doesn't. Cannot map %s to %s".formatted(
+							writerProperties, readSchema));
 		}
 
 		return super.createResolver(writerProperties, nonNullableSchemaOf(readSchema));
@@ -213,8 +236,10 @@ public class JsonAsAvroParser extends AsAvroParserBase<SchemaProperties> {
 
 			SchemaProperties fieldProperties = entry.getValue();
 			if (!requiredField && !readField.hasDefaultValue()) {
-				throw new ResolvingFailure("JSON field '%s' is not required, but the corresponding Avro field '%s' has no default in schema %s"
-						.formatted(name, readField.name(), readSchema));
+				throw new ResolvingFailure(
+						("JSON field '%s' is not required, but the corresponding Avro field '%s' has no default in " +
+						 "schema %s")
+								.formatted(name, readField.name(), readSchema));
 			}
 			ValueResolver fieldResolver = createResolver(fieldProperties, readField.schema());
 			recordResolver.addResolver(name, readField, fieldResolver);
@@ -246,7 +271,8 @@ public class JsonAsAvroParser extends AsAvroParserBase<SchemaProperties> {
 	 * @throws IOException when the JSON cannot be read
 	 */
 	public <T> T parse(URL url) throws IOException {
-		try (JsonParser parser = mapper.createParser(url)) {
+		try (InputStream inputStream = url.openStream();
+		     JsonParser parser = mapper.createParser(inputStream)) {
 			return parse(parser);
 		}
 	}
@@ -303,7 +329,9 @@ public class JsonAsAvroParser extends AsAvroParserBase<SchemaProperties> {
 							parseStack.push(noopResolver);
 						} else {
 							JsonLocation location = currentTokenLocation();
-							throw new IllegalStateException("Did not expect an object at %d:%d".formatted(location.getLineNr(), location.getColumnNr()));
+							throw new IllegalStateException(
+									"Did not expect an object at %d:%d".formatted(location.getLineNr(),
+											location.getColumnNr()));
 						}
 						break;
 					case START_ARRAY:
@@ -311,7 +339,9 @@ public class JsonAsAvroParser extends AsAvroParserBase<SchemaProperties> {
 							parseStack.push(collectingResolver.resolve("value")); // Any value will do
 						} else {
 							JsonLocation location = currentTokenLocation();
-							throw new IllegalStateException("Did not expect an array at %d:%d".formatted(location.getLineNr(), location.getColumnNr()));
+							throw new IllegalStateException(
+									"Did not expect an array at %d:%d".formatted(location.getLineNr(),
+											location.getColumnNr()));
 						}
 						break;
 					case FIELD_NAME:
@@ -319,23 +349,26 @@ public class JsonAsAvroParser extends AsAvroParserBase<SchemaProperties> {
 						// collectingResolver is the one we just popped; we need its parent
 						parseStack.push(parseStack.element().resolve(currentName()));
 						break;
+					// noinspection DefaultNotLastCaseInSwitch -> needed here for fall-through
 					default:
 						collectingResolver.addContent(getValueAsString());
 						parseStack.push(noopResolver);
 						// Fall through
 					case END_OBJECT:
 					case END_ARRAY:
-						// First pop the dummy/item/field resolver that is used for child elements, but we no longer need that.
+						// First pop the dummy/item/field resolver that is used for child elements, but we no longer
+						// need that.
 						parseStack.pop();
 						// Then pop the collector for our value, and peek ahead for the collector of our parent.
 						CollectingResolver valueResolver = parseStack.pop();
-						// Here, we want both the current top collector (the parent), and collector we just popped (that collected our value).
-						// Note we've first popped a dummy/item/field resolver that is used for child elements, if present, but we no longer need that.
+						// Here, we want both the current top collector (the parent), and collector we just popped
+						// (that collected our value).
 						Object value = valueResolver.complete();
 						CollectingResolver parentResolver = parseStack.peek();
 						if (parentResolver == null) {
 							result = (T) value;
 						} else if (parentResolver.addProperty(currentName(), value)) {
+							// We've added a value to our array parent; add a resolver like for START_ARRAY
 							parseStack.push(parentResolver.resolve("value")); // Any value will do
 						} else {
 							parseStack.push(noopResolver);

@@ -49,7 +49,7 @@
 		<!-- Build configurations -->
 		<maven.compiler.release>17</maven.compiler.release>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<nexusUrl>https://oss.sonatype.org/</nexusUrl>
+		<nexusUrl>https://s01.oss.sonatype.org/</nexusUrl>
 	</properties>
 	<dependencies>
 		<!-- Basics -->
@@ -196,6 +196,75 @@
 						<goals>
 							<goal>prepare-agent</goal>
 							<goal>report</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>com.github.siom79.japicmp</groupId>
+				<artifactId>japicmp-maven-plugin</artifactId>
+				<version>0.25.4</version>
+				<configuration>
+					<!--<skip>true</skip>-->
+					<parameter>
+						<!-- No previous versions use SemVer yet -->
+						<ignoreMissingOldVersion>true</ignoreMissingOldVersion>
+						<!-- This version must use SemVer -->
+						<ignoreMissingNewVersion>false</ignoreMissingNewVersion>
+
+						<!-- SemVer (requires all checked versions to have a major.minor.patch formatted version) -->
+						<breakBuildBasedOnSemanticVersioning>true</breakBuildBasedOnSemanticVersioning>
+						<breakBuildBasedOnSemanticVersioningForMajorVersionZero>false
+						</breakBuildBasedOnSemanticVersioningForMajorVersionZero>
+						<!-- Non-semver -->
+						<breakBuildOnModifications>false</breakBuildOnModifications>
+						<breakBuildOnSourceIncompatibleModifications>false</breakBuildOnSourceIncompatibleModifications>
+						<breakBuildOnBinaryIncompatibleModifications>false</breakBuildOnBinaryIncompatibleModifications>
+
+						<!-- See https://siom79.github.io/japicmp/MavenPlugin.html -->
+						<accessModifier>protected</accessModifier>
+						<!-- Includes are supported as well -->
+						<excludeModules>
+							<!--
+							Exclude modules that are not part of the public API, have problems, etc.
+							-->
+							<!--<excludeModule>parquet-benchmarks</excludeModule>-->
+						</excludeModules>
+						<excludes>
+							<!-- Due to the removal of deprecated methods -->
+							<!--<exclude>org.apache.parquet.arrow.schema.SchemaMapping</exclude>-->
+						</excludes>
+
+						<onlyModified>true</onlyModified>
+						<onlyBinaryIncompatible>true</onlyBinaryIncompatible>
+
+						<!--<ignoreMissingClasses>true</ignoreMissingClasses>-->
+						<ignoreMissingClassesByRegularExpressions>
+							<ignoreMissingClassesByRegularExpression>org\.apache\.avro\.compiler\..*
+							</ignoreMissingClassesByRegularExpression>
+						</ignoreMissingClassesByRegularExpressions>
+						<breakBuildIfCausedByExclusion>false</breakBuildIfCausedByExclusion>
+
+						<overrideCompatibilityChangeParameters>
+							<overrideCompatibilityChangeParameter>
+								<compatibilityChange>CLASS_REMOVED</compatibilityChange>
+								<binaryCompatible>true</binaryCompatible>
+								<sourceCompatible>true</sourceCompatible>
+								<semanticVersionLevel>PATCH</semanticVersionLevel>
+							</overrideCompatibilityChangeParameter>
+						</overrideCompatibilityChangeParameters>
+
+						<skipXmlReport>true</skipXmlReport>
+						<skipHtmlReport>true</skipHtmlReport>
+						<skipMarkdownReport>false</skipMarkdownReport>
+						<skipDiffReport>false</skipDiffReport>
+					</parameter>
+				</configuration>
+				<executions>
+					<execution>
+						<phase>verify</phase>
+						<goals>
+							<goal>cmp</goal>
 						</goals>
 					</execution>
 				</executions>
