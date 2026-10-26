@@ -98,7 +98,8 @@ class JsonAsAvroParserTest {
 	void testMostTypesFromAvroSchema() throws IOException {
 		Schema readSchema = avroSchema("TestRecordProjection.avsc");
 
-		JsonAsAvroParser parser = new JsonAsAvroParser(readSchema, GenericData.get());
+		// JsonAsAvroParser parser = new JsonAsAvroParser(readSchema, GenericData.get());
+		JsonAsAvroParser parser = new JsonAsAvroParser(null, false, readSchema, Set.of(), GenericData.get());
 		GenericRecord fullRecord = parser.parse(getClass().getResource("TestRecord-full.json"));
 
 		assertThat(fullRecord.toString()).isEqualTo(
