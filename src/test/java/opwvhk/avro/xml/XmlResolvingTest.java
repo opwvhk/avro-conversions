@@ -76,7 +76,7 @@ class XmlResolvingTest {
 					"textList" : [ "Hey, that's my line!" ],
 					"inner" : null,
 					"switch" : "broken",
-					"approximation" : 123456.78125,
+					"approximation" : 123456.78,
 					"moreAccurateApproximation" : null,
 					"morePrecise" : null,
 					"exceptionToUnwrappingRule" : { "opwvhk.resolvingTest.mustMatch" : {
@@ -113,7 +113,7 @@ class XmlResolvingTest {
 						"dt" : { "long" : 1678974301123 },
 						"dtu" : { "long" : 1678970701123456 },
 						"fd" : { "double" : 123456.789012 },
-						"fs" : { "float" : 123.45600128173828 },
+						"fs" : { "float" : 123.456 },
 						"hexBytes" : { "bytes" : "Hello World!\\n" },
 						"s" : { "string" : "text" },
 						"t" : { "int" : 49501123 },
@@ -125,7 +125,7 @@ class XmlResolvingTest {
 						"numberUnbounded" : 9223372036854775807
 					} },
 					"switch" : "broken",
-					"approximation" : 123456.78125,
+					"approximation" : 123456.78,
 					"moreAccurateApproximation" : { "double" : 1.23456789012345E8 },
 					"morePrecise" : { "double" : 12.5 },
 					"exceptionToUnwrappingRule" : { "opwvhk.resolvingTest.mustMatch" : {
@@ -147,7 +147,7 @@ class XmlResolvingTest {
 					"textList" : [ "Hey, that's my line!" ],
 					"inner" : null,
 					"switch" : "broken",
-					"approximation" : 123456.78125,
+					"approximation" : 123456.78,
 					"moreAccurateApproximation" : null,
 					"morePrecise" : null,
 					"exceptionToUnwrappingRule" : { "opwvhk.resolvingTest.mustMatch" : {
@@ -173,7 +173,7 @@ class XmlResolvingTest {
 					"textList" : [ "Hey, that's my line!" ],
 					"inner" : null,
 					"switch" : "broken",
-					"approximation" : 123456.78125,
+					"approximation" : 123456.78,
 					"moreAccurateApproximation" : null,
 					"morePrecise" : null,
 					"exceptionToUnwrappingRule" : { "opwvhk.resolvingTest.mustMatch" : {
