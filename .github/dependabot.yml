@@ -1,5 +1,6 @@
 # Please see the documentation for all configuration options:
 # https://docs.github.com/github/administering-a-repository/configuration-options-for-dependency-updates
+# $schema: https://json.schemastore.org/dependabot-2.0.json
 version: 2
 updates:
   - package-ecosystem: "maven"
@@ -7,10 +8,25 @@ updates:
     schedule:
       interval: "weekly"
       day: "sunday"
-    open-pull-requests-limit: 50
+    open-pull-requests-limit: 5 # Default
+    cooldown:
+      default-days: 3
+      semver-patch-days: 7
+    groups:
+      "all": # Group all non-major version upgrades
+        applies-to: version-updates
+        update-types: [ "minor", "patch" ]
+        patterns: [ "*" ]
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "weekly"
       day: "sunday"
-    open-pull-requests-limit: 5
+    open-pull-requests-limit: 5 # Default
+    cooldown:
+      default-days: 3
+      semver-patch-days: 7
+    groups:
+      "all": # Group all version upgrades
+        applies-to: version-updates
+        patterns: [ "*" ]

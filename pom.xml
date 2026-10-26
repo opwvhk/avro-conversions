@@ -43,13 +43,13 @@
 	</scm>
 
 	<properties>
-		<jackson.version>2.22.2</jackson.version>
+		<jackson.version>2.22.4</jackson.version>
 		<avro.version>1.12.2</avro.version>
-		<org.slf4j.version>2.0.18</org.slf4j.version>
+		<org.slf4j.version>2.0.20</org.slf4j.version>
 		<!-- Build configurations -->
 		<maven.compiler.release>17</maven.compiler.release>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<nexusUrl>https://oss.sonatype.org/</nexusUrl>
+		<nexusUrl>https://s01.oss.sonatype.org/</nexusUrl>
 	</properties>
 	<dependencies>
 		<!-- Basics -->
@@ -74,7 +74,7 @@
 		<dependency>
 			<groupId>ch.qos.reload4j</groupId>
 			<artifactId>reload4j</artifactId>
-			<version>1.2.26</version>
+			<version>1.2.27</version>
 		</dependency>
 		<!--
 		<dependency>
@@ -88,7 +88,7 @@
 		<dependency>
 			<groupId>org.apache.ws.xmlschema</groupId>
 			<artifactId>xmlschema-walker</artifactId>
-			<version>2.3.2</version>
+			<version>2.3.3</version>
 		</dependency>
 
 		<!-- JSON & JSON Schema related -->
@@ -136,7 +136,7 @@
 		<dependency>
 			<groupId>org.jsoup</groupId>
 			<artifactId>jsoup</artifactId>
-			<version>1.22.2</version>
+			<version>1.23.2</version>
 		</dependency>
 
 		<!-- Testing -->
@@ -177,12 +177,12 @@
 				<plugin>
 					<groupId>org.codehaus.mojo</groupId>
 					<artifactId>versions-maven-plugin</artifactId>
-					<version>2.21.0</version>
+					<version>2.23.0</version>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-compiler-plugin</artifactId>
-					<version>3.15.0</version>
+					<version>3.16.0</version>
 				</plugin>
 			</plugins>
 		</pluginManagement>
@@ -196,6 +196,75 @@
 						<goals>
 							<goal>prepare-agent</goal>
 							<goal>report</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>com.github.siom79.japicmp</groupId>
+				<artifactId>japicmp-maven-plugin</artifactId>
+				<version>0.26.5</version>
+				<configuration>
+					<!--<skip>true</skip>-->
+					<parameter>
+						<!-- No previous versions use SemVer yet -->
+						<ignoreMissingOldVersion>true</ignoreMissingOldVersion>
+						<!-- This version must use SemVer -->
+						<ignoreMissingNewVersion>false</ignoreMissingNewVersion>
+
+						<!-- SemVer (requires all checked versions to have a major.minor.patch formatted version) -->
+						<breakBuildBasedOnSemanticVersioning>true</breakBuildBasedOnSemanticVersioning>
+						<breakBuildBasedOnSemanticVersioningForMajorVersionZero>false
+						</breakBuildBasedOnSemanticVersioningForMajorVersionZero>
+						<!-- Non-semver -->
+						<breakBuildOnModifications>false</breakBuildOnModifications>
+						<breakBuildOnSourceIncompatibleModifications>false</breakBuildOnSourceIncompatibleModifications>
+						<breakBuildOnBinaryIncompatibleModifications>false</breakBuildOnBinaryIncompatibleModifications>
+
+						<!-- See https://siom79.github.io/japicmp/MavenPlugin.html -->
+						<accessModifier>protected</accessModifier>
+						<!-- Includes are supported as well -->
+						<excludeModules>
+							<!--
+							Exclude modules that are not part of the public API, have problems, etc.
+							-->
+							<!--<excludeModule>parquet-benchmarks</excludeModule>-->
+						</excludeModules>
+						<excludes>
+							<!-- Due to the removal of deprecated methods -->
+							<!--<exclude>org.apache.parquet.arrow.schema.SchemaMapping</exclude>-->
+						</excludes>
+
+						<onlyModified>true</onlyModified>
+						<onlyBinaryIncompatible>true</onlyBinaryIncompatible>
+
+						<!--<ignoreMissingClasses>true</ignoreMissingClasses>-->
+						<ignoreMissingClassesByRegularExpressions>
+							<ignoreMissingClassesByRegularExpression>org\.apache\.avro\.compiler\..*
+							</ignoreMissingClassesByRegularExpression>
+						</ignoreMissingClassesByRegularExpressions>
+						<breakBuildIfCausedByExclusion>false</breakBuildIfCausedByExclusion>
+
+						<overrideCompatibilityChangeParameters>
+							<overrideCompatibilityChangeParameter>
+								<compatibilityChange>CLASS_REMOVED</compatibilityChange>
+								<binaryCompatible>true</binaryCompatible>
+								<sourceCompatible>true</sourceCompatible>
+								<semanticVersionLevel>PATCH</semanticVersionLevel>
+							</overrideCompatibilityChangeParameter>
+						</overrideCompatibilityChangeParameters>
+
+						<skipXmlReport>true</skipXmlReport>
+						<skipHtmlReport>true</skipHtmlReport>
+						<skipMarkdownReport>false</skipMarkdownReport>
+						<skipDiffReport>false</skipDiffReport>
+					</parameter>
+				</configuration>
+				<executions>
+					<execution>
+						<phase>verify</phase>
+						<goals>
+							<goal>cmp</goal>
 						</goals>
 					</execution>
 				</executions>
