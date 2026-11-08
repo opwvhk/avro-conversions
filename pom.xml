@@ -136,7 +136,7 @@
 		<dependency>
 			<groupId>org.jsoup</groupId>
 			<artifactId>jsoup</artifactId>
-			<version>1.23.2</version>
+			<version>1.24.1</version>
 		</dependency>
 
 		<!-- Testing -->
@@ -190,7 +190,7 @@
 			<plugin>
 				<groupId>org.jacoco</groupId>
 				<artifactId>jacoco-maven-plugin</artifactId>
-				<version>0.8.15</version>
+				<version>0.8.16</version>
 				<executions>
 					<execution>
 						<goals>
@@ -203,7 +203,7 @@
 			<plugin>
 				<groupId>com.github.siom79.japicmp</groupId>
 				<artifactId>japicmp-maven-plugin</artifactId>
-				<version>0.26.5</version>
+				<version>0.27.0</version>
 				<configuration>
 					<!--<skip>true</skip>-->
 					<parameter>
